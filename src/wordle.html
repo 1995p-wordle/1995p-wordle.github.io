@@ -125,7 +125,7 @@
     </style>
 </head>
 
-<body class="nightmode">
+<body>
     <game-app></game-app>
     <div id='header-container' style='display: none;'>
         <style>
@@ -189,6 +189,8 @@
             align-items: center;
             flex-grow: 1;
             overflow: hidden;
+            /* Limit max height to prevent excessive spacing before keyboard */
+            max-height: calc(100% - var(--keyboard-height) - var(--header-height) - 10px);
         }
 
         #board {
@@ -197,6 +199,27 @@
             grid-gap: 5px;
             padding: 10px;
             box-sizing: border-box;
+        }
+
+        /* Responsive adjustments for tablets */
+        @media (max-height: 700px) {
+            :root {
+                --keyboard-height: 180px;
+            }
+        }
+
+        /* Responsive adjustments for phones */
+        @media (max-height: 600px) {
+            :root {
+                --keyboard-height: 160px;
+                --header-height: 40px;
+            }
+        }
+
+        @media (max-width: 500px) {
+            #board {
+                padding: 5px;
+            }
         }
 
         button.icon {

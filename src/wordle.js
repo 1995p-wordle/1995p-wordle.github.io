@@ -162,7 +162,110 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
         return t
     }
     var k = document.createElement("template");
-    k.innerHTML = "\n<style>\n  :host {\n    display: inline-block;\n  }\n  .tile {\n    width: 100%;\n    display: inline-flex;\n    justify-content: center;\n    align-items: center;\n    font-size: 2rem;\n    line-height: 2rem;\n    font-weight: bold;\n    vertical-align: middle;\n    box-sizing: border-box;\n    color: var(--tile-text-color);\n    text-transform: uppercase;\n    user-select: none;\n  }\n  .tile::before {\n    content: '';\n    display: inline-block;\n    padding-bottom: 100%;\n  }\n\n  /* Allow tiles to be smaller on small screens */\n  @media (max-height: 600px) {\n    .tile {\n      font-size: 1em;\n      line-height: 1em;\n    }\n  }\n\n  .tile[data-state='empty'] {\n    border: 2px solid var(--color-tone-4);\n  }\n  .tile[data-state='tbd'] {\n    background-color: var(--color-tone-7);\n    border: 2px solid var(--color-tone-3);\n    color: var(--color-tone-1);\n  }\n  .tile[data-state='correct'] {\n    background-color: var(--color-correct);\n  }\n  .tile[data-state='present'] {\n    background-color: var(--color-present);\n  }\n  .tile[data-state='absent'] {\n    background-color: var(--color-absent);\n  }\n\n  .tile[data-animation='pop'] {\n    animation-name: PopIn;\n    animation-duration: 100ms;\n  }\n\n  @keyframes PopIn {\n    from {\n      transform: scale(0.8);\n      opacity: 0;\n    }\n\n    40% {\n      transform: scale(1.1);\n      opacity: 1;\n    }\n  }\n  .tile[data-animation='flip-in'] {\n    animation-name: FlipIn;\n    animation-duration: 250ms;\n    animation-timing-function: ease-in;\n  }\n  @keyframes FlipIn {\n    0% {\n      transform: rotateX(0);\n    }\n    100% {\n      transform: rotateX(-90deg);\n    }\n  }\n  .tile[data-animation='flip-out'] {\n    animation-name: FlipOut;\n    animation-duration: 250ms;\n    animation-timing-function: ease-in;\n  }\n  @keyframes FlipOut {\n    0% {\n      transform: rotateX(-90deg);\n    }\n    100% {\n      transform: rotateX(0);\n    }\n  }\n</style>\n<div class=\"tile\" data-state=\"empty\" data-animation=\"idle\"></div>\n";
+    k.innerHTML = `
+<style>
+  :host {
+    display: inline-block;
+  }
+
+  .tile {
+    width: 100%;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    line-height: 2rem;
+    font-weight: bold;
+    vertical-align: middle;
+    box-sizing: border-box;
+    color: var(--tile-text-color);
+    text-transform: uppercase;
+    user-select: none;
+  }
+
+  .tile::before {
+    content: '';
+    display: inline-block;
+    padding-bottom: 100%;
+  }
+
+  @media (max-height: 600px) {
+    .tile {
+      font-size: 1em;
+      line-height: 1em;
+    }
+  }
+
+  .tile[data-state='empty'] {
+    border: 2px solid var(--color-tone-4);
+  }
+
+  .tile[data-state='tbd'] {
+    background-color: var(--color-tone-7);
+    border: 2px solid var(--color-tone-3);
+    color: var(--color-tone-1);
+  }
+
+  .tile[data-state='correct'] {
+    background-color: var(--color-correct);
+  }
+
+  .tile[data-state='present'] {
+    background-color: var(--color-present);
+  }
+
+  .tile[data-state='absent'] {
+    background-color: var(--color-absent);
+  }
+
+  .tile[data-animation='pop'] {
+    animation-name: PopIn;
+    animation-duration: 100ms;
+  }
+
+  @keyframes PopIn {
+    from {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    40% {
+      transform: scale(1.1);
+      opacity: 1;
+    }
+  }
+
+  .tile[data-animation='flip-in'] {
+    animation-name: FlipIn;
+    animation-duration: 250ms;
+    animation-timing-function: ease-in;
+  }
+
+  @keyframes FlipIn {
+    0% {
+      transform: rotateX(0);
+    }
+    100% {
+      transform: rotateX(-90deg);
+    }
+  }
+
+  .tile[data-animation='flip-out'] {
+    animation-name: FlipOut;
+    animation-duration: 250ms;
+    animation-timing-function: ease-in;
+  }
+
+  @keyframes FlipOut {
+    0% {
+      transform: rotateX(-90deg);
+    }
+    100% {
+      transform: rotateX(0);
+    }
+  }
+</style>
+<div class="tile" data-state="empty" data-animation="idle"></div>
+`;
     var v = function(e) {
         r(t, e);
         var a = h(t);
@@ -296,7 +399,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     }(c(HTMLElement));
     customElements.define("game-row", x);
     var z = document.createElement("template");
-    z.innerHTML = "\n  <slot></slot>\n";
+    z.innerHTML = `<slot></slot>`;
     var j = "darkTheme",
         S = "colorBlindTheme",
         _ = function(e) {
@@ -1216,7 +1319,93 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
         }(c(HTMLElement));
     customElements.define("game-app", ts);
     var os = document.createElement("template");
-    os.innerHTML = "\n  <style>\n    .overlay {\n      display: none;\n      position: absolute;\n      width: 100%;\n      height: 100%;\n      top: 0;\n      left: 0;\n      justify-content: center;\n      align-items: center;\n      background-color: var(--opacity-50);\n      z-index: ".concat(3e3, ';\n    }\n\n    :host([open]) .overlay {\n      display: flex;\n    }\n\n    .content {\n      position: relative;\n      border-radius: 8px;\n      border: 1px solid var(--color-tone-6);\n      background-color: var(--modal-content-bg);\n      color: var(--color-tone-1);\n      box-shadow: 0 4px 23px 0 rgba(0, 0, 0, 0.2);\n      width: 90%;\n      max-height: 90%;\n      overflow-y: auto;\n      animation: SlideIn 200ms;\n      max-width: var(--game-max-width);\n      padding: 16px;\n      box-sizing: border-box;\n    }\n\n    .content.closing {\n      animation: SlideOut 200ms;\n    }\n\n    .close-icon {\n      width: 24px;\n      height: 24px;\n      position: absolute;\n      top: 16px;\n      right: 16px;\n    }\n\n    game-icon {\n      position: fixed;\n      user-select: none;\n      cursor: pointer;\n    }\n\n    @keyframes SlideIn {\n      0% {\n        transform: translateY(30px);\n        opacity: 0;\n      }\n      100% {\n        transform: translateY(0px);\n        opacity: 1;\n      }\n    }\n    @keyframes SlideOut {\n      0% {\n        transform: translateY(0px);\n        opacity: 1;\n      }\n      90% {\n        opacity: 0;\n      }\n      100% {\n        opacity: 0;\n        transform: translateY(60px);\n      }\n    }\n  </style>\n  <div class="overlay">\n    <div class="content">\n      <slot></slot>\n      <div class="close-icon">\n        <game-icon icon="close"></game-icon>\n      </div>\n    </div>\n  </div>\n');
+    os.innerHTML = `
+  <style>
+    .overlay {
+      display: none;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      justify-content: center;
+      align-items: center;
+      background-color: var(--opacity-50);
+      z-index: ${3e3};
+    }
+
+    :host([open]) .overlay {
+      display: flex;
+    }
+
+    .content {
+      position: relative;
+      border-radius: 8px;
+      border: 1px solid var(--color-tone-6);
+      background-color: var(--modal-content-bg);
+      color: var(--color-tone-1);
+      box-shadow: 0 4px 23px 0 rgba(0, 0, 0, 0.2);
+      width: 90%;
+      max-height: 90%;
+      overflow-y: auto;
+      animation: SlideIn 200ms;
+      max-width: var(--game-max-width);
+      padding: 16px;
+      box-sizing: border-box;
+    }
+
+    .content.closing {
+      animation: SlideOut 200ms;
+    }
+
+    .close-icon {
+      width: 24px;
+      height: 24px;
+      position: absolute;
+      top: 16px;
+      right: 16px;
+    }
+
+    game-icon {
+      position: fixed;
+      user-select: none;
+      cursor: pointer;
+    }
+
+    @keyframes SlideIn {
+      0% {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+      100% {
+        transform: translateY(0px);
+        opacity: 1;
+      }
+    }
+
+    @keyframes SlideOut {
+      0% {
+        transform: translateY(0px);
+        opacity: 1;
+      }
+      90% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(60px);
+      }
+    }
+  </style>
+  <div class="overlay">
+    <div class="content">
+      <slot></slot>
+      <div class="close-icon">
+        <game-icon icon="close"></game-icon>
+      </div>
+    </div>
+  </div>
+`;
     var ns = function(e) {
         r(t, e);
         var a = h(t);
@@ -1240,9 +1429,113 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     }(c(HTMLElement));
     customElements.define("game-modal", ns);
     var rs = document.createElement("template");
-    rs.innerHTML = "\n  <style>\n  :host {\n    height: var(--keyboard-height);\n  }\n  #keyboard {\n    margin: 0 8px;\n    user-select: none;\n  }\n  \n  .row {\n    display: flex;\n    width: 100%;\n    margin: 0 auto 8px;\n    /* https://stackoverflow.com/questions/46167604/ios-html-disable-double-tap-to-zoom */\n    touch-action: manipulation;\n  }\n  \n  button {\n    font-family: inherit;\n    font-weight: bold;\n    border: 0;\n    padding: 0;\n    margin: 0 6px 0 0;\n    height: 58px;\n    border-radius: 4px;\n    cursor: pointer;\n    user-select: none;\n    background-color: var(--key-bg);\n    color: var(--key-text-color);\n    flex: 1;\n    display: flex;\n    justify-content: center;\n    align-items: center;\n    text-transform: uppercase;\n    -webkit-tap-highlight-color: rgba(0,0,0,0.3);\n  }\n\n  button:focus {\n    outline: none;\n  }\n\n  button.fade {\n    transition: background-color 0.1s ease, color 0.1s ease;\n  }\n  \n  button:last-of-type {\n    margin: 0;\n  }\n  \n  .half {\n    flex: 0.5;\n  }\n  \n  .one {\n    flex: 1;\n  }\n\n  .one-and-a-half {\n    flex: 1.5;\n    font-size: 12px;\n  }\n  \n  .two {\n    flex: 2;\n  }\n\n  button[data-state='correct'] {\n    background-color: var(--key-bg-correct);\n    color: var(--key-evaluated-text-color);\n  }\n\n  button[data-state='present'] {\n    background-color: var(--key-bg-present);\n    color: var(--key-evaluated-text-color);\n  }\n\n  button[data-state='absent'] {\n    background-color: var(--key-bg-absent);\n    color: var(--key-evaluated-text-color);\n  }\n\n  </style>\n  <div id=\"keyboard\"></div>\n";
+    rs.innerHTML = `
+  <style>
+  :host {
+    height: var(--keyboard-height);
+  }
+
+  #keyboard {
+    margin: 0 8px;
+    user-select: none;
+  }
+
+  .row {
+    display: flex;
+    width: 100%;
+    margin: 0 auto 8px;
+    touch-action: manipulation;
+  }
+
+  button {
+    font-family: inherit;
+    font-weight: 700;
+    border: 0;
+    padding: 0;
+    margin: 0 6px 0 0;
+    height: 58px;
+    border-radius: 4px;
+    cursor: pointer;
+    user-select: none;
+    background-color: var(--key-bg);
+    color: var(--color-tone-1);
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-transform: uppercase;
+    -webkit-tap-highlight-color: rgba(0,0,0,0.3);
+    font-size: 1.25rem;
+  }
+
+  button:focus {
+    outline: none;
+  }
+
+  button.fade {
+    transition: background-color 0.1s ease, color 0.1s ease;
+  }
+
+  button:last-of-type {
+    margin: 0;
+  }
+
+  .half {
+    flex: 0.5;
+  }
+
+  .one {
+    flex: 1;
+  }
+
+  .one-and-a-half {
+    flex: 1.5;
+    font-size: 12px;
+  }
+
+  .two {
+    flex: 2;
+  }
+
+  button[data-state='correct'] {
+    background-color: var(--key-bg-correct);
+    color: var(--key-evaluated-text-color);
+  }
+
+  button[data-state='present'] {
+    background-color: var(--key-bg-present);
+    color: var(--key-evaluated-text-color);
+  }
+
+  button[data-state='absent'] {
+    background-color: var(--key-bg-absent);
+    color: var(--key-evaluated-text-color);
+  }
+
+  @media (max-height: 600px) {
+    button {
+      height: 50px;
+      font-size: 1rem;
+    }
+    .row {
+      margin: 0 auto 5px;
+    }
+  }
+
+  @media (max-width: 500px) {
+    button {
+      margin: 0 3px 0 0;
+      border-radius: 3px;
+    }
+    #keyboard {
+      margin: 0 4px;
+    }
+  }
+  </style>
+  <div id="keyboard"></div>
+`;
     var is = document.createElement("template");
-    is.innerHTML = "\n  <button>key</button>\n";
+    is.innerHTML = `<button>key</button>`;
     var ls = document.createElement("template");
     ls.innerHTML = '\n  <div class="spacer"></div>\n';
     var ds = [["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"], ["-", "a", "s", "d", "f", "g", "h", "j", "k", "l", "-"], ["↵", "z", "x", "c", "v", "b", "n", "m", "←"]],
@@ -1690,7 +1983,115 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     }(c(HTMLElement));
     customElements.define("game-help", Hs);
     var Ns = document.createElement("template");
-    Ns.innerHTML = "\n  <style>\n    .overlay {\n      display: none;\n      position: absolute;\n      width: 100%;\n      height: 100%;\n      top: 0;\n      left: 0;\n      justify-content: center;\n      background-color: var(--color-background);\n      animation: SlideIn 100ms linear;\n      z-index: ".concat(2e3, ';\n    }\n\n    :host([open]) .overlay {\n      display: flex;\n    }\n\n    .content {\n      position: relative;\n      color: var(--color-tone-1);\n      padding: 0 32px;\n      max-width: var(--game-max-width);\n      width: 100%;\n      overflow-y: auto;\n      height: 100%;\n      display: flex;\n      flex-direction: column;\n    }\n\n    .content-container {\n      height: 100%;\n    }\n\n    .overlay.closing {\n      animation: SlideOut 150ms linear;\n    }\n\n    header {\n      display: flex;\n      justify-content: center;\n      align-items: center;\n      position: relative;\n    }\n\n    h1 {\n      font-weight: 700;\n      font-size: 16px;\n      letter-spacing: 0.5px;\n      text-transform: uppercase;\n      text-align: center;\n      margin-bottom: 10px;\n    }\n\n    game-icon {\n      position: absolute;\n      right: 0;\n      user-select: none;\n      cursor: pointer;\n    }\n\n    @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {\n      .content {\n        max-width: 100%;\n        padding: 0;\n      }\n      game-icon {\n        padding: 0 16px;\n      }\n    }\n\n    @keyframes SlideIn {\n      0% {\n        transform: translateY(30px);\n        opacity: 0;\n      }\n      100% {\n        transform: translateY(0px);\n        opacity: 1;\n      }\n    }\n    @keyframes SlideOut {\n      0% {\n        transform: translateY(0px);\n        opacity: 1;\n      }\n      90% {\n        opacity: 0;\n      }\n      100% {\n        opacity: 0;\n        transform: translateY(60px);\n      }\n    }\n  </style>\n  <div class="overlay">\n    <div class="content">\n      <header>\n        <h1><slot></slot></h1>\n        <game-icon icon="close"></game-icon>\n      </header>\n      <div class="content-container">\n        <slot name="content"></slot>\n      </div>\n    </div>\n  </div>\n');
+    Ns.innerHTML = `
+  <style>
+    .overlay {
+      display: none;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      justify-content: center;
+      background-color: var(--color-background);
+      animation: SlideIn 100ms linear;
+      z-index: ${2e3};
+    }
+
+    :host([open]) .overlay {
+      display: flex;
+    }
+
+    .content {
+      position: relative;
+      color: var(--color-tone-1);
+      padding: 0 32px;
+      max-width: var(--game-max-width);
+      width: 100%;
+      overflow-y: auto;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .content-container {
+      height: 100%;
+    }
+
+    .overlay.closing {
+      animation: SlideOut 150ms linear;
+    }
+
+    header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    h1 {
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    game-icon {
+      position: absolute;
+      right: 0;
+      user-select: none;
+      cursor: pointer;
+    }
+
+    @media only screen and (min-device-width: 320px) and (max-device-width: 480px) {
+      .content {
+        max-width: 100%;
+        padding: 0;
+      }
+      game-icon {
+        padding: 0 16px;
+      }
+    }
+
+    @keyframes SlideIn {
+      0% {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+      100% {
+        transform: translateY(0px);
+        opacity: 1;
+      }
+    }
+
+    @keyframes SlideOut {
+      0% {
+        transform: translateY(0px);
+        opacity: 1;
+      }
+      90% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(60px);
+      }
+    }
+  </style>
+  <div class="overlay">
+    <div class="content">
+      <header>
+        <h1><slot></slot></h1>
+        <game-icon icon="close"></game-icon>
+      </header>
+      <div class="content-container">
+        <slot name="content"></slot>
+      </div>
+    </div>
+  </div>
+`;
     var Ds = function(e) {
         r(t, e);
         var a = h(t);
