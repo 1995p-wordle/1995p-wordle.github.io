@@ -926,7 +926,114 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
         }(va(a, e))
     }
     var Sa = document.createElement("template");
-    Sa.innerHTML = '\n  <style>\n  .setting {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    border-bottom: 1px solid var(--color-tone-4);\n    padding: 16px 0;\n  }\n\n  a, a:visited {\n    color: var(--color-tone-2);\n  }\n\n  .title {\n    font-size: 18px;\n  }\n  .text {\n    padding-right: 8px;\n  }\n  .description {\n    font-size: 12px;\n    color: var(--color-tone-2);\n  }\n\n  #footnote {\n    position: absolute;\n    bottom: 0;\n    left: 0;\n    right: 0;\n    padding: 16px;\n    color: var(--color-tone-2);\n    font-size: 12px;\n    text-align: right;\n    display: flex;\n    justify-content: space-between;\n    align-items: flex-end;\n  }\n\n  #privacy-policy,\n  #copyright {\n    text-align: left;\n  }\n\n  @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {\n    .setting {\n      padding: 16px;\n    }\n  }\n\n  </style>\n  <div class="sections">\n    <section>\n      <div class="setting">\n        <div class="text">\n          <div class="title">Hard Mode</div>\n          <div class="description">Any revealed hints must be used in subsequent guesses</div>\n        </div>\n        <div class="control">\n          <game-switch id="hard-mode" name="hard-mode"></game-switch>\n        </div>\n      </div>\n      <div class="setting">\n        <div class="text">\n          <div class="title">Dark Theme</div>\n        </div>\n        <div class="control">\n          <game-switch id="dark-theme" name="dark-theme"></game-switch>\n        </div>\n      </div>\n      <div class="setting">\n        <div class="text">\n          <div class="title">Color Blind Mode</div>\n          <div class="description">High contrast colors</div>\n        </div>\n        <div class="control">\n          <game-switch id="color-blind-theme" name="color-blind-theme"></game-switch>\n        </div>\n      </div>\n    </section>\n\n    <section>\n      <div class="setting">\n        <div class="text">\n          <div class="title">Feedback</div>\n        </div>\n        <div class="control">\n          <a href="mailto:wordle@powerlanguage.co.uk?subject=Feedback" title="wordle@powerlanguage.co.uk">Email</a>\n          |\n          <a href="https://twitter.com/intent/tweet?screen_name=powerlanguish" target="blank" title="@powerlanguish">Twitter</a>\n        </div>\n      </div>\n    </section>\n  </div>\n  <div id="footnote">\n    <div>\n      <div id="privacy-policy"><a href="https://www.powerlanguage.co.uk/privacy-policy.html" target="_blank">Privacy Policy</a></div>\n      <div id="copyright">Copyright 2021-2022. All Rights Reserved.</div>\n    </div>\n    <div>\n      <div id="puzzle-number"></div>\n      <div id="hash"></div>\n    </div>\n  </div>\n';
+    Sa.innerHTML = `
+  <style>
+  .setting {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--color-tone-4);
+    padding: 16px 0;
+  }
+
+  a, a:visited {
+    color: var(--color-tone-2);
+  }
+
+  .title {
+    font-size: 18px;
+  }
+
+  .text {
+    padding-right: 8px;
+  }
+
+  .description {
+    font-size: 12px;
+    color: var(--color-tone-2);
+  }
+
+  #footnote {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 16px;
+    color: var(--color-tone-2);
+    font-size: 12px;
+    text-align: right;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  #privacy-policy,
+  #copyright {
+    text-align: left;
+  }
+
+  @media only screen and (min-device-width: 320px) and (max-device-width: 480px) {
+    .setting {
+      padding: 16px;
+    }
+  }
+  </style>
+
+  <div class="sections">
+    <section>
+      <div class="setting">
+        <div class="text">
+          <div class="title">Hard Mode</div>
+          <div class="description">Any revealed hints must be used in subsequent guesses</div>
+        </div>
+        <div class="control">
+          <game-switch id="hard-mode" name="hard-mode"></game-switch>
+        </div>
+      </div>
+      <div class="setting">
+        <div class="text">
+          <div class="title">Dark Theme</div>
+        </div>
+        <div class="control">
+          <game-switch id="dark-theme" name="dark-theme"></game-switch>
+        </div>
+      </div>
+      <div class="setting">
+        <div class="text">
+          <div class="title">Color Blind Mode</div>
+          <div class="description">High contrast colors</div>
+        </div>
+        <div class="control">
+          <game-switch id="color-blind-theme" name="color-blind-theme"></game-switch>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="setting">
+        <div class="text">
+          <div class="title">Feedback</div>
+        </div>
+        <div class="control">
+          <a href="mailto:wordle@powerlanguage.co.uk?subject=Feedback" title="wordle@powerlanguage.co.uk">Email</a>
+          |
+          <a href="https://twitter.com/intent/tweet?screen_name=powerlanguish" target="blank" title="@powerlanguish">Twitter</a>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="footnote">
+    <div>
+      <div id="privacy-policy"><a href="https://www.powerlanguage.co.uk/privacy-policy.html" target="_blank">Privacy Policy</a></div>
+      <div id="copyright">Copyright 2021-2022. All Rights Reserved.</div>
+    </div>
+    <div>
+      <div id="puzzle-number"></div>
+      <div id="hash"></div>
+    </div>
+  </div>
+`;
     var _a = function(e) {
         r(t, e);
         var a = h(t);
