@@ -179,7 +179,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     vertical-align: middle;
     box-sizing: border-box;
     color: var(--tile-text-color);
-    text-transform: uppercase;
+     /* text-transform: uppercase; */
     user-select: none;
   }
 
@@ -321,7 +321,66 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     }(c(HTMLElement));
     customElements.define("game-tile", v);
     var w = document.createElement("template");
-    w.innerHTML = '\n  <style>\n    :host {\n      display: block;\n    }\n    :host([invalid]){\n      animation-name: Shake;\n      animation-duration: 600ms;\n    }\n    .row {\n      display: grid;\n      grid-template-columns: repeat(5, 1fr);\n      grid-gap: 5px;\n    }\n    .win {\n      animation-name: Bounce;\n      animation-duration: 1000ms;\n    }\n\n    @keyframes Bounce {\n      0%, 20% {\n        transform: translateY(0);\n      }\n      40% {\n        transform: translateY(-30px);\n      }\n      50% {\n        transform: translateY(5px);\n      }\n      60% {\n        transform: translateY(-15px);\n      }\n      80% {\n        transform: translateY(2px);\n      }\n      100% {\n        transform: translateY(0);\n      }\n    }\n\n    @keyframes Shake {\n      10%,\n      90% {\n        transform: translateX(-1px);\n      }\n\n      20%,\n      80% {\n        transform: translateX(2px);\n      }\n\n      30%,\n      50%,\n      70% {\n        transform: translateX(-4px);\n      }\n\n      40%,\n      60% {\n        transform: translateX(4px);\n      }\n    }\n  </style>\n  <div class="row"></div>\n';
+    w.innerHTML = `
+  <style>
+    :host {
+      display: block;
+    }
+
+    :host([invalid]) {
+      animation-name: Shake;
+      animation-duration: 600ms;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-gap: 5px;
+    }
+
+    .win {
+      animation-name: Bounce;
+      animation-duration: 1000ms;
+    }
+
+    @keyframes Bounce {
+      0%, 20% {
+        transform: translateY(0);
+      }
+      40% {
+        transform: translateY(-30px);
+      }
+      50% {
+        transform: translateY(5px);
+      }
+      60% {
+        transform: translateY(-15px);
+      }
+      80% {
+        transform: translateY(2px);
+      }
+      100% {
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes Shake {
+      10%, 90% {
+        transform: translateX(-1px);
+      }
+      20%, 80% {
+        transform: translateX(2px);
+      }
+      30%, 50%, 70% {
+        transform: translateX(-4px);
+      }
+      40%, 60% {
+        transform: translateX(4px);
+      }
+    }
+  </style>
+  <div class="row"></div>
+`;
     var x = function(e) {
         r(t, e);
         var a = h(t);
@@ -1064,7 +1123,32 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     }(c(HTMLElement));
     customElements.define("game-settings", _a);
     var qa = document.createElement("template");
-    qa.innerHTML = '\n  <style>\n    .toast {\n      position: relative;\n      margin: 16px;\n      background-color: var(--color-tone-1);\n      color: var(--color-tone-7);\n      padding: 16px;\n      border: none;\n      border-radius: 4px;\n      opacity: 1;\n      transition: opacity 300ms cubic-bezier(0.645, 0.045, 0.355, 1);\n      font-weight: 700;\n    }\n    .win {\n      background-color: var(--color-correct);\n      color: var(--tile-text-color);\n    }\n    .fade {\n      opacity: 0;\n    }\n  </style>\n  <div class="toast"></div>\n';
+    qa.innerHTML = `
+  <style>
+    .toast {
+      position: relative;
+      margin: 16px;
+      background-color: var(--color-tone-1);
+      color: var(--color-tone-7);
+      padding: 16px;
+      border: none;
+      border-radius: 4px;
+      opacity: 1;
+      transition: opacity 300ms cubic-bezier(0.645, 0.045, 0.355, 1);
+      font-weight: 700;
+    }
+
+    .win {
+      background-color: var(--color-correct);
+      color: var(--tile-text-color);
+    }
+
+    .fade {
+      opacity: 0;
+    }
+  </style>
+  <div class="toast"></div>
+`;
     var Ea,
         Aa = function(e) {
             r(t, e);
@@ -1189,7 +1273,13 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     // Ka.innerHTML = "\n  <style>\n  .toaster {\n    position: absolute;\n    top: 10%;\n    left: 50%;\n    transform: translate(-50%, 0);\n    pointer-events: none;\n    width: fit-content;\n  }\n  #game-toaster {\n    z-index: ".concat(1e3, ";\n  }\n  #system-toaster {\n    z-index: ").concat(4e3, ';\n  }\n\n  #game {\n    width: 100%;\n    max-width: var(--game-max-width);\n    margin: 0 auto;\n    height: 100%;\n    display: flex;\n    flex-direction: column;\n  }\n  header {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    height: var(--header-height);\n    color: var(--color-tone-1);\n    border-bottom: 1px solid var(--color-tone-4);\n  }\n  header .title {\n    font-weight: 700;\n    font-size: 36px;\n    letter-spacing: 0.2rem;\n    text-transform: uppercase;\n    text-align: center;\n    position: absolute;\n    left: 0;\n    right: 0;\n    pointer-events: none;\n  }\n\n  @media (max-width: 360px) {\n    header .title {\n      font-size: 22px;\n      letter-spacing: 0.1rem;\n    }\n  }\n\n  #board-container {\n    display: flex;\n    justify-content: center;\n    align-items: center;\n    flex-grow: 1;\n    overflow: hidden;\n  }\n  #board {\n    display: grid;\n    grid-template-rows: repeat(6, 1fr);\n    grid-gap: 5px;\n    padding:10px;\n    box-sizing: border-box;\n  }\n  button.icon {\n    background: none;\n    border: none;\n    cursor: pointer;\n    padding: 0 4px;\n  }\n\n  #debug-tools {\n    position: absolute;\n    bottom: 0;\n  }\n\n  </style>\n  <game-theme-manager>\n    <div id="game">\n      <header>\n        <div class="menu">\n          <button id="help-button" class="icon" aria-label="help">\n            <game-icon icon="help"></game-icon>\n          </button>\n        </div>\n        <div class="title">\n         WORDLE\n        </div>\n        <div class="menu">\n          <button id="statistics-button" class="icon" aria-label="statistics">\n            <game-icon icon="statistics"></game-icon>\n          </button>\n          <button id="settings-button" class="icon" aria-label="settings">\n            <game-icon icon="settings"></game-icon>\n          </button>\n        </div>\n      </header>\n        <div id="board-container">\n          <div id="board"></div>\n        </div>\n        <game-keyboard></game-keyboard>\n        <game-modal></game-modal>\n        <game-page></game-page>\n        <div class="toaster" id="game-toaster"></div>\n        <div class="toaster" id="system-toaster"></div>\n    </div>\n  </game-theme-manager>\n  <div id="debug-tools"></div>\n');
     Ka.innerHTML = document.getElementById('header-container').innerHTML;
     var Qa = document.createElement("template");
-    Qa.innerHTML = '\n<button id="reveal">reveal</button>\n<button id="shake">shake</button>\n<button id="bounce">bounce</button>\n<button id="toast">toast</button>\n<button id="modal">modal</button>\n';
+    Qa.innerHTML = `
+<button id="reveal">reveal</button>
+<button id="shake">shake</button>
+<button id="bounce">bounce</button>
+<button id="toast">toast</button>
+<button id="modal">modal</button>
+`;
     var Za = "IN_PROGRESS",
         es = "WIN",
         as = "FAIL",
@@ -1614,7 +1704,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     var is = document.createElement("template");
     is.innerHTML = `<button>key</button>`;
     var ls = document.createElement("template");
-    ls.innerHTML = '\n  <div class="spacer"></div>\n';
+    ls.innerHTML = `<div class="spacer"></div>`;
     var ds = [["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"], ["-", "a", "s", "d", "f", "g", "h", "j", "k", "l", "-"], ["↵", "z", "x", "c", "v", "b", "n", "m", "←"]],
         us = function(e) {
             r(t, e);
@@ -1893,13 +1983,203 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
         } var t
     }
     var Cs = document.createElement("template");
-    Cs.innerHTML = '\n  <style>\n    .container {\n      display: flex;\n      flex-direction: column;\n      align-items: center;\n      justify-content: center;\n      padding: 16px 0; \n    }\n    h1 {\n      font-weight: 700;\n      font-size: 16px;\n      letter-spacing: 0.5px;\n      text-transform: uppercase;\n      text-align: center;\n      margin-bottom: 10px;\n    }\n  \n    #statistics {\n      display: flex;\n      margin-bottom: \n    }\n\n    .statistic-container {\n      flex: 1;\n    }\n\n    .statistic-container .statistic {\n      font-size: 36px;\n      font-weight: 400;\n      display: flex;\n      align-items: center;\n      justify-content: center;\n      text-align: center;\n      letter-spacing: 0.05em;\n      font-variant-numeric: proportional-nums;\n    }\n\n    .statistic.timer {\n      font-variant-numeric: initial;\n    }\n\n    .statistic-container .label {\n      font-size: 12px;\n      display: flex;\n      align-items: center;\n      justify-content: center;\n      text-align: center;\n    }\n\n    #guess-distribution {\n      width: 80%;\n    }\n\n    .graph-container {\n      width: 100%;\n      height: 20px;\n      display: flex;\n      align-items: center;\n      padding-bottom: 4px;\n      font-size: 14px;\n      line-height: 20px;\n    }\n\n    .graph-container .graph {\n      width: 100%;\n      height: 100%;\n      padding-left: 4px;\n    }\n\n    .graph-container .graph .graph-bar {\n      height: 100%;\n      /* Assume no wins */\n      width: 0%;\n      position: relative;\n      background-color: var(--color-absent);\n      display: flex;\n      justify-content: center;\n    }\n\n    .graph-container .graph .graph-bar.highlight {\n      background-color: var(--color-correct);\n    }\n\n    .graph-container .graph .graph-bar.align-right {\n      justify-content: flex-end;\n      padding-right: 8px;\n    }\n\n    .graph-container .graph .num-guesses {\n      font-weight: bold;\n      color: var(--tile-text-color);\n    }\n\n    #statistics,\n    #guess-distribution {\n      padding-bottom: 10px;\n    }\n\n    .footer {\n      display: flex;\n      width: 100%;\n    }\n\n    .countdown {\n      border-right: 1px solid var(--color-tone-1);\n      padding-right: 12px;\n      width: 50%;\n    }\n\n    .share {\n      display: flex;\n      justify-content: center;\n      align-items: center;\n      padding-left: 12px;\n      width: 50%;\n    }\n\n    .no-data {\n      text-align: center;\n    }\n\n    button#share-button {\n      background-color: var(--key-bg-correct);\n      color: var(--key-evaluated-text-color);\n      font-family: inherit;\n      font-weight: bold;\n      border-radius: 4px;\n      cursor: pointer;\n      border: none;\n      user-select: none;\n      display: flex;\n      justify-content: center;\n      align-items: center;\n      text-transform: uppercase;\n      -webkit-tap-highlight-color: rgba(0,0,0,0.3);\n      width: 80%;\n      font-size: 20px;\n      height: 52px;\n      -webkit-filter: brightness(100%);\n    }\n    button#share-button:hover {\n      opacity: 0.9;\n    }\n    button#share-button game-icon {\n      width: 24px;\n      height: 24px;\n      padding-left: 8px;\n    }\n  </style>\n\n  <div class="container">\n    <h1>Statistics</h1>\n    <div id="statistics"></div>\n    <h1>Guess Distribution</h1>\n    <div id="guess-distribution"></div>\n    <div class="footer"></div>\n  </div>\n';
+    Cs.innerHTML = `
+  <style>
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 0;
+    }
+
+    h1 {
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    #statistics {
+      display: flex;
+      margin-bottom: 10px;
+    }
+
+    .statistic-container {
+      flex: 1;
+    }
+
+    .statistic-container .statistic {
+      font-size: 36px;
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      letter-spacing: 0.05em;
+      font-variant-numeric: proportional-nums;
+    }
+
+    .statistic.timer {
+      font-variant-numeric: initial;
+    }
+
+    .statistic-container .label {
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    #guess-distribution {
+      width: 80%;
+    }
+
+    .graph-container {
+      width: 100%;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      padding-bottom: 4px;
+      font-size: 14px;
+      line-height: 20px;
+    }
+
+    .graph-container .graph {
+      width: 100%;
+      height: 100%;
+      padding-left: 4px;
+    }
+
+    .graph-container .graph .graph-bar {
+      height: 100%;
+      width: 0%;
+      position: relative;
+      background-color: var(--color-absent);
+      display: flex;
+      justify-content: center;
+    }
+
+    .graph-container .graph .graph-bar.highlight {
+      background-color: var(--color-correct);
+    }
+
+    .graph-container .graph .graph-bar.align-right {
+      justify-content: flex-end;
+      padding-right: 8px;
+    }
+
+    .graph-container .graph .num-guesses {
+      font-weight: bold;
+      color: var(--tile-text-color);
+    }
+
+    #statistics,
+    #guess-distribution {
+      padding-bottom: 10px;
+    }
+
+    .footer {
+      display: flex;
+      width: 100%;
+    }
+
+    .countdown {
+      border-right: 1px solid var(--color-tone-1);
+      padding-right: 12px;
+      width: 50%;
+    }
+
+    .share {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding-left: 12px;
+      width: 50%;
+    }
+
+    .no-data {
+      text-align: center;
+    }
+
+    button#share-button {
+      background-color: var(--key-bg-correct);
+      color: var(--key-evaluated-text-color);
+      font-family: inherit;
+      font-weight: bold;
+      border-radius: 4px;
+      cursor: pointer;
+      border: none;
+      user-select: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-transform: uppercase;
+      -webkit-tap-highlight-color: rgba(0,0,0,0.3);
+      width: 80%;
+      font-size: 20px;
+      height: 52px;
+      -webkit-filter: brightness(100%);
+    }
+
+    button#share-button:hover {
+      opacity: 0.9;
+    }
+
+    button#share-button game-icon {
+      width: 24px;
+      height: 24px;
+      padding-left: 8px;
+    }
+  </style>
+
+  <div class="container">
+    <h1>Statistics</h1>
+    <div id="statistics"></div>
+    <h1>Guess Distribution</h1>
+    <div id="guess-distribution"></div>
+    <div class="footer"></div>
+  </div>
+`;
     var Ls = document.createElement("template");
-    Ls.innerHTML = '\n  <div class="statistic-container">\n    <div class="statistic"></div>\n    <div class="label"></div>\n  </div>\n';
+    Ls.innerHTML = `
+  <div class="statistic-container">
+    <div class="statistic"></div>
+    <div class="label"></div>
+  </div>
+`;
     var Ts = document.createElement("template");
-    Ts.innerHTML = '\n    <div class="graph-container">\n      <div class="guess"></div>\n      <div class="graph">\n        <div class="graph-bar">\n          <div class="num-guesses">\n        </div>\n      </div>\n      </div>\n    </div>\n';
+    Ts.innerHTML = `
+  <div class="graph-container">
+    <div class="guess"></div>
+    <div class="graph">
+      <div class="graph-bar">
+        <div class="num-guesses"></div>
+      </div>
+    </div>
+  </div>
+`;
     var Is = document.createElement("template");
-    Is.innerHTML = '\n  <div class="countdown">\n    <h1>Next WORDLE</h1>\n    <div id="timer">\n      <div class="statistic-container">\n        <div class="statistic timer">\n          <countdown-timer></countdown-timer>\n        </div>\n      </div>\n    </div>\n  </div>\n  <div class="share">\n    <button id="share-button">\n      Share <game-icon icon="share"></game-icon>\n    </button>\n  </div>\n';
+    Is.innerHTML = `
+  <div class="countdown">
+    <h1>Next WORDLE</h1>
+    <div id="timer">
+      <div class="statistic-container">
+        <div class="statistic timer">
+          <countdown-timer></countdown-timer>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="share">
+    <button id="share-button">
+      Share <game-icon icon="share"></game-icon>
+    </button>
+  </div>
+`;
     var Ms = {
             currentStreak: "Current Streak",
             maxStreak: "Max Streak",
@@ -2006,7 +2286,58 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
         }(c(HTMLElement));
     customElements.define("game-stats", Os);
     var Rs = document.createElement("template");
-    Rs.innerHTML = '\n  <style>\n    :host {\n    }\n    .container {\n      display: flex;\n      justify-content: space-between;\n    }\n    .switch {\n      height: 20px;\n      width: 32px;\n      vertical-align: middle;\n      /* not quite right */\n      background: var(--color-tone-3);\n      border-radius: 999px;\n      display: block;\n      position: relative;\n    }\n    .knob {\n      display: block;\n      position: absolute;\n      left: 2px;\n      top: 2px;\n      height: calc(100% - 4px);\n      width: 50%;\n      border-radius: 8px;\n      background: var(--white);\n      transform: translateX(0);\n      transition: transform 0.3s;\n    }\n    :host([checked]) .switch {\n      background: var(--color-correct);\n    }\n    :host([checked]) .knob {\n      transform: translateX(calc(100% - 4px));\n    }\n    :host([disabled]) .switch {\n      opacity: 0.5;\n    }\n  </style>\n  <div class="container">\n    <label><slot></slot></label>\n    <div class="switch">\n      <span class="knob"></div>\n    </div>\n  </div>\n';
+    Rs.innerHTML = `
+  <style>
+    :host {
+    }
+
+    .container {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .switch {
+      height: 20px;
+      width: 32px;
+      vertical-align: middle;
+      background: var(--color-tone-3);
+      border-radius: 999px;
+      display: block;
+      position: relative;
+    }
+
+    .knob {
+      display: block;
+      position: absolute;
+      left: 2px;
+      top: 2px;
+      height: calc(100% - 4px);
+      width: 50%;
+      border-radius: 8px;
+      background: var(--white);
+      transform: translateX(0);
+      transition: transform 0.3s;
+    }
+
+    :host([checked]) .switch {
+      background: var(--color-correct);
+    }
+
+    :host([checked]) .knob {
+      transform: translateX(calc(100% - 4px));
+    }
+
+    :host([disabled]) .switch {
+      opacity: 0.5;
+    }
+  </style>
+  <div class="container">
+    <label><slot></slot></label>
+    <div class="switch">
+      <span class="knob"></span>
+    </div>
+  </div>
+`;
     var Ps = function(e) {
         r(t, e);
         var a = h(t);
@@ -2041,7 +2372,76 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     }(c(HTMLElement));
     customElements.define("game-switch", Ps);
     var $s = document.createElement("template");
-    $s.innerHTML = '\n  <style>\n  .instructions {\n    font-size: 14px;\n    color: var(--color-tone-1)\n  }\n\n  .examples {\n    border-bottom: 1px solid var(--color-tone-4);\n    border-top: 1px solid var(--color-tone-4);\n  }\n\n  .example {\n    margin-top: 24px;\n    margin-bottom: 24px;\n  }\n\n  game-tile {\n    width: 40px;\n    height: 40px;\n  }\n\n  :host([page]) section {\n    padding: 16px;\n    padding-top: 0px;\n  }\n\n  </style>\n  <section>\n    <div class="instructions">\n      <p>Guess the <strong>WORDLE</strong> in 6 tries.</p>\n      <p>Each guess must be a valid 5 letter word. Hit the enter button to submit.</p>\n      <p>After each guess, the color of the tiles will change to show how close your guess was to the word.</p>\n      <div class="examples">\n        <p><strong>Examples</strong></p>\n        <div class="example">\n          <div class="row">\n            <game-tile letter="w" evaluation="correct" reveal></game-tile>\n            <game-tile letter="e"></game-tile>\n            <game-tile letter="a"></game-tile>\n            <game-tile letter="r"></game-tile>\n            <game-tile letter="y"></game-tile>\n          </div>\n          <p>The letter <strong>W</strong> is in the word and in the correct spot.</p>\n        </div>\n        <div class="example">\n          <div class="row">\n            <game-tile letter="p"></game-tile>\n            <game-tile letter="i" evaluation="present" reveal></game-tile>\n            <game-tile letter="l"></game-tile>\n            <game-tile letter="l"></game-tile>\n            <game-tile letter="s"></game-tile>\n          </div>\n          <p>The letter <strong>I</strong> is in the word but in the wrong spot.</p>\n        </div>\n        <div class="example">\n          <div class="row">\n            <game-tile letter="v"></game-tile>\n            <game-tile letter="a"></game-tile>\n            <game-tile letter="g"></game-tile>\n            <game-tile letter="u" evaluation="absent" reveal></game-tile>\n            <game-tile letter="e"></game-tile>\n          </div>\n          <p>The letter <strong>U</strong> is not in the word in any spot.</p>\n        </div>\n      </div>\n      <p><strong>A new WORDLE will be available each day!<strong></p>\n    </div>\n  </section>\n';
+    $s.innerHTML = `
+  <style>
+  .instructions {
+    font-size: 14px;
+    color: var(--color-tone-1);
+  }
+
+  .examples {
+    border-bottom: 1px solid var(--color-tone-4);
+    border-top: 1px solid var(--color-tone-4);
+  }
+
+  .example {
+    margin-top: 24px;
+    margin-bottom: 24px;
+  }
+
+  game-tile {
+    width: 40px;
+    height: 40px;
+  }
+
+  :host([page]) section {
+    padding: 16px;
+    padding-top: 0px;
+  }
+  </style>
+
+  <section>
+    <div class="instructions">
+      <p>Guess the <strong>WORDLE</strong> in 6 tries.</p>
+      <p>Each guess must be a valid 5 letter word. Hit the enter button to submit.</p>
+      <p>After each guess, the color of the tiles will change to show how close your guess was to the word.</p>
+      <div class="examples">
+        <p><strong>Examples</strong></p>
+        <div class="example">
+          <div class="row">
+            <game-tile letter="w" evaluation="correct" reveal></game-tile>
+            <game-tile letter="e"></game-tile>
+            <game-tile letter="a"></game-tile>
+            <game-tile letter="r"></game-tile>
+            <game-tile letter="y"></game-tile>
+          </div>
+          <p>The letter <strong>W</strong> is in the word and in the correct spot.</p>
+        </div>
+        <div class="example">
+          <div class="row">
+            <game-tile letter="p"></game-tile>
+            <game-tile letter="i" evaluation="present" reveal></game-tile>
+            <game-tile letter="l"></game-tile>
+            <game-tile letter="l"></game-tile>
+            <game-tile letter="s"></game-tile>
+          </div>
+          <p>The letter <strong>I</strong> is in the word but in the wrong spot.</p>
+        </div>
+        <div class="example">
+          <div class="row">
+            <game-tile letter="v"></game-tile>
+            <game-tile letter="a"></game-tile>
+            <game-tile letter="g"></game-tile>
+            <game-tile letter="u" evaluation="absent" reveal></game-tile>
+            <game-tile letter="e"></game-tile>
+          </div>
+          <p>The letter <strong>U</strong> is not in the word in any spot.</p>
+        </div>
+      </div>
+      <p><strong>A new WORDLE will be available each day!</strong></p>
+    </div>
+  </section>
+`;
     var Hs = function(e) {
         r(t, e);
         var a = h(t);
@@ -2194,7 +2594,11 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     }(c(HTMLElement));
     customElements.define("game-page", Ds);
     var Gs = document.createElement("template");
-    Gs.innerHTML = '\n  <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">\n    <path fill=var(--color-tone-3) />\n  </svg>\n';
+    Gs.innerHTML = `
+  <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+    <path fill="var(--color-tone-3)" />
+  </svg>
+`;
     var Bs = {
             help: "M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z",
             settings: "M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z",
@@ -2224,7 +2628,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
         }(c(HTMLElement));
     customElements.define("game-icon", Fs);
     var Ws = document.createElement("template");
-    Ws.innerHTML = '\n  <div id="timer"></div>\n';
+    Ws.innerHTML = `<div id="timer"></div>`;
     var Ys = 6e4,
         Js = 36e5,
         Us = function(e) {
