@@ -1291,7 +1291,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                         })), this.shadowRoot.getElementById("save-button").addEventListener("click", (function(a) {
                             var s = document.querySelector('#save');
                             s.classList.toggle('hidden');
-                            
+
                         })), window.addEventListener("resize", this.sizeBoard.bind(this))
                     }
                 }, {
@@ -1448,7 +1448,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
   }
 
   button {
-    font-family: inherit;
+    font-family: "Libre Franklin", "Helvetica Neue", Arial, sans-serif;
     font-weight: 700;
     border: 0;
     padding: 0;
@@ -1465,7 +1465,9 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     align-items: center;
     text-transform: uppercase;
     -webkit-tap-highlight-color: rgba(0,0,0,0.3);
-    font-size: 1.25rem;
+    font-size: 20px;
+    -webkit-text-stroke: 0.5px currentColor;
+    letter-spacing: 0.025em;
   }
 
   button:focus {
@@ -1512,25 +1514,6 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     color: var(--key-evaluated-text-color);
   }
 
-  @media (max-height: 600px) {
-    button {
-      height: 50px;
-      font-size: 1rem;
-    }
-    .row {
-      margin: 0 auto 5px;
-    }
-  }
-
-  @media (max-width: 500px) {
-    button {
-      margin: 0 3px 0 0;
-      border-radius: 3px;
-    }
-    #keyboard {
-      margin: 0 4px;
-    }
-  }
   </style>
   <div id="keyboard"></div>
 `;
