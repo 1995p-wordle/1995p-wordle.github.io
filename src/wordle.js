@@ -1180,7 +1180,9 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
         app_version: null === (Ea = window.wordle) || void 0 === Ea ? void 0 : Ea.hash,
         debug_mode: !1
     });
-var     Ia = "present",
+var La = defined_answers,
+    Ta = valid_guesses,
+        Ia = "present",
         Ma = "correct",
         Oa = "absent";
     var Ra = {
@@ -1215,7 +1217,7 @@ var     Ia = "present",
     function Da(e) {
         var a,
             s = Ga(e);
-        return a = s % answer_list.length, answer_list[a]
+        return a = s % La.length, La[a]
     }
     function Ga(e) {
         return Na(Ha, e)
@@ -1307,7 +1309,7 @@ var     Ia = "present",
                             var e,
                                 a = this.$board.querySelectorAll("game-row")[this.rowIndex],
                                 s = this.boardState[this.rowIndex];
-                            if (e = s, !valid_guesses.includes(e) && !answer_list.includes(e)) return a.setAttribute("invalid", ""), void this.addToast("Not in word list");
+                            if (e = s, !Ta.includes(e) && !La.includes(e)) return a.setAttribute("invalid", ""), void this.addToast("Not in word list");
                             if (this.hardMode) {
                                 var t = function(e, a, s) {
                                         if (!e || !a || !s) return {

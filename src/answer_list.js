@@ -1,4 +1,4 @@
-var answer_list = [
+var defined_answers = [
     "cigar",
     "rebut",
     "sissy",
