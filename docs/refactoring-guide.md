@@ -42,11 +42,11 @@ Start with constants and simple functions. The test file documents what each obf
 | `Ja` | `FAIL_KEY` | constant | "fail" |✅|
 | `Ua` | `DEFAULT_STATISTICS` | object | Default stats structure |
 | `Pa` | `aggregateLetterEvaluations` | function | Combines letter states for keyboard |
-| `$a` | `getOrdinal` | function | Returns "1st", "2nd", etc. |
-| `Na` | `calculateDaysBetween` | function | Days between two dates |
+| `$a` | `getOrdinal` | function | Returns "1st", "2nd", etc. |✅|
+| `Na` | `calculateDaysBetween` | function | Days between two dates |✅|
 | `Da` | `getSolution` | function | Gets solution for a date |
-| `Ga` | `getDayOffset` | function | Days since puzzle start |
-| `Wa` | `encodeWord` | function | ROT13-like encoding |
+| `Ga` | `getDayOffset` | function | Days since puzzle start |✅|
+| `Wa` | `encodeWord` | function | ROT13-like encoding |✅|
 
 ### 2. Find All Occurrences
 
@@ -126,10 +126,10 @@ Start with isolated items that have fewer dependencies:
 7. `Ja` → `FAIL_KEY`✅
 
 ### Phase 2: Simple Functions
-1. `$a` → `getOrdinal`
-2. `Na` → `calculateDaysBetween`
-3. `Ga` → `getDayOffset`
-4. `Wa` → `encodeWord`
+1. `$a` → `getOrdinal`✅
+2. `Na` → `calculateDaysBetween`✅
+3. `Ga` → `getDayOffset`✅
+4. `Wa` → `encodeWord`✅
 
 ### Phase 3: Data Structures
 1. `Ra` → `STATE_PRECEDENCE`

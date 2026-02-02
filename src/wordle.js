@@ -1201,28 +1201,28 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 }
             })), s
     }
-    function $a(e) {
+    function getOrdinal(e) {
         var a = ["th", "st", "nd", "rd"],
             s = e % 100;
         return e + (a[(s - 20) % 10] || a[s] || a[0])
     }
     const PUZZLE_START_DATE = new Date(2021, 5, 19, 0, 0, 0, 0);
-    function Na(e, a) {
+    function calculateDaysBetween(e, a) {
         var s = new Date(e),
             t = new Date(a).setHours(0, 0, 0, 0) - s.setHours(0, 0, 0, 0);
         return Math.round(t / 864e5)
     }
     function Da(e) {
         var a,
-            s = Ga(e);
+            s = getDayOffset(e);
         return a = s % answer_list.length, answer_list[a]
     }
-    function Ga(e) {
-        return Na(PUZZLE_START_DATE, e)
+    function getDayOffset(e) {
+        return calculateDaysBetween(PUZZLE_START_DATE, e)
     }
     var Ba = "abcdefghijklmnopqrstuvwxyz",
         Fa = [].concat(g(Ba.split("").slice(13)), g(Ba.split("").slice(0, 13)));
-    function Wa(e) {
+    function encodeWord(e) {
         console.debug('parsing stats', e);
         for (var a = "", s = 0; s < e.length; s++) {
             var t = Ba.indexOf(e[s]);
@@ -1290,15 +1290,15 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 s(this, t), n(p(e = a.call(this)), "tileIndex", 0), n(p(e), "rowIndex", 0), n(p(e), "solution", void 0), n(p(e), "boardState", void 0), n(p(e), "evaluations", void 0), n(p(e), "canInput", !0), n(p(e), "gameStatus", GAME_STATUS_IN_PROGRESS), n(p(e), "letterEvaluations", {}), n(p(e), "$board", void 0), n(p(e), "$keyboard", void 0), n(p(e), "$game", void 0), n(p(e), "today", void 0), n(p(e), "lastPlayedTs", void 0), n(p(e), "lastCompletedTs", void 0), n(p(e), "hardMode", void 0), n(p(e), "dayOffset", void 0), e.attachShadow({
                     mode: "open"
                 }), e.today = new Date;var o = za();
-                return e.lastPlayedTs = o.lastPlayedTs, !e.lastPlayedTs || Na(new Date(e.lastPlayedTs), e.today) >= 1 ? (e.boardState = new Array(6).fill(""), e.evaluations = new Array(6).fill(null), e.solution = Da(e.today), e.dayOffset = Ga(e.today), e.lastCompletedTs = o.lastCompletedTs, e.hardMode = o.hardMode, e.restoringFromLocalStorage = !1, ja({
+                return e.lastPlayedTs = o.lastPlayedTs, !e.lastPlayedTs || calculateDaysBetween(new Date(e.lastPlayedTs), e.today) >= 1 ? (e.boardState = new Array(6).fill(""), e.evaluations = new Array(6).fill(null), e.solution = Da(e.today), e.dayOffset = getDayOffset(e.today), e.lastCompletedTs = o.lastCompletedTs, e.hardMode = o.hardMode, e.restoringFromLocalStorage = !1, ja({
                         rowIndex: e.rowIndex,
                         boardState: e.boardState,
                         evaluations: e.evaluations,
                         solution: e.solution,
                         gameStatus: e.gameStatus
                     }), Ca("event", "level_start", {
-                        level_name: Wa(e.solution)
-                    })) : (e.boardState = o.boardState, e.evaluations = o.evaluations, e.rowIndex = o.rowIndex, e.solution = o.solution, e.dayOffset = Ga(e.today), e.letterEvaluations = Pa(e.boardState, e.evaluations), e.gameStatus = o.gameStatus, e.lastCompletedTs = o.lastCompletedTs, e.hardMode = o.hardMode, e.gameStatus !== GAME_STATUS_IN_PROGRESS && (e.canInput = !1), e.restoringFromLocalStorage = !0), e
+                        level_name: encodeWord(e.solution)
+                    })) : (e.boardState = o.boardState, e.evaluations = o.evaluations, e.rowIndex = o.rowIndex, e.solution = o.solution, e.dayOffset = getDayOffset(e.today), e.letterEvaluations = Pa(e.boardState, e.evaluations), e.gameStatus = o.gameStatus, e.lastCompletedTs = o.lastCompletedTs, e.hardMode = o.hardMode, e.gameStatus !== GAME_STATUS_IN_PROGRESS && (e.canInput = !1), e.restoringFromLocalStorage = !0), e
             }
             return o(t, [{
                     key: "evaluateRow",
@@ -1316,7 +1316,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                                         for (var t = 0; t < s.length; t++)
                                             if (s[t] === CORRECT && e[t] !== a[t]) return {
                                                     validGuess: !1,
-                                                    errorMessage: "".concat($a(t + 1), " letter must be ").concat(a[t].toUpperCase())
+                                                    errorMessage: "".concat(getOrdinal(t + 1), " letter must be ").concat(a[t].toUpperCase())
                                                 };
                                         for (var o = {}, n = 0; n < s.length; n++) [CORRECT, PRESENT].includes(s[n]) && (o[a[n]] ? o[a[n]] += 1 : o[a[n]] = 1);
                                         var r = e.split("").reduce((function(e, a) {
@@ -1356,12 +1356,12 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                                 }));
                             if (i || l) Va({
                                     isWin: l,
-                                    isStreak: !!this.lastCompletedTs && 1 === Na(new Date(this.lastCompletedTs), new Date),
+                                    isStreak: !!this.lastCompletedTs && 1 === calculateDaysBetween(new Date(this.lastCompletedTs), new Date),
                                     numGuesses: this.rowIndex
                                 }), ja({
                                     lastCompletedTs: Date.now()
                                 }), this.gameStatus = l ? GAME_STATUS_WIN : GAME_STATUS_FAIL, Ca("event", "level_end", {
-                                    level_name: Wa(this.solution),
+                                    level_name: encodeWord(this.solution),
                                     num_guesses: this.rowIndex,
                                     success: l
                                 });
@@ -2737,11 +2737,11 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
 
       // Functions
       Pa: Pa, // aggregateLetterEvaluations(boardState, evaluations)
-      $a: $a, // getOrdinal(n)
-      Na: Na, // calculateDaysBetween(startDate, endDate)
+      getOrdinal: getOrdinal, // getOrdinal(n)
+      calculateDaysBetween: calculateDaysBetween, // calculateDaysBetween(startDate, endDate)
       Da: Da, // getSolution(date)
-      Ga: Ga, // getDayOffset(date)
-      Wa: Wa, // encodeWord(word) - ROT13-like cipher
+      getDayOffset: getDayOffset, // getDayOffset(date)
+      encodeWord: encodeWord, // encodeWord(word) - ROT13-like cipher
     };
 
     return customElements.define("countdown-timer", Us), e.CountdownTimer = Us, e.GameApp = ts, e.GameHelp = Hs, e.GameIcon = Fs, e.GameKeyboard = us, e.GameModal = ns, e.GamePage = Ds, e.GameRow = x, e.GameSettings = _a, e.GameStats = Os, e.GameSwitch = Ps, e.GameThemeManager = _, e.GameTile = v, e.GameToast = Aa, Object.defineProperty(e, "__esModule", {

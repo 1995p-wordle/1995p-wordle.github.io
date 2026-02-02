@@ -87,11 +87,11 @@ const DEFAULT_STATISTICS = testExports.Ua; // Will become: testExports.DEFAULT_S
 
 // Functions (current obfuscated names -> meaningful names)
 const aggregateLetterEvaluations = testExports.Pa; // Will become: testExports.aggregateLetterEvaluations
-const getOrdinal = testExports.$a;                 // Will become: testExports.getOrdinal
-const calculateDaysBetween = testExports.Na;       // Will become: testExports.calculateDaysBetween
+const getOrdinal = testExports.getOrdinal;                 // Will become: testExports.getOrdinal
+const calculateDaysBetween = testExports.calculateDaysBetween;       // Will become: testExports.calculateDaysBetween
 const getSolution = testExports.Da;                // Will become: testExports.getSolution
-const getDayOffset = testExports.Ga;               // Will become: testExports.getDayOffset
-const encodeWord = testExports.Wa;                 // Will become: testExports.encodeWord
+const getDayOffset = testExports.getDayOffset;               // Will become: testExports.getDayOffset
+const encodeWord = testExports.encodeWord;                 // Will become: testExports.encodeWord
 
 // ============================================================================
 // TESTS
@@ -139,7 +139,7 @@ describe('Constants', () => {
     });
 });
 
-describe('getOrdinal (currently $a)', () => {
+describe('getOrdinal (previously $a)', () => {
     test('1st', () => expect(getOrdinal(1)).toBe('1st'));
     test('2nd', () => expect(getOrdinal(2)).toBe('2nd'));
     test('3rd', () => expect(getOrdinal(3)).toBe('3rd'));
@@ -156,7 +156,7 @@ describe('getOrdinal (currently $a)', () => {
     test('111th (special case)', () => expect(getOrdinal(111)).toBe('111th'));
 });
 
-describe('calculateDaysBetween (currently Na)', () => {
+describe('calculateDaysBetween (previously Na)', () => {
     test('same day returns 0', () => {
         const date = new Date(2023, 5, 15);
         expect(calculateDaysBetween(date, date)).toBe(0);
@@ -187,7 +187,7 @@ describe('calculateDaysBetween (currently Na)', () => {
     });
 });
 
-describe('getDayOffset (currently Ga)', () => {
+describe('getDayOffset (previously Ga)', () => {
     test('puzzle start date returns 0', () => {
         expect(getDayOffset(PUZZLE_START_DATE)).toBe(0);
     });
@@ -274,7 +274,7 @@ describe('aggregateLetterEvaluations (currently Pa)', () => {
     });
 });
 
-describe('encodeWord (currently Wa)', () => {
+describe('encodeWord (previously Wa)', () => {
     test('encodes alphabetic characters', () => {
         const encoded = encodeWord('abc');
         expect(encoded).toHaveLength(3);
