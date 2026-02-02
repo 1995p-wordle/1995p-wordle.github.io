@@ -112,7 +112,7 @@
 
     html {
         height: 100%;
-        min-width: 560px;
+        min-width: 320px;
         min-height: 670px;
     }
 
@@ -124,6 +124,33 @@
         padding: 0;
         overflow-x: hidden;
         overflow-y: auto;
+    }
+
+    /* Narrow screen adjustments (< 560px) */
+    @media (max-width: 559px) {
+        :root {
+            --game-max-width: 450px;
+            --board-max-width: 315px;
+            --keyboard-height: 180px;
+        }
+    }
+
+    @media (max-width: 509px) {
+        #board {
+            padding: 8px;
+        }
+        #board-container {
+            padding-bottom: 45px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        #board {
+            padding: 5px;
+        }
+        #board-container {
+            padding-bottom: 35px;
+        }
     }
     </style>
 </head>

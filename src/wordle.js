@@ -1408,7 +1408,8 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                     key: "sizeBoard",
                     value: function() {
                         var e = this.shadowRoot.querySelector("#board-container"),
-                            a = Math.min(Math.floor(e.clientHeight * (5 / 6)), 350),
+                            maxBoardWidth = window.innerWidth < 560 ? 315 : 350,
+                            a = Math.min(Math.floor(e.clientHeight * (5 / 6)), maxBoardWidth),
                             s = 6 * Math.floor(a / 5);
                         this.$board.style.width = "".concat(a, "px"), this.$board.style.height = "".concat(s, "px")
                     }
@@ -1622,6 +1623,18 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     user-select: none;
   }
 
+  @media (max-width: 509px) {
+    #keyboard {
+      margin: 0 4px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    #keyboard {
+      margin: 0 2px;
+    }
+  }
+
   .row {
     display: flex;
     width: 100%;
@@ -1650,6 +1663,30 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     font-size: 20px;
     -webkit-text-stroke: 0.5px currentColor;
     letter-spacing: 0.025em;
+  }
+
+  @media (max-width: 559px) {
+    button {
+      height: 52px;
+      margin: 0 5px 0 0;
+      font-size: 18px;
+    }
+    .row {
+      margin: 0 auto 6px;
+    }
+  }
+
+  @media (max-width: 509px) {
+    button {
+      margin: 0 4px 0 0;
+    }
+  }
+
+  @media (max-width: 480px) {
+    button {
+      margin: 0 3px 0 0;
+      font-size: 16px;
+    }
   }
 
   button:focus {
