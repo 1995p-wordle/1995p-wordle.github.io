@@ -1,2 +1,7 @@
 tmp/*
 !.keep
+
+# Node.js
+node_modules/
+coverage/
+*.log

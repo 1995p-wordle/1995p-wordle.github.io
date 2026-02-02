@@ -2721,6 +2721,29 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                     }
                 }]), t
         }(c(HTMLElement));
+    // Export pure functions for testing (obfuscated names will be renamed during refactoring)
+    e._testExports = {
+        // Constants
+        Ia: Ia,  // PRESENT = "present"
+        Ma: Ma,  // CORRECT = "correct"
+        Oa: Oa,  // ABSENT = "absent"
+        Ra: Ra,  // STATE_PRECEDENCE
+        Ha: Ha,  // PUZZLE_START_DATE
+        Za: Za,  // GAME_STATUS_IN_PROGRESS = "IN_PROGRESS"
+        es: es,  // GAME_STATUS_WIN = "WIN"
+        as: as,  // GAME_STATUS_FAIL = "FAIL"
+        Ja: Ja,  // FAIL_KEY = "fail"
+        Ua: Ua,  // DEFAULT_STATISTICS
+
+        // Functions
+        Pa: Pa,  // aggregateLetterEvaluations(boardState, evaluations)
+        $a: $a,  // getOrdinal(n)
+        Na: Na,  // calculateDaysBetween(startDate, endDate)
+        Da: Da,  // getSolution(date)
+        Ga: Ga,  // getDayOffset(date)
+        Wa: Wa,  // encodeWord(word) - ROT13-like cipher
+    };
+
     return customElements.define("countdown-timer", Us), e.CountdownTimer = Us, e.GameApp = ts, e.GameHelp = Hs, e.GameIcon = Fs, e.GameKeyboard = us, e.GameModal = ns, e.GamePage = Ds, e.GameRow = x, e.GameSettings = _a, e.GameStats = Os, e.GameSwitch = Ps, e.GameThemeManager = _, e.GameTile = v, e.GameToast = Aa, Object.defineProperty(e, "__esModule", {
             value: !0
         }), e
