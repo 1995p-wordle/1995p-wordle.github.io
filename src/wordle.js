@@ -1180,10 +1180,10 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
         app_version: null === (Ea = window.wordle) || void 0 === Ea ? void 0 : Ea.hash,
         debug_mode: !1
     });
-    var Ia = "present",
-        Ma = "correct",
-        Oa = "absent";
-    var Ra = {
+    const PRESENT = "present";
+    const CORRECT = "correct";
+    const ABSENT = "absent";
+    const STATE_PRECEDENCE = {
         unknown: 0,
         absent: 1,
         present: 2,
@@ -1197,7 +1197,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                         var n = e[o],
                             r = a[t][o],
                             i = s[n] || "unknown";
-                        Ra[r] > Ra[i] && (s[n] = r)
+                        STATE_PRECEDENCE[r] > STATE_PRECEDENCE[i] && (s[n] = r)
                 }
             })), s
     }
@@ -1206,7 +1206,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
             s = e % 100;
         return e + (a[(s - 20) % 10] || a[s] || a[0])
     }
-    var Ha = new Date(2021, 5, 19, 0, 0, 0, 0);
+    const PUZZLE_START_DATE = new Date(2021, 5, 19, 0, 0, 0, 0);
     function Na(e, a) {
         var s = new Date(e),
             t = new Date(a).setHours(0, 0, 0, 0) - s.setHours(0, 0, 0, 0);
@@ -1218,7 +1218,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
         return a = s % answer_list.length, answer_list[a]
     }
     function Ga(e) {
-        return Na(Ha, e)
+        return Na(PUZZLE_START_DATE, e)
     }
     var Ba = "abcdefghijklmnopqrstuvwxyz",
         Fa = [].concat(g(Ba.split("").slice(13)), g(Ba.split("").slice(0, 13)));
@@ -1230,9 +1230,9 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
         }
         return a
     }
-    var Ya = "statistics",
-        Ja = "fail",
-        Ua = {
+    var   Ya = "statistics";
+    const FAIL_KEY = "fail";
+    var   Ua = {
             currentStreak: 0,
             maxStreak: 0,
             guesses: n({
@@ -1242,7 +1242,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 4: 0,
                 5: 0,
                 6: 0
-            }, Ja, 0),
+            }, FAIL_KEY, 0),
             winPercentage: 0,
             gamesPlayed: 0,
             gamesWon: 0,
@@ -1262,7 +1262,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 var s = y(a, 2),
                     t = s[0],
                     o = s[1];
-                return t !== Ja ? e += t * o : e
+                return t !== FAIL_KEY ? e += t * o : e
             }), 0) / o.gamesWon), function(e) {
             window.localStorage.setItem(Ya, JSON.stringify(e))
         }(o)
@@ -1278,16 +1278,16 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
 <button id="toast">toast</button>
 <button id="modal">modal</button>
 `;
-    var Za = "IN_PROGRESS",
-        es = "WIN",
-        as = "FAIL",
-        ss = ["Genius", "Magnificent", "Impressive", "Splendid", "Great", "Phew"],
+    const GAME_STATUS_IN_PROGRESS = "IN_PROGRESS";
+    const GAME_STATUS_WIN = "WIN";
+    const GAME_STATUS_FAIL = "FAIL";
+    var ss = ["Genius", "Magnificent", "Impressive", "Splendid", "Great", "Phew"],
         ts = function(e) {
             r(t, e);
             var a = h(t);
             function t() {
                 var e;
-                s(this, t), n(p(e = a.call(this)), "tileIndex", 0), n(p(e), "rowIndex", 0), n(p(e), "solution", void 0), n(p(e), "boardState", void 0), n(p(e), "evaluations", void 0), n(p(e), "canInput", !0), n(p(e), "gameStatus", Za), n(p(e), "letterEvaluations", {}), n(p(e), "$board", void 0), n(p(e), "$keyboard", void 0), n(p(e), "$game", void 0), n(p(e), "today", void 0), n(p(e), "lastPlayedTs", void 0), n(p(e), "lastCompletedTs", void 0), n(p(e), "hardMode", void 0), n(p(e), "dayOffset", void 0), e.attachShadow({
+                s(this, t), n(p(e = a.call(this)), "tileIndex", 0), n(p(e), "rowIndex", 0), n(p(e), "solution", void 0), n(p(e), "boardState", void 0), n(p(e), "evaluations", void 0), n(p(e), "canInput", !0), n(p(e), "gameStatus", GAME_STATUS_IN_PROGRESS), n(p(e), "letterEvaluations", {}), n(p(e), "$board", void 0), n(p(e), "$keyboard", void 0), n(p(e), "$game", void 0), n(p(e), "today", void 0), n(p(e), "lastPlayedTs", void 0), n(p(e), "lastCompletedTs", void 0), n(p(e), "hardMode", void 0), n(p(e), "dayOffset", void 0), e.attachShadow({
                     mode: "open"
                 }), e.today = new Date;var o = za();
                 return e.lastPlayedTs = o.lastPlayedTs, !e.lastPlayedTs || Na(new Date(e.lastPlayedTs), e.today) >= 1 ? (e.boardState = new Array(6).fill(""), e.evaluations = new Array(6).fill(null), e.solution = Da(e.today), e.dayOffset = Ga(e.today), e.lastCompletedTs = o.lastCompletedTs, e.hardMode = o.hardMode, e.restoringFromLocalStorage = !1, ja({
@@ -1298,7 +1298,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                         gameStatus: e.gameStatus
                     }), Ca("event", "level_start", {
                         level_name: Wa(e.solution)
-                    })) : (e.boardState = o.boardState, e.evaluations = o.evaluations, e.rowIndex = o.rowIndex, e.solution = o.solution, e.dayOffset = Ga(e.today), e.letterEvaluations = Pa(e.boardState, e.evaluations), e.gameStatus = o.gameStatus, e.lastCompletedTs = o.lastCompletedTs, e.hardMode = o.hardMode, e.gameStatus !== Za && (e.canInput = !1), e.restoringFromLocalStorage = !0), e
+                    })) : (e.boardState = o.boardState, e.evaluations = o.evaluations, e.rowIndex = o.rowIndex, e.solution = o.solution, e.dayOffset = Ga(e.today), e.letterEvaluations = Pa(e.boardState, e.evaluations), e.gameStatus = o.gameStatus, e.lastCompletedTs = o.lastCompletedTs, e.hardMode = o.hardMode, e.gameStatus !== GAME_STATUS_IN_PROGRESS && (e.canInput = !1), e.restoringFromLocalStorage = !0), e
             }
             return o(t, [{
                     key: "evaluateRow",
@@ -1314,11 +1314,11 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                                                 validGuess: !0
                                             };
                                         for (var t = 0; t < s.length; t++)
-                                            if (s[t] === Ma && e[t] !== a[t]) return {
+                                            if (s[t] === CORRECT && e[t] !== a[t]) return {
                                                     validGuess: !1,
                                                     errorMessage: "".concat($a(t + 1), " letter must be ").concat(a[t].toUpperCase())
                                                 };
-                                        for (var o = {}, n = 0; n < s.length; n++) [Ma, Ia].includes(s[n]) && (o[a[n]] ? o[a[n]] += 1 : o[a[n]] = 1);
+                                        for (var o = {}, n = 0; n < s.length; n++) [CORRECT, PRESENT].includes(s[n]) && (o[a[n]] ? o[a[n]] += 1 : o[a[n]] = 1);
                                         var r = e.split("").reduce((function(e, a) {
                                             return e[a] ? e[a] += 1 : e[a] = 1, e
                                         }), {});
@@ -1336,14 +1336,14 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                                 if (!o) return a.setAttribute("invalid", ""), void this.addToast(n || "Not valid in hard mode")
                             }
                             var r = function(e, a) {
-                                for (var s = Array(a.length).fill(Oa), t = Array(a.length).fill(!0), o = Array(a.length).fill(!0), n = 0; n < e.length; n++) e[n] === a[n] && o[n] && (s[n] = Ma, t[n] = !1, o[n] = !1);
+                                for (var s = Array(a.length).fill(ABSENT), t = Array(a.length).fill(!0), o = Array(a.length).fill(!0), n = 0; n < e.length; n++) e[n] === a[n] && o[n] && (s[n] = CORRECT, t[n] = !1, o[n] = !1);
                                 for (var r = 0; r < e.length; r++) {
                                     var i = e[r];
                                     if (t[r])
                                         for (var l = 0; l < a.length; l++) {
                                             var d = a[l];
                                             if (o[l] && i === d) {
-                                                s[r] = Ia, o[l] = !1;break
+                                                s[r] = PRESENT, o[l] = !1;break
                                             }
                                     }
                                 }
@@ -1360,7 +1360,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                                     numGuesses: this.rowIndex
                                 }), ja({
                                     lastCompletedTs: Date.now()
-                                }), this.gameStatus = l ? es : as, Ca("event", "level_end", {
+                                }), this.gameStatus = l ? GAME_STATUS_WIN : GAME_STATUS_FAIL, Ca("event", "level_end", {
                                     level_name: Wa(this.solution),
                                     num_guesses: this.rowIndex,
                                     success: l
@@ -1378,12 +1378,12 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 }, {
                     key: "addLetter",
                     value: function(e) {
-                        this.gameStatus === Za && (this.canInput && (this.tileIndex >= 5 || (this.boardState[this.rowIndex] += e, this.$board.querySelectorAll("game-row")[this.rowIndex].setAttribute("letters", this.boardState[this.rowIndex]), this.tileIndex += 1)))
+                        this.gameStatus === GAME_STATUS_IN_PROGRESS && (this.canInput && (this.tileIndex >= 5 || (this.boardState[this.rowIndex] += e, this.$board.querySelectorAll("game-row")[this.rowIndex].setAttribute("letters", this.boardState[this.rowIndex]), this.tileIndex += 1)))
                     }
                 }, {
                     key: "removeLetter",
                     value: function() {
-                        if (this.gameStatus === Za && this.canInput && !(this.tileIndex <= 0)) {
+                        if (this.gameStatus === GAME_STATUS_IN_PROGRESS && this.canInput && !(this.tileIndex <= 0)) {
                             this.boardState[this.rowIndex] = this.boardState[this.rowIndex].slice(0, this.boardState[this.rowIndex].length - 1);
                             var e = this.$board.querySelectorAll("game-row")[this.rowIndex];
                             this.boardState[this.rowIndex] ? e.setAttribute("letters", this.boardState[this.rowIndex]) : e.removeAttribute("letters"), e.removeAttribute("invalid"), this.tileIndex -= 1
@@ -1392,7 +1392,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 }, {
                     key: "submitGuess",
                     value: function() {
-                        if (this.gameStatus === Za && this.canInput) {
+                        if (this.gameStatus === GAME_STATUS_IN_PROGRESS && this.canInput) {
                             if (5 !== this.tileIndex) return this.$board.querySelectorAll("game-row")[this.rowIndex].setAttribute("invalid", ""), void this.addToast("Not enough letters");
                             this.evaluateRow()
                         }
@@ -1418,7 +1418,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                     value: function() {
                         var e = this.$game.querySelector("game-modal"),
                             a = document.createElement("game-stats");
-                        this.gameStatus === es && this.rowIndex <= 6 && a.setAttribute("highlight-guess", this.rowIndex), a.gameApp = this, e.appendChild(a), e.setAttribute("open", "")
+                        this.gameStatus === GAME_STATUS_WIN && this.rowIndex <= 6 && a.setAttribute("highlight-guess", this.rowIndex), a.gameApp = this, e.appendChild(a), e.setAttribute("open", "")
                     }
                 }, {
                     key: "showHelpModal",
@@ -1443,7 +1443,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                         })), this.$game.addEventListener("game-last-tile-revealed-in-row", (function(a) {
                             e.$keyboard.letterEvaluations = e.letterEvaluations, e.rowIndex < 6 && (e.canInput = !0);
                             var s = e.$board.querySelectorAll("game-row")[e.rowIndex - 1];
-                            (a.path || a.composedPath && a.composedPath()).includes(s) && ([es, as].includes(e.gameStatus) && (e.restoringFromLocalStorage ? e.showStatsModal() : (e.gameStatus === es && (s.setAttribute("win", ""), e.addToast(ss[e.rowIndex - 1], 2e3)), e.gameStatus === as && e.addToast(e.solution.toUpperCase(), 1 / 0), setTimeout((function() {
+                            (a.path || a.composedPath && a.composedPath()).includes(s) && ([GAME_STATUS_WIN, GAME_STATUS_FAIL].includes(e.gameStatus) && (e.restoringFromLocalStorage ? e.showStatsModal() : (e.gameStatus === GAME_STATUS_WIN && (s.setAttribute("win", ""), e.addToast(ss[e.rowIndex - 1], 2e3)), e.gameStatus === GAME_STATUS_FAIL && e.addToast(e.solution.toUpperCase(), 1 / 0), setTimeout((function() {
                                 e.showStatsModal()
                             }), 2500))), e.restoringFromLocalStorage = !1)
                         })), this.shadowRoot.addEventListener("game-setting-change", (function(a) {
@@ -2273,7 +2273,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                                         o = e.stats[s],
                                         n = Ls.content.cloneNode(!0);
                                     n.querySelector(".label").textContent = t, n.querySelector(".statistic").textContent = o, a.appendChild(n)
-                                })), this.gameApp.gameStatus !== Za) {
+                                })), this.gameApp.gameStatus !== GAME_STATUS_IN_PROGRESS) {
                             var p = this.shadowRoot.querySelector(".footer"),
                                 m = Is.content.cloneNode(!0);
                             p.appendChild(m), this.shadowRoot.querySelector("button#share-button").addEventListener("click", (function(a) {
@@ -2293,15 +2293,15 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                                                 if (e) {
                                                     var a = "";
                                                     switch (e) {
-                                                    case Ma:
+                                                    case CORRECT:
                                                         a = function(e) {
                                                             return e ? "🟧" : "🟩"
                                                         }(i);
-                                                        break;case Ia:
+                                                        break;case PRESENT:
                                                         a = function(e) {
                                                             return e ? "🟦" : "🟨"
                                                         }(i);
-                                                        break;case Oa:
+                                                        break;case ABSENT:
                                                         a = function(e) {
                                                             return e ? "⬛" : "⬜"
                                                         }(r)
@@ -2317,7 +2317,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                                     dayOffset: e.gameApp.dayOffset,
                                     rowIndex: e.gameApp.rowIndex,
                                     isHardMode: e.gameApp.hardMode,
-                                    isWin: e.gameApp.gameStatus === es
+                                    isWin: e.gameApp.gameStatus === GAME_STATUS_WIN
                                 }), (function() {
                                     e.gameApp.addToast("Copied results to clipboard", 2e3, !0)
                                 }), (function() {
@@ -2723,25 +2723,25 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
         }(c(HTMLElement));
     // Export pure functions for testing (obfuscated names will be renamed during refactoring)
     e._testExports = {
-        // Constants
-        Ia: Ia,  // PRESENT = "present"
-        Ma: Ma,  // CORRECT = "correct"
-        Oa: Oa,  // ABSENT = "absent"
-        Ra: Ra,  // STATE_PRECEDENCE
-        Ha: Ha,  // PUZZLE_START_DATE
-        Za: Za,  // GAME_STATUS_IN_PROGRESS = "IN_PROGRESS"
-        es: es,  // GAME_STATUS_WIN = "WIN"
-        as: as,  // GAME_STATUS_FAIL = "FAIL"
-        Ja: Ja,  // FAIL_KEY = "fail"
-        Ua: Ua,  // DEFAULT_STATISTICS
+      // Constants
+      PRESENT: PRESENT, // PRESENT = "present"
+      CORRECT: CORRECT, // CORRECT = "correct"
+      ABSENT: ABSENT, // ABSENT = "absent"
+      STATE_PRECEDENCE: STATE_PRECEDENCE, // STATE_PRECEDENCE
+      PUZZLE_START_DATE: PUZZLE_START_DATE, // PUZZLE_START_DATE
+      GAME_STATUS_IN_PROGRESS: GAME_STATUS_IN_PROGRESS, // GAME_STATUS_IN_PROGRESS = "IN_PROGRESS"
+      GAME_STATUS_WIN: GAME_STATUS_WIN, // GAME_STATUS_WIN = "WIN"
+      GAME_STATUS_FAIL: GAME_STATUS_FAIL, // GAME_STATUS_FAIL = "FAIL"
+      FAIL_KEY: FAIL_KEY, // FAIL_KEY = "fail"
+      Ua: Ua, // DEFAULT_STATISTICS
 
-        // Functions
-        Pa: Pa,  // aggregateLetterEvaluations(boardState, evaluations)
-        $a: $a,  // getOrdinal(n)
-        Na: Na,  // calculateDaysBetween(startDate, endDate)
-        Da: Da,  // getSolution(date)
-        Ga: Ga,  // getDayOffset(date)
-        Wa: Wa,  // encodeWord(word) - ROT13-like cipher
+      // Functions
+      Pa: Pa, // aggregateLetterEvaluations(boardState, evaluations)
+      $a: $a, // getOrdinal(n)
+      Na: Na, // calculateDaysBetween(startDate, endDate)
+      Da: Da, // getSolution(date)
+      Ga: Ga, // getDayOffset(date)
+      Wa: Wa, // encodeWord(word) - ROT13-like cipher
     };
 
     return customElements.define("countdown-timer", Us), e.CountdownTimer = Us, e.GameApp = ts, e.GameHelp = Hs, e.GameIcon = Fs, e.GameKeyboard = us, e.GameModal = ns, e.GamePage = Ds, e.GameRow = x, e.GameSettings = _a, e.GameStats = Os, e.GameSwitch = Ps, e.GameThemeManager = _, e.GameTile = v, e.GameToast = Aa, Object.defineProperty(e, "__esModule", {

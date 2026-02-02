@@ -29,17 +29,17 @@ This approach means:
 
 Start with constants and simple functions. The test file documents what each obfuscated name should become:
 
-| Obfuscated | Meaningful Name | Type | Description |
-|------------|-----------------|------|-------------|
-| `Ia` | `PRESENT` | constant | "present" string |
-| `Ma` | `CORRECT` | constant | "correct" string |
-| `Oa` | `ABSENT` | constant | "absent" string |
-| `Ra` | `STATE_PRECEDENCE` | object | Letter state priority |
-| `Ha` | `PUZZLE_START_DATE` | Date | June 19, 2021 |
-| `Za` | `GAME_STATUS_IN_PROGRESS` | constant | "IN_PROGRESS" |
-| `es` | `GAME_STATUS_WIN` | constant | "WIN" |
-| `as` | `GAME_STATUS_FAIL` | constant | "FAIL" |
-| `Ja` | `FAIL_KEY` | constant | "fail" |
+| Obfuscated | Meaningful Name | Type | Description | Status |
+|------------|-----------------|------|-------------|--------|
+| `Ia` | `PRESENT` | constant | "present" string |✅|
+| `Ma` | `CORRECT` | constant | "correct" string |✅|
+| `Oa` | `ABSENT` | constant | "absent" string |✅|
+| `Ra` | `STATE_PRECEDENCE` | object | Letter state priority |✅|
+| `Ha` | `PUZZLE_START_DATE` | Date | June 19, 2021 |✅|
+| `Za` | `GAME_STATUS_IN_PROGRESS` | constant | "IN_PROGRESS" |✅|
+| `es` | `GAME_STATUS_WIN` | constant | "WIN" |✅|
+| `as` | `GAME_STATUS_FAIL` | constant | "FAIL" |✅|
+| `Ja` | `FAIL_KEY` | constant | "fail" |✅|
 | `Ua` | `DEFAULT_STATISTICS` | object | Default stats structure |
 | `Pa` | `aggregateLetterEvaluations` | function | Combines letter states for keyboard |
 | `$a` | `getOrdinal` | function | Returns "1st", "2nd", etc. |
@@ -117,13 +117,13 @@ git commit -m "Rename $a to getOrdinal"
 Start with isolated items that have fewer dependencies:
 
 ### Phase 1: Constants
-1. `Ia` → `PRESENT`
-2. `Ma` → `CORRECT`
-3. `Oa` → `ABSENT`
-4. `Za` → `GAME_STATUS_IN_PROGRESS`
-5. `es` → `GAME_STATUS_WIN`
-6. `as` → `GAME_STATUS_FAIL`
-7. `Ja` → `FAIL_KEY`
+1. `Ia` → `PRESENT`✅
+2. `Ma` → `CORRECT`✅
+3. `Oa` → `ABSENT`✅
+4. `Za` → `GAME_STATUS_IN_PROGRESS`✅
+5. `es` → `GAME_STATUS_WIN`✅
+6. `as` → `GAME_STATUS_FAIL`✅
+7. `Ja` → `FAIL_KEY`✅
 
 ### Phase 2: Simple Functions
 1. `$a` → `getOrdinal`

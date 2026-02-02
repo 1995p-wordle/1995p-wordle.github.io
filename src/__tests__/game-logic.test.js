@@ -74,15 +74,15 @@ const testExports = dom.window.wordle.bundle._testExports;
 // ============================================================================
 
 // Constants (current obfuscated names -> meaningful names)
-const PRESENT = testExports.Ia;           // Will become: testExports.PRESENT
-const CORRECT = testExports.Ma;           // Will become: testExports.CORRECT
-const ABSENT = testExports.Oa;            // Will become: testExports.ABSENT
-const STATE_PRECEDENCE = testExports.Ra;  // Will become: testExports.STATE_PRECEDENCE
-const PUZZLE_START_DATE = testExports.Ha; // Will become: testExports.PUZZLE_START_DATE
-const GAME_STATUS_IN_PROGRESS = testExports.Za; // Will become: testExports.GAME_STATUS_IN_PROGRESS
-const GAME_STATUS_WIN = testExports.es;   // Will become: testExports.GAME_STATUS_WIN
-const GAME_STATUS_FAIL = testExports.as;  // Will become: testExports.GAME_STATUS_FAIL
-const FAIL_KEY = testExports.Ja;          // Will become: testExports.FAIL_KEY
+const PRESENT = testExports.PRESENT;           // Will become: testExports.PRESENT
+const CORRECT = testExports.CORRECT;           // Will become: testExports.CORRECT
+const ABSENT = testExports.ABSENT;            // Will become: testExports.ABSENT
+const STATE_PRECEDENCE = testExports.STATE_PRECEDENCE;  // Will become: testExports.STATE_PRECEDENCE
+const PUZZLE_START_DATE = testExports.PUZZLE_START_DATE; // Will become: testExports.PUZZLE_START_DATE
+const GAME_STATUS_IN_PROGRESS = testExports.GAME_STATUS_IN_PROGRESS; // Will become: testExports.GAME_STATUS_IN_PROGRESS
+const GAME_STATUS_WIN = testExports.GAME_STATUS_WIN;   // Will become: testExports.GAME_STATUS_WIN
+const GAME_STATUS_FAIL = testExports.GAME_STATUS_FAIL;  // Will become: testExports.GAME_STATUS_FAIL
+const FAIL_KEY = testExports.FAIL_KEY;          // Will become: testExports.FAIL_KEY
 const DEFAULT_STATISTICS = testExports.Ua; // Will become: testExports.DEFAULT_STATISTICS
 
 // Functions (current obfuscated names -> meaningful names)
