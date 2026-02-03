@@ -73,25 +73,29 @@ const testExports = dom.window.wordle.bundle._testExports;
 // ALIAS DEFINITIONS - Update these as you rename functions in wordle.js
 // ============================================================================
 
-// Constants (current obfuscated names -> meaningful names)
-const PRESENT = testExports.PRESENT;           // Will become: testExports.PRESENT
-const CORRECT = testExports.CORRECT;           // Will become: testExports.CORRECT
-const ABSENT = testExports.ABSENT;            // Will become: testExports.ABSENT
-const STATE_PRECEDENCE = testExports.STATE_PRECEDENCE;  // Will become: testExports.STATE_PRECEDENCE
-const PUZZLE_START_DATE = testExports.PUZZLE_START_DATE; // Will become: testExports.PUZZLE_START_DATE
-const GAME_STATUS_IN_PROGRESS = testExports.GAME_STATUS_IN_PROGRESS; // Will become: testExports.GAME_STATUS_IN_PROGRESS
-const GAME_STATUS_WIN = testExports.GAME_STATUS_WIN;   // Will become: testExports.GAME_STATUS_WIN
-const GAME_STATUS_FAIL = testExports.GAME_STATUS_FAIL;  // Will become: testExports.GAME_STATUS_FAIL
-const FAIL_KEY = testExports.FAIL_KEY;          // Will become: testExports.FAIL_KEY
-const DEFAULT_STATISTICS = testExports.DEFAULT_STATISTICS; // Will become: testExports.DEFAULT_STATISTICS
+// Constants
+const PRESENT = testExports.PRESENT;           // Ia -> PRESENT
+const CORRECT = testExports.CORRECT;           // Ma -> CORRECT
+const ABSENT = testExports.ABSENT;            // Oa -> ABSENT
+const STATE_PRECEDENCE = testExports.STATE_PRECEDENCE;  // Ra -> STATE_PRECEDENCE
+const PUZZLE_START_DATE = testExports.PUZZLE_START_DATE; // Ha -> PUZZLE_START_DATE
+const GAME_STATUS_IN_PROGRESS = testExports.GAME_STATUS_IN_PROGRESS; // Za -> GAME_STATUS_IN_PROGRESS
+const GAME_STATUS_WIN = testExports.GAME_STATUS_WIN;   // es -> GAME_STATUS_WIN
+const GAME_STATUS_FAIL = testExports.GAME_STATUS_FAIL;  // as -> GAME_STATUS_FAIL
+const FAIL_KEY = testExports.FAIL_KEY;          // Ja -> FAIL_KEY
+const DEFAULT_STATISTICS = testExports.DEFAULT_STATISTICS; // Ua -> DEFAULT_STATISTICS
 
-// Functions (current obfuscated names -> meaningful names)
-const aggregateLetterEvaluations = testExports.aggregateLetterEvaluations; // Will become: testExports.aggregateLetterEvaluations
-const getOrdinal = testExports.getOrdinal;                 // Will become: testExports.getOrdinal
-const calculateDaysBetween = testExports.calculateDaysBetween;       // Will become: testExports.calculateDaysBetween
-const getSolution = testExports.getSolution;                // Will become: testExports.getSolution
-const getDayOffset = testExports.getDayOffset;               // Will become: testExports.getDayOffset
-const encodeWord = testExports.encodeWord;                 // Will become: testExports.encodeWord
+// Functions
+const aggregateLetterEvaluations = testExports.aggregateLetterEvaluations; // Pa -> aggregateLetterEvaluations
+const getOrdinal = testExports.getOrdinal;                 // $a -> getOrdinal
+const calculateDaysBetween = testExports.calculateDaysBetween;       // Na -> calculateDaysBetween
+const getSolution = testExports.getSolution;               // Da -> getSolution
+const getDayOffset = testExports.getDayOffset;             // Ga -> getDayOffset
+const encodeWord = testExports.encodeWord;                 // Wa -> encodeWord
+const getStatistics = testExports.getStatistics;            // Xa -> getStatistics
+const updateStatistics = testExports.updateStatistics;      // Va -> updateStatistics
+const evaluateGuess = testExports.evaluateGuess;            // IIFE -> evaluateGuess
+const validateHardMode = testExports.validateHardMode;      // IIFE -> validateHardMode
 
 // ============================================================================
 // TESTS
@@ -271,6 +275,209 @@ describe('aggregateLetterEvaluations (previously Pa)', () => {
         ];
         const result = aggregateLetterEvaluations(boardState, evaluations);
         expect(result.c).toBe(CORRECT); // Should stay correct, not downgrade
+    });
+});
+
+describe('getStatistics (currently Xa)', () => {
+    beforeEach(() => {
+        dom.window.localStorage.removeItem('statistics');
+    });
+
+    test('returns default statistics when nothing in localStorage', () => {
+        const stats = getStatistics();
+        expect(stats.currentStreak).toBe(0);
+        expect(stats.maxStreak).toBe(0);
+        expect(stats.gamesPlayed).toBe(0);
+        expect(stats.gamesWon).toBe(0);
+        expect(stats.winPercentage).toBe(0);
+        expect(stats.averageGuesses).toBe(0);
+        expect(stats.guesses).toBeDefined();
+        expect(stats.guesses.fail).toBe(0);
+    });
+
+    test('returns saved statistics from localStorage', () => {
+        const saved = {
+            currentStreak: 3,
+            maxStreak: 5,
+            gamesPlayed: 10,
+            gamesWon: 8,
+            winPercentage: 80,
+            averageGuesses: 4,
+            guesses: { 1: 0, 2: 1, 3: 2, 4: 3, 5: 1, 6: 1, fail: 2 }
+        };
+        dom.window.localStorage.setItem('statistics', JSON.stringify(saved));
+        const stats = getStatistics();
+        expect(stats.currentStreak).toBe(3);
+        expect(stats.maxStreak).toBe(5);
+        expect(stats.gamesPlayed).toBe(10);
+        expect(stats.gamesWon).toBe(8);
+    });
+
+    test('returns a new object each call (not a reference)', () => {
+        const stats1 = getStatistics();
+        const stats2 = getStatistics();
+        expect(stats1).toEqual(stats2);
+        expect(stats1).not.toBe(stats2);
+    });
+});
+
+describe('updateStatistics (currently Va)', () => {
+    beforeEach(() => {
+        dom.window.localStorage.removeItem('statistics');
+    });
+
+    test('records a win and increments streak', () => {
+        updateStatistics({ isWin: true, isStreak: false, numGuesses: 3 });
+        const stats = getStatistics();
+        expect(stats.gamesPlayed).toBe(1);
+        expect(stats.gamesWon).toBe(1);
+        expect(stats.currentStreak).toBe(1);
+        expect(stats.guesses[3]).toBe(1);
+    });
+
+    test('records a loss and resets streak', () => {
+        updateStatistics({ isWin: true, isStreak: false, numGuesses: 4 });
+        updateStatistics({ isWin: false, isStreak: false, numGuesses: 6 });
+        const stats = getStatistics();
+        expect(stats.gamesPlayed).toBe(2);
+        expect(stats.gamesWon).toBe(1);
+        expect(stats.currentStreak).toBe(0);
+        expect(stats.guesses.fail).toBe(1);
+    });
+
+    test('continues streak when isStreak is true', () => {
+        updateStatistics({ isWin: true, isStreak: false, numGuesses: 3 });
+        updateStatistics({ isWin: true, isStreak: true, numGuesses: 4 });
+        const stats = getStatistics();
+        expect(stats.currentStreak).toBe(2);
+    });
+
+    test('tracks max streak', () => {
+        updateStatistics({ isWin: true, isStreak: false, numGuesses: 3 });
+        updateStatistics({ isWin: true, isStreak: true, numGuesses: 4 });
+        updateStatistics({ isWin: true, isStreak: true, numGuesses: 2 });
+        updateStatistics({ isWin: false, isStreak: false, numGuesses: 6 });
+        const stats = getStatistics();
+        expect(stats.maxStreak).toBe(3);
+        expect(stats.currentStreak).toBe(0);
+    });
+
+    test('calculates win percentage', () => {
+        updateStatistics({ isWin: true, isStreak: false, numGuesses: 3 });
+        updateStatistics({ isWin: true, isStreak: true, numGuesses: 4 });
+        updateStatistics({ isWin: false, isStreak: false, numGuesses: 6 });
+        const stats = getStatistics();
+        expect(stats.winPercentage).toBe(67); // Math.round(2/3 * 100)
+    });
+
+    test('calculates average guesses', () => {
+        updateStatistics({ isWin: true, isStreak: false, numGuesses: 2 });
+        updateStatistics({ isWin: true, isStreak: true, numGuesses: 4 });
+        const stats = getStatistics();
+        expect(stats.averageGuesses).toBe(3); // Math.round((2+4)/2)
+    });
+
+    test('persists to localStorage', () => {
+        updateStatistics({ isWin: true, isStreak: false, numGuesses: 3 });
+        const raw = dom.window.localStorage.getItem('statistics');
+        expect(raw).not.toBeNull();
+        const parsed = JSON.parse(raw);
+        expect(parsed.gamesPlayed).toBe(1);
+    });
+});
+
+describe('evaluateGuess (extracted IIFE)', () => {
+    test('all correct', () => {
+        const result = evaluateGuess('crane', 'crane');
+        expect(result).toEqual([CORRECT, CORRECT, CORRECT, CORRECT, CORRECT]);
+    });
+
+    test('all absent', () => {
+        const result = evaluateGuess('xxxxx', 'crane');
+        expect(result).toEqual([ABSENT, ABSENT, ABSENT, ABSENT, ABSENT]);
+    });
+
+    test('mixed correct, present, and absent', () => {
+        // guess: cnxer, solution: crane
+        // c=correct, n=present(pos3->pos3? no, n@1 vs r@1), n=present, x=absent, e=present, r=present
+        const result = evaluateGuess('rnexa', 'crane');
+        expect(result).toEqual([PRESENT, PRESENT, PRESENT, ABSENT, PRESENT]);
+    });
+
+    test('duplicate letter in guess, one correct', () => {
+        const result = evaluateGuess('creep', 'crane');
+        expect(result[0]).toBe(CORRECT); // c
+        expect(result[1]).toBe(CORRECT); // r
+        expect(result[2]).toBe(PRESENT); // e (present, not in position 2)
+        expect(result[3]).toBe(ABSENT);  // e (duplicate, already accounted for)
+        expect(result[4]).toBe(ABSENT);  // p
+    });
+
+    test('duplicate letter in guess, none in correct position', () => {
+        const result = evaluateGuess('eexxx', 'crane');
+        expect(result[0]).toBe(PRESENT); // first e is present
+        expect(result[1]).toBe(ABSENT);  // second e, only one e in solution
+    });
+
+    test('returns array same length as solution', () => {
+        const result = evaluateGuess('crane', 'crane');
+        expect(result).toHaveLength(5);
+    });
+});
+
+describe('validateHardMode (extracted IIFE)', () => {
+    test('returns valid when no previous guess data', () => {
+        expect(validateHardMode('crane', null, null)).toEqual({ validGuess: true });
+        expect(validateHardMode('crane', '', null)).toEqual({ validGuess: true });
+        expect(validateHardMode(null, null, null)).toEqual({ validGuess: true });
+    });
+
+    test('accepts guess that satisfies all constraints', () => {
+        // Previous guess: crane, c=correct, r=absent, a=present, n=absent, e=absent
+        const prevEval = [CORRECT, ABSENT, PRESENT, ABSENT, ABSENT];
+        const result = validateHardMode('clamp', 'crane', prevEval);
+        expect(result.validGuess).toBe(true);
+    });
+
+    test('rejects guess missing a correct-position letter', () => {
+        // Previous guess: crane, c=correct
+        const prevEval = [CORRECT, ABSENT, ABSENT, ABSENT, ABSENT];
+        const result = validateHardMode('blaze', 'crane', prevEval);
+        expect(result.validGuess).toBe(false);
+        expect(result.errorMessage).toContain('1st');
+        expect(result.errorMessage).toContain('C');
+    });
+
+    test('rejects guess missing a present letter', () => {
+        // Previous guess: crane, a=present
+        const prevEval = [ABSENT, ABSENT, PRESENT, ABSENT, ABSENT];
+        const result = validateHardMode('blitz', 'crane', prevEval);
+        expect(result.validGuess).toBe(false);
+        expect(result.errorMessage).toContain('A');
+    });
+
+    test('correct-position check takes priority over present check', () => {
+        // Previous guess: crane, c=correct at position 0
+        // New guess has wrong letter at position 0
+        const prevEval = [CORRECT, CORRECT, CORRECT, ABSENT, ABSENT];
+        const result = validateHardMode('xxane', 'crane', prevEval);
+        expect(result.validGuess).toBe(false);
+        expect(result.errorMessage).toContain('1st');
+    });
+
+    test('handles multiple present letters', () => {
+        // Previous: aabxx, both a's present
+        const prevEval = [PRESENT, PRESENT, ABSENT, ABSENT, ABSENT];
+        const result = validateHardMode('aaxxx', 'aabxx', prevEval);
+        expect(result.validGuess).toBe(true);
+    });
+
+    test('rejects when not enough of a repeated present letter', () => {
+        // Previous: aabxx, both a's present
+        const prevEval = [PRESENT, PRESENT, ABSENT, ABSENT, ABSENT];
+        const result = validateHardMode('axbxx', 'aabxx', prevEval);
+        expect(result.validGuess).toBe(false);
+        expect(result.errorMessage).toContain('A');
     });
 });
 

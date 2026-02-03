@@ -1230,7 +1230,6 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
         }
         return a
     }
-    var   Ya = "statistics";
     const FAIL_KEY = "fail";
     const   DEFAULT_STATISTICS = {
             currentStreak: 0,
@@ -1248,27 +1247,112 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
             gamesWon: 0,
             averageGuesses: 0
         };
-    function Xa() {
-        var e = window.localStorage.getItem(Ya) || JSON.stringify(DEFAULT_STATISTICS);
-        console.debug('loaded stats', e);
-        return JSON.parse(e)
+    function getStatistics() {
+        var storedStats = window.localStorage.getItem("statistics") || JSON.stringify(DEFAULT_STATISTICS);
+        console.debug('loaded stats', storedStats);
+        return JSON.parse(storedStats)
     }
-    function Va(e) {
-        var a = e.isWin,
-            s = e.isStreak,
-            t = e.numGuesses,
-            o = Xa();
-        a ? (o.guesses[t] += 1, s ? o.currentStreak += 1 : o.currentStreak = 1) : (o.currentStreak = 0, o.guesses.fail += 1), o.maxStreak = Math.max(o.currentStreak, o.maxStreak), o.gamesPlayed += 1, o.gamesWon += a ? 1 : 0, o.winPercentage = Math.round(o.gamesWon / o.gamesPlayed * 100), o.averageGuesses = Math.round(Object.entries(o.guesses).reduce((function(e, a) {
-                var s = y(a, 2),
-                    t = s[0],
-                    o = s[1];
-                return t !== FAIL_KEY ? e += t * o : e
-            }), 0) / o.gamesWon), function(e) {
-            window.localStorage.setItem(Ya, JSON.stringify(e))
-        }(o)
+    function updateStatistics(gameResults) {
+        var stats = getStatistics();
+
+        // Update guesses and streak
+        if (gameResults.isWin) {
+            stats.guesses[gameResults.numGuesses] += 1;
+            stats.currentStreak = gameResults.isStreak ? stats.currentStreak + 1 : 1;
+        } else {
+            stats.currentStreak = 0;
+            stats.guesses.fail += 1;
+        }
+
+        stats.maxStreak = Math.max(stats.currentStreak, stats.maxStreak);
+        stats.gamesPlayed += 1;
+        stats.gamesWon += gameResults.isWin ? 1 : 0;
+        stats.winPercentage = Math.round(stats.gamesWon / stats.gamesPlayed * 100);
+
+        // Calculate average guesses (excluding failures)
+        stats.averageGuesses = Math.round(
+            Object.entries(stats.guesses).reduce(function(total, entry) {
+                var key = entry[0];
+                var count = entry[1];
+                return key !== FAIL_KEY ? total + key * count : total;
+            }, 0) / stats.gamesWon
+        );
+
+        window.localStorage.setItem("statistics", JSON.stringify(stats));
+    }
+    function evaluateGuess(guessed_wd, ans_wd) {
+      var result = Array(ans_wd.length).fill(ABSENT);
+      var guessUnmatched = Array(ans_wd.length).fill(true);
+      var solutionUnmatched = Array(ans_wd.length).fill(true);
+
+      // First pass: mark exact matches
+      for (var idx = 0; idx < guessed_wd.length; idx++) {
+        if (guessed_wd[idx] === ans_wd[idx] && solutionUnmatched[idx]) {
+          result[idx] = CORRECT;
+          guessUnmatched[idx] = false;
+          solutionUnmatched[idx] = false;
+        }
+      }
+
+      // Second pass: mark present (right letter, wrong position)
+      for (var idx = 0; idx < guessed_wd.length; idx++) {
+        if (guessUnmatched[idx]) {
+          var guessChar = guessed_wd[idx];
+          for (var ans_idx = 0; ans_idx < ans_wd.length; ans_idx++) {
+            if (solutionUnmatched[ans_idx] && guessChar === ans_wd[ans_idx]) {
+              result[idx] = PRESENT;
+              solutionUnmatched[ans_idx] = false;
+              break;
+            }
+          }
+        }
+      }
+
+      return result;
+    }
+    function validateHardMode(guess, previousGuess, previousEvaluation) {
+        if (!guess || !previousGuess || !previousEvaluation) {
+            return { validGuess: true };
+        }
+
+        // Check that all previously correct letters are in the same positions
+        for (var idx = 0; idx < previousEvaluation.length; idx++) {
+            if (previousEvaluation[idx] === CORRECT && guess[idx] !== previousGuess[idx]) {
+                return {
+                    validGuess: false,
+                    errorMessage: "".concat(getOrdinal(idx + 1), " letter must be ").concat(previousGuess[idx].toUpperCase())
+                };
+            }
+        }
+
+        // Count required letters (those marked correct or present in previous evaluation)
+        var requiredLetters = {};
+        for (var idx = 0; idx < previousEvaluation.length; idx++) {
+            if ([CORRECT, PRESENT].includes(previousEvaluation[idx])) {
+                var letter = previousGuess[idx];
+                requiredLetters[letter] = (requiredLetters[letter] || 0) + 1;
+            }
+        }
+
+        // Count letters in current guess
+        var guessLetterCounts = guess.split("").reduce(function(counts, letter) {
+            counts[letter] = (counts[letter] || 0) + 1;
+            return counts;
+        }, {});
+
+        // Check that all required letters appear enough times
+        for (var requiredLetter in requiredLetters) {
+            if ((guessLetterCounts[requiredLetter] || 0) < requiredLetters[requiredLetter]) {
+                return {
+                    validGuess: false,
+                    errorMessage: "Guess must contain ".concat(requiredLetter.toUpperCase())
+                };
+            }
+        }
+
+        return { validGuess: true };
     }
     var Ka = document.createElement("template");
-    // Ka.innerHTML = "\n  <style>\n  .toaster {\n    position: absolute;\n    top: 10%;\n    left: 50%;\n    transform: translate(-50%, 0);\n    pointer-events: none;\n    width: fit-content;\n  }\n  #game-toaster {\n    z-index: ".concat(1e3, ";\n  }\n  #system-toaster {\n    z-index: ").concat(4e3, ';\n  }\n\n  #game {\n    width: 100%;\n    max-width: var(--game-max-width);\n    margin: 0 auto;\n    height: 100%;\n    display: flex;\n    flex-direction: column;\n  }\n  header {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    height: var(--header-height);\n    color: var(--color-tone-1);\n    border-bottom: 1px solid var(--color-tone-4);\n  }\n  header .title {\n    font-weight: 700;\n    font-size: 36px;\n    letter-spacing: 0.2rem;\n    text-transform: uppercase;\n    text-align: center;\n    position: absolute;\n    left: 0;\n    right: 0;\n    pointer-events: none;\n  }\n\n  @media (max-width: 360px) {\n    header .title {\n      font-size: 22px;\n      letter-spacing: 0.1rem;\n    }\n  }\n\n  #board-container {\n    display: flex;\n    justify-content: center;\n    align-items: center;\n    flex-grow: 1;\n    overflow: hidden;\n  }\n  #board {\n    display: grid;\n    grid-template-rows: repeat(6, 1fr);\n    grid-gap: 5px;\n    padding:10px;\n    box-sizing: border-box;\n  }\n  button.icon {\n    background: none;\n    border: none;\n    cursor: pointer;\n    padding: 0 4px;\n  }\n\n  #debug-tools {\n    position: absolute;\n    bottom: 0;\n  }\n\n  </style>\n  <game-theme-manager>\n    <div id="game">\n      <header>\n        <div class="menu">\n          <button id="help-button" class="icon" aria-label="help">\n            <game-icon icon="help"></game-icon>\n          </button>\n        </div>\n        <div class="title">\n         WORDLE\n        </div>\n        <div class="menu">\n          <button id="statistics-button" class="icon" aria-label="statistics">\n            <game-icon icon="statistics"></game-icon>\n          </button>\n          <button id="settings-button" class="icon" aria-label="settings">\n            <game-icon icon="settings"></game-icon>\n          </button>\n        </div>\n      </header>\n        <div id="board-container">\n          <div id="board"></div>\n        </div>\n        <game-keyboard></game-keyboard>\n        <game-modal></game-modal>\n        <game-page></game-page>\n        <div class="toaster" id="game-toaster"></div>\n        <div class="toaster" id="system-toaster"></div>\n    </div>\n  </game-theme-manager>\n  <div id="debug-tools"></div>\n');
     Ka.innerHTML = document.getElementById('header-container').innerHTML;
     var qaButtons = document.createElement("template");
     qaButtons.innerHTML = `
@@ -1281,8 +1365,8 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     const GAME_STATUS_IN_PROGRESS = "IN_PROGRESS";
     const GAME_STATUS_WIN = "WIN";
     const GAME_STATUS_FAIL = "FAIL";
-    var ss = ["Genius", "Magnificent", "Impressive", "Splendid", "Great", "Phew"],
-        ts = function(e) {
+    const COMMENT_WDS = ["Genius", "Magnificent", "Impressive", "Splendid", "Great", "Phew"];
+    var ts = function(e) {
             r(t, e);
             var a = h(t);
             function t() {
@@ -1309,52 +1393,18 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                                 s = this.boardState[this.rowIndex];
                             if (e = s, !valid_guesses.includes(e) && !answer_list.includes(e)) return a.setAttribute("invalid", ""), void this.addToast("Not in word list");
                             if (this.hardMode) {
-                                var t = function(e, a, s) {
-                                        if (!e || !a || !s) return {
-                                                validGuess: !0
-                                            };
-                                        for (var t = 0; t < s.length; t++)
-                                            if (s[t] === CORRECT && e[t] !== a[t]) return {
-                                                    validGuess: !1,
-                                                    errorMessage: "".concat(getOrdinal(t + 1), " letter must be ").concat(a[t].toUpperCase())
-                                                };
-                                        for (var o = {}, n = 0; n < s.length; n++) [CORRECT, PRESENT].includes(s[n]) && (o[a[n]] ? o[a[n]] += 1 : o[a[n]] = 1);
-                                        var r = e.split("").reduce((function(e, a) {
-                                            return e[a] ? e[a] += 1 : e[a] = 1, e
-                                        }), {});
-                                        for (var i in o)
-                                            if ((r[i] || 0) < o[i]) return {
-                                                    validGuess: !1,
-                                                    errorMessage: "Guess must contain ".concat(i.toUpperCase())
-                                                };
-                                        return {
-                                            validGuess: !0
-                                        }
-                                    }(s, this.boardState[this.rowIndex - 1], this.evaluations[this.rowIndex - 1]),
+                                var t = validateHardMode(s, this.boardState[this.rowIndex - 1], this.evaluations[this.rowIndex - 1]),
                                     o = t.validGuess,
                                     n = t.errorMessage;
                                 if (!o) return a.setAttribute("invalid", ""), void this.addToast(n || "Not valid in hard mode")
                             }
-                            var r = function(e, a) {
-                                for (var s = Array(a.length).fill(ABSENT), t = Array(a.length).fill(!0), o = Array(a.length).fill(!0), n = 0; n < e.length; n++) e[n] === a[n] && o[n] && (s[n] = CORRECT, t[n] = !1, o[n] = !1);
-                                for (var r = 0; r < e.length; r++) {
-                                    var i = e[r];
-                                    if (t[r])
-                                        for (var l = 0; l < a.length; l++) {
-                                            var d = a[l];
-                                            if (o[l] && i === d) {
-                                                s[r] = PRESENT, o[l] = !1;break
-                                            }
-                                    }
-                                }
-                                return s
-                            }(s, this.solution);
+                            var r = evaluateGuess(s, this.solution);
                             this.evaluations[this.rowIndex] = r, this.letterEvaluations = aggregateLetterEvaluations(this.boardState, this.evaluations), a.evaluation = this.evaluations[this.rowIndex], this.rowIndex += 1;
                             var i = this.rowIndex >= 6,
                                 l = r.every((function(e) {
                                     return "correct" === e
                                 }));
-                            if (i || l) Va({
+                            if (i || l) updateStatistics({
                                     isWin: l,
                                     isStreak: !!this.lastCompletedTs && 1 === calculateDaysBetween(new Date(this.lastCompletedTs), new Date),
                                     numGuesses: this.rowIndex
@@ -1443,7 +1493,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                         })), this.$game.addEventListener("game-last-tile-revealed-in-row", (function(a) {
                             e.$keyboard.letterEvaluations = e.letterEvaluations, e.rowIndex < 6 && (e.canInput = !0);
                             var s = e.$board.querySelectorAll("game-row")[e.rowIndex - 1];
-                            (a.path || a.composedPath && a.composedPath()).includes(s) && ([GAME_STATUS_WIN, GAME_STATUS_FAIL].includes(e.gameStatus) && (e.restoringFromLocalStorage ? e.showStatsModal() : (e.gameStatus === GAME_STATUS_WIN && (s.setAttribute("win", ""), e.addToast(ss[e.rowIndex - 1], 2e3)), e.gameStatus === GAME_STATUS_FAIL && e.addToast(e.solution.toUpperCase(), 1 / 0), setTimeout((function() {
+                            (a.path || a.composedPath && a.composedPath()).includes(s) && ([GAME_STATUS_WIN, GAME_STATUS_FAIL].includes(e.gameStatus) && (e.restoringFromLocalStorage ? e.showStatsModal() : (e.gameStatus === GAME_STATUS_WIN && (s.setAttribute("win", ""), e.addToast(COMMENT_WDS[e.rowIndex - 1], 2e3)), e.gameStatus === GAME_STATUS_FAIL && e.addToast(e.solution.toUpperCase(), 1 / 0), setTimeout((function() {
                                 e.showStatsModal()
                             }), 2500))), e.restoringFromLocalStorage = !1)
                         })), this.shadowRoot.addEventListener("game-setting-change", (function(a) {
@@ -2239,7 +2289,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 var e;
                 return s(this, t), n(p(e = a.call(this)), "stats", {}), n(p(e), "gameApp", void 0), e.attachShadow({
                         mode: "open"
-                    }), e.stats = Xa(), e
+                    }), e.stats = getStatistics(), e
             }
             return o(t, [{
                     key: "connectedCallback",
@@ -2742,6 +2792,10 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
       getSolution: getSolution, // getSolution(date)
       getDayOffset: getDayOffset, // getDayOffset(date)
       encodeWord: encodeWord, // encodeWord(word) - ROT13-like cipher
+      getStatistics: getStatistics, // Xa - > getStatistics
+      updateStatistics: updateStatistics, // Va -> updateStatistics
+      evaluateGuess: evaluateGuess, // IIFE extraction
+      validateHardMode: validateHardMode, // IIFE extraction
     };
 
     return customElements.define("countdown-timer", Us), e.CountdownTimer = Us, e.GameApp = ts, e.GameHelp = Hs, e.GameIcon = Fs, e.GameKeyboard = us, e.GameModal = ns, e.GamePage = Ds, e.GameRow = x, e.GameSettings = _a, e.GameStats = Os, e.GameSwitch = Ps, e.GameThemeManager = _, e.GameTile = v, e.GameToast = Aa, Object.defineProperty(e, "__esModule", {
