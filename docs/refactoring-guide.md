@@ -40,11 +40,11 @@ Start with constants and simple functions. The test file documents what each obf
 | `es` | `GAME_STATUS_WIN` | constant | "WIN" |✅|
 | `as` | `GAME_STATUS_FAIL` | constant | "FAIL" |✅|
 | `Ja` | `FAIL_KEY` | constant | "fail" |✅|
-| `Ua` | `DEFAULT_STATISTICS` | object | Default stats structure |
-| `Pa` | `aggregateLetterEvaluations` | function | Combines letter states for keyboard |
+| `Ua` | `DEFAULT_STATISTICS` | object | Default stats structure |✅|
+| `Pa` | `aggregateLetterEvaluations` | function | Combines letter states for keyboard |✅|
 | `$a` | `getOrdinal` | function | Returns "1st", "2nd", etc. |✅|
 | `Na` | `calculateDaysBetween` | function | Days between two dates |✅|
-| `Da` | `getSolution` | function | Gets solution for a date |
+| `Da` | `getSolution` | function | Gets solution for a date |✅|
 | `Ga` | `getDayOffset` | function | Days since puzzle start |✅|
 | `Wa` | `encodeWord` | function | ROT13-like encoding |✅|
 
@@ -132,13 +132,13 @@ Start with isolated items that have fewer dependencies:
 4. `Wa` → `encodeWord`✅
 
 ### Phase 3: Data Structures
-1. `Ra` → `STATE_PRECEDENCE`
-2. `Ha` → `PUZZLE_START_DATE`
-3. `Ua` → `DEFAULT_STATISTICS`
+1. `Ra` → `STATE_PRECEDENCE ✅`
+2. `Ha` → `PUZZLE_START_DATE`✅
+3. `Ua` → `DEFAULT_STATISTICS`✅
 
 ### Phase 4: Complex Functions
-1. `Da` → `getSolution`
-2. `Pa` → `aggregateLetterEvaluations`
+1. `Da` → `getSolution`✅
+2. `Pa` → `aggregateLetterEvaluations`✅
 
 ## Functions Not Yet Exported for Testing
 

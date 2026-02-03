@@ -1189,7 +1189,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
         present: 2,
         correct: 3
     };
-    function Pa(e, a) {
+    function aggregateLetterEvaluations(e, a) {
         var s = {};
         return e.forEach((function(e, t) {
                 if (a[t])
@@ -1212,7 +1212,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
             t = new Date(a).setHours(0, 0, 0, 0) - s.setHours(0, 0, 0, 0);
         return Math.round(t / 864e5)
     }
-    function Da(e) {
+    function getSolution(e) {
         var a,
             s = getDayOffset(e);
         return a = s % answer_list.length, answer_list[a]
@@ -1232,7 +1232,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     }
     var   Ya = "statistics";
     const FAIL_KEY = "fail";
-    var   Ua = {
+    const   DEFAULT_STATISTICS = {
             currentStreak: 0,
             maxStreak: 0,
             guesses: n({
@@ -1249,7 +1249,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
             averageGuesses: 0
         };
     function Xa() {
-        var e = window.localStorage.getItem(Ya) || JSON.stringify(Ua);
+        var e = window.localStorage.getItem(Ya) || JSON.stringify(DEFAULT_STATISTICS);
         console.debug('loaded stats', e);
         return JSON.parse(e)
     }
@@ -1290,7 +1290,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 s(this, t), n(p(e = a.call(this)), "tileIndex", 0), n(p(e), "rowIndex", 0), n(p(e), "solution", void 0), n(p(e), "boardState", void 0), n(p(e), "evaluations", void 0), n(p(e), "canInput", !0), n(p(e), "gameStatus", GAME_STATUS_IN_PROGRESS), n(p(e), "letterEvaluations", {}), n(p(e), "$board", void 0), n(p(e), "$keyboard", void 0), n(p(e), "$game", void 0), n(p(e), "today", void 0), n(p(e), "lastPlayedTs", void 0), n(p(e), "lastCompletedTs", void 0), n(p(e), "hardMode", void 0), n(p(e), "dayOffset", void 0), e.attachShadow({
                     mode: "open"
                 }), e.today = new Date;var o = za();
-                return e.lastPlayedTs = o.lastPlayedTs, !e.lastPlayedTs || calculateDaysBetween(new Date(e.lastPlayedTs), e.today) >= 1 ? (e.boardState = new Array(6).fill(""), e.evaluations = new Array(6).fill(null), e.solution = Da(e.today), e.dayOffset = getDayOffset(e.today), e.lastCompletedTs = o.lastCompletedTs, e.hardMode = o.hardMode, e.restoringFromLocalStorage = !1, ja({
+                return e.lastPlayedTs = o.lastPlayedTs, !e.lastPlayedTs || calculateDaysBetween(new Date(e.lastPlayedTs), e.today) >= 1 ? (e.boardState = new Array(6).fill(""), e.evaluations = new Array(6).fill(null), e.solution = getSolution(e.today), e.dayOffset = getDayOffset(e.today), e.lastCompletedTs = o.lastCompletedTs, e.hardMode = o.hardMode, e.restoringFromLocalStorage = !1, ja({
                         rowIndex: e.rowIndex,
                         boardState: e.boardState,
                         evaluations: e.evaluations,
@@ -1298,7 +1298,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                         gameStatus: e.gameStatus
                     }), Ca("event", "level_start", {
                         level_name: encodeWord(e.solution)
-                    })) : (e.boardState = o.boardState, e.evaluations = o.evaluations, e.rowIndex = o.rowIndex, e.solution = o.solution, e.dayOffset = getDayOffset(e.today), e.letterEvaluations = Pa(e.boardState, e.evaluations), e.gameStatus = o.gameStatus, e.lastCompletedTs = o.lastCompletedTs, e.hardMode = o.hardMode, e.gameStatus !== GAME_STATUS_IN_PROGRESS && (e.canInput = !1), e.restoringFromLocalStorage = !0), e
+                    })) : (e.boardState = o.boardState, e.evaluations = o.evaluations, e.rowIndex = o.rowIndex, e.solution = o.solution, e.dayOffset = getDayOffset(e.today), e.letterEvaluations = aggregateLetterEvaluations(e.boardState, e.evaluations), e.gameStatus = o.gameStatus, e.lastCompletedTs = o.lastCompletedTs, e.hardMode = o.hardMode, e.gameStatus !== GAME_STATUS_IN_PROGRESS && (e.canInput = !1), e.restoringFromLocalStorage = !0), e
             }
             return o(t, [{
                     key: "evaluateRow",
@@ -1349,7 +1349,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                                 }
                                 return s
                             }(s, this.solution);
-                            this.evaluations[this.rowIndex] = r, this.letterEvaluations = Pa(this.boardState, this.evaluations), a.evaluation = this.evaluations[this.rowIndex], this.rowIndex += 1;
+                            this.evaluations[this.rowIndex] = r, this.letterEvaluations = aggregateLetterEvaluations(this.boardState, this.evaluations), a.evaluation = this.evaluations[this.rowIndex], this.rowIndex += 1;
                             var i = this.rowIndex >= 6,
                                 l = r.every((function(e) {
                                     return "correct" === e
@@ -2733,13 +2733,13 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
       GAME_STATUS_WIN: GAME_STATUS_WIN, // GAME_STATUS_WIN = "WIN"
       GAME_STATUS_FAIL: GAME_STATUS_FAIL, // GAME_STATUS_FAIL = "FAIL"
       FAIL_KEY: FAIL_KEY, // FAIL_KEY = "fail"
-      Ua: Ua, // DEFAULT_STATISTICS
+      DEFAULT_STATISTICS: DEFAULT_STATISTICS, // DEFAULT_STATISTICS
 
       // Functions
-      Pa: Pa, // aggregateLetterEvaluations(boardState, evaluations)
+      aggregateLetterEvaluations: aggregateLetterEvaluations, // aggregateLetterEvaluations(boardState, evaluations)
       getOrdinal: getOrdinal, // getOrdinal(n)
       calculateDaysBetween: calculateDaysBetween, // calculateDaysBetween(startDate, endDate)
-      Da: Da, // getSolution(date)
+      getSolution: getSolution, // getSolution(date)
       getDayOffset: getDayOffset, // getDayOffset(date)
       encodeWord: encodeWord, // encodeWord(word) - ROT13-like cipher
     };

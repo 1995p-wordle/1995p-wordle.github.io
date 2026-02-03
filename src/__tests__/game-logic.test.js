@@ -83,13 +83,13 @@ const GAME_STATUS_IN_PROGRESS = testExports.GAME_STATUS_IN_PROGRESS; // Will bec
 const GAME_STATUS_WIN = testExports.GAME_STATUS_WIN;   // Will become: testExports.GAME_STATUS_WIN
 const GAME_STATUS_FAIL = testExports.GAME_STATUS_FAIL;  // Will become: testExports.GAME_STATUS_FAIL
 const FAIL_KEY = testExports.FAIL_KEY;          // Will become: testExports.FAIL_KEY
-const DEFAULT_STATISTICS = testExports.Ua; // Will become: testExports.DEFAULT_STATISTICS
+const DEFAULT_STATISTICS = testExports.DEFAULT_STATISTICS; // Will become: testExports.DEFAULT_STATISTICS
 
 // Functions (current obfuscated names -> meaningful names)
-const aggregateLetterEvaluations = testExports.Pa; // Will become: testExports.aggregateLetterEvaluations
+const aggregateLetterEvaluations = testExports.aggregateLetterEvaluations; // Will become: testExports.aggregateLetterEvaluations
 const getOrdinal = testExports.getOrdinal;                 // Will become: testExports.getOrdinal
 const calculateDaysBetween = testExports.calculateDaysBetween;       // Will become: testExports.calculateDaysBetween
-const getSolution = testExports.Da;                // Will become: testExports.getSolution
+const getSolution = testExports.getSolution;                // Will become: testExports.getSolution
 const getDayOffset = testExports.getDayOffset;               // Will become: testExports.getDayOffset
 const encodeWord = testExports.encodeWord;                 // Will become: testExports.encodeWord
 
@@ -203,7 +203,7 @@ describe('getDayOffset (previously Ga)', () => {
     });
 });
 
-describe('getSolution (currently Da)', () => {
+describe('getSolution (previously Da)', () => {
     test('returns a 5-letter word', () => {
         const solution = getSolution(new Date(2023, 5, 15));
         expect(solution).toHaveLength(5);
@@ -228,7 +228,7 @@ describe('getSolution (currently Da)', () => {
     });
 });
 
-describe('aggregateLetterEvaluations (currently Pa)', () => {
+describe('aggregateLetterEvaluations (previously Pa)', () => {
     test('empty board returns empty object', () => {
         const result = aggregateLetterEvaluations(
             ['', '', '', '', '', ''],
