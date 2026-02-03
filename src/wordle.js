@@ -196,6 +196,13 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     }
   }
 
+  @media (max-width: 330px) {
+    .tile {
+      font-size: 1.7rem;
+      line-height: 1.7rem;
+    }
+  }
+
   .tile[data-state='empty'] {
     border: 2px solid var(--color-tone-4);
   }
@@ -1458,7 +1465,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                     key: "sizeBoard",
                     value: function() {
                         var e = this.shadowRoot.querySelector("#board-container"),
-                            maxBoardWidth = window.innerWidth < 560 ? 315 : 350,
+                            maxBoardWidth = window.innerWidth < 331 ? 268 : window.innerWidth < 560 ? 315 : 350,
                             a = Math.min(Math.floor(e.clientHeight * (5 / 6)), maxBoardWidth),
                             s = 6 * Math.floor(a / 5);
                         this.$board.style.width = "".concat(a, "px"), this.$board.style.height = "".concat(s, "px")
@@ -1685,6 +1692,12 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     }
   }
 
+  @media (max-width: 330px) {
+    #keyboard {
+      margin: 0 1px;
+    }
+  }
+
   .row {
     display: flex;
     width: 100%;
@@ -1735,7 +1748,18 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
   @media (max-width: 480px) {
     button {
       margin: 0 3px 0 0;
-      font-size: 16px;
+      font-size: 18px;
+    }
+  }
+
+  @media (max-width: 330px) {
+    button {
+      height: 44px;
+      margin: 0 2px 0 0;
+      font-size: 15px;
+    }
+    .row {
+      margin: 0 auto 5px;
     }
   }
 

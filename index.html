@@ -213,6 +213,16 @@
             }
         }
 
+        @media (max-width: 330px) {
+            header .title {
+                font-size: 19px;
+                letter-spacing: 0.085rem;
+            }
+            #board {
+                padding: 3px;
+            }
+        }
+
         #board-container {
             display: flex;
             flex-direction: column;
@@ -241,6 +251,33 @@
         game-keyboard {
             padding-bottom: 5px;
         }
+
+        @media (max-height: 670px) {
+            #board-container {
+                padding-bottom: 20px;
+            }
+            #board-container::before {
+                max-height: 20px;
+            }
+        }
+
+        @media (max-height: 600px) {
+            #board-container {
+                padding-bottom: 5px;
+            }
+            #board-container::before {
+                max-height: 5px;
+            }
+        }
+
+        /* @media (max-height: 530px) {
+            #board-container {
+                padding-bottom: 5px;
+            }
+            #board-container::before {
+                max-height: 5px;
+            }
+        } */
 
         button.icon {
             background: none;
