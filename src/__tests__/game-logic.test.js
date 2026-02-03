@@ -97,6 +97,7 @@ const getStatistics = testExports.getStatistics;            // Xa -> getStatisti
 const updateStatistics = testExports.updateStatistics;      // Va -> updateStatistics
 const evaluateGuess = testExports.evaluateGuess;            // IIFE -> evaluateGuess
 const validateHardMode = testExports.validateHardMode;      // IIFE -> validateHardMode
+const buildShareText = testExports.buildShareText;          // IIFE -> buildShareText
 
 // ============================================================================
 // TESTS
@@ -501,6 +502,138 @@ describe('validateHardMode (extracted IIFE)', () => {
         const result = validateHardMode('axbxx', 'aabxx', prevEval);
         expect(result.validGuess).toBe(false);
         expect(result.errorMessage).toContain('A');
+    });
+});
+
+describe('buildShareText (extracted IIFE)', () => {
+    beforeEach(() => {
+        dom.window.localStorage.removeItem('darkTheme');
+        dom.window.localStorage.removeItem('colorBlindTheme');
+    });
+
+    test('builds header with puzzle number and guess count', () => {
+        var result = buildShareText({
+            evaluations: [
+                [CORRECT, CORRECT, CORRECT, CORRECT, CORRECT],
+                null, null, null, null, null
+            ],
+            dayOffset: 123,
+            rowIndex: 1,
+            isHardMode: false,
+            isWin: true
+        });
+        expect(result.text).toMatch(/^Wordle 123 1\/6/);
+    });
+
+    test('shows X for losses', () => {
+        var result = buildShareText({
+            evaluations: [
+                [ABSENT, ABSENT, ABSENT, ABSENT, ABSENT],
+                [ABSENT, ABSENT, ABSENT, ABSENT, ABSENT],
+                [ABSENT, ABSENT, ABSENT, ABSENT, ABSENT],
+                [ABSENT, ABSENT, ABSENT, ABSENT, ABSENT],
+                [ABSENT, ABSENT, ABSENT, ABSENT, ABSENT],
+                [ABSENT, ABSENT, ABSENT, ABSENT, ABSENT]
+            ],
+            dayOffset: 50,
+            rowIndex: 6,
+            isHardMode: false,
+            isWin: false
+        });
+        expect(result.text).toMatch(/^Wordle 50 X\/6/);
+    });
+
+    test('appends asterisk for hard mode', () => {
+        var result = buildShareText({
+            evaluations: [
+                [CORRECT, CORRECT, CORRECT, CORRECT, CORRECT],
+                null, null, null, null, null
+            ],
+            dayOffset: 99,
+            rowIndex: 1,
+            isHardMode: true,
+            isWin: true
+        });
+        expect(result.text).toMatch(/^Wordle 99 1\/6\*/);
+    });
+
+    test('uses green/yellow/white squares in normal mode', () => {
+        var result = buildShareText({
+            evaluations: [
+                [CORRECT, PRESENT, ABSENT, ABSENT, ABSENT],
+                null, null, null, null, null
+            ],
+            dayOffset: 1,
+            rowIndex: 1,
+            isHardMode: false,
+            isWin: true
+        });
+        expect(result.text).toContain("🟩");
+        expect(result.text).toContain("🟨");
+        expect(result.text).toContain("⬜");
+    });
+
+    test('uses dark squares when dark theme is set', () => {
+        dom.window.localStorage.setItem('darkTheme', 'true');
+        var result = buildShareText({
+            evaluations: [
+                [ABSENT, ABSENT, ABSENT, ABSENT, ABSENT],
+                null, null, null, null, null
+            ],
+            dayOffset: 1,
+            rowIndex: 1,
+            isHardMode: false,
+            isWin: true
+        });
+        expect(result.text).toContain("⬛");
+        expect(result.text).not.toContain("⬜");
+    });
+
+    test('uses colorblind squares when colorblind mode is set', () => {
+        dom.window.localStorage.setItem('colorBlindTheme', 'true');
+        var result = buildShareText({
+            evaluations: [
+                [CORRECT, PRESENT, ABSENT, ABSENT, ABSENT],
+                null, null, null, null, null
+            ],
+            dayOffset: 1,
+            rowIndex: 1,
+            isHardMode: false,
+            isWin: true
+        });
+        expect(result.text).toContain("🟧");
+        expect(result.text).toContain("🟦");
+    });
+
+    test('skips null evaluation rows', () => {
+        var result = buildShareText({
+            evaluations: [
+                [CORRECT, CORRECT, CORRECT, CORRECT, CORRECT],
+                null, null, null, null, null
+            ],
+            dayOffset: 1,
+            rowIndex: 1,
+            isHardMode: false,
+            isWin: true
+        });
+        var lines = result.text.split("\n");
+        // Header, blank line, one grid row
+        expect(lines).toHaveLength(3);
+    });
+
+    test('returns object with text property', () => {
+        var result = buildShareText({
+            evaluations: [
+                [CORRECT, CORRECT, CORRECT, CORRECT, CORRECT],
+                null, null, null, null, null
+            ],
+            dayOffset: 1,
+            rowIndex: 1,
+            isHardMode: false,
+            isWin: true
+        });
+        expect(result).toHaveProperty('text');
+        expect(typeof result.text).toBe('string');
     });
 });
 

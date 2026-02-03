@@ -2100,6 +2100,48 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
         }
     }
 
+    function buildShareText(gameResults) {
+        var evaluations = gameResults.evaluations;
+        var dayOffset = gameResults.dayOffset;
+        var rowIndex = gameResults.rowIndex;
+        var isHardMode = gameResults.isHardMode;
+        var isWin = gameResults.isWin;
+        var isDarkTheme = JSON.parse(window.localStorage.getItem(j));
+        var isColorBlind = JSON.parse(window.localStorage.getItem(S));
+
+        // Build header line: "Wordle 123 4/6" or "Wordle 123 X/6*"
+        var header = "Wordle " + dayOffset;
+        header += " " + (isWin ? rowIndex : "X") + "/6";
+        if (isHardMode) {
+            header += "*";
+        }
+
+        // Build emoji grid
+        var grid = "";
+        evaluations.forEach(function(row) {
+            if (row) {
+                row.forEach(function(tile) {
+                    if (tile) {
+                        switch (tile) {
+                            case CORRECT:
+                                grid += isColorBlind ? "🟧" : "🟩";
+                                break;
+                            case PRESENT:
+                                grid += isColorBlind ? "🟦" : "🟨";
+                                break;
+                            case ABSENT:
+                                grid += isDarkTheme ? "⬛" : "⬜";
+                                break;
+                        }
+                    }
+                });
+                grid += "\n";
+            }
+        });
+
+        return { text: header + "\n\n" + grid.trimEnd() };
+    }
+
     var Cs = document.createElement("template");
     Cs.innerHTML = `
   <style>
@@ -2351,52 +2393,19 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                             var p = this.shadowRoot.querySelector(".footer"),
                                 m = Is.content.cloneNode(!0);
                             p.appendChild(m), this.shadowRoot.querySelector("button#share-button").addEventListener("click", (function(a) {
-                                a.preventDefault(), a.stopPropagation();shareOrCopy(function(e) {
-                                    var a = e.evaluations,
-                                        s = e.dayOffset,
-                                        t = e.rowIndex,
-                                        o = e.isHardMode,
-                                        n = e.isWin,
-                                        r = JSON.parse(window.localStorage.getItem(j)),
-                                        i = JSON.parse(window.localStorage.getItem(S)),
-                                        l = "Wordle ".concat(s);
-                                    l += " ".concat(n ? t : "X", "/").concat(6), o && (l += "*");
-                                    var d = "";
-                                    return a.forEach((function(e) {
-                                            e && (e.forEach((function(e) {
-                                                if (e) {
-                                                    var a = "";
-                                                    switch (e) {
-                                                    case CORRECT:
-                                                        a = function(e) {
-                                                            return e ? "🟧" : "🟩"
-                                                        }(i);
-                                                        break;case PRESENT:
-                                                        a = function(e) {
-                                                            return e ? "🟦" : "🟨"
-                                                        }(i);
-                                                        break;case ABSENT:
-                                                        a = function(e) {
-                                                            return e ? "⬛" : "⬜"
-                                                        }(r)
-                                                    }
-                                                    d += a
-                                                }
-                                            })), d += "\n")
-                                        })), {
-                                            text: "".concat(l, "\n\n").concat(d.trimEnd())
-                                    }
-                                }({
+                                a.preventDefault();
+                                a.stopPropagation();
+                                shareOrCopy(buildShareText({
                                     evaluations: e.gameApp.evaluations,
                                     dayOffset: e.gameApp.dayOffset,
                                     rowIndex: e.gameApp.rowIndex,
                                     isHardMode: e.gameApp.hardMode,
                                     isWin: e.gameApp.gameStatus === GAME_STATUS_WIN
-                                }), (function() {
-                                    e.gameApp.addToast("Copied results to clipboard", 2e3, !0)
-                                }), (function() {
-                                    e.gameApp.addToast("Share failed", 2e3, !0)
-                                }))
+                                }), function() {
+                                    e.gameApp.addToast("Copied results to clipboard", 2000, true);
+                                }, function() {
+                                    e.gameApp.addToast("Share failed", 2000, true);
+                                });
                             }))
                         }
                     }
@@ -2828,6 +2837,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
       updateStatistics: updateStatistics, // Va -> updateStatistics
       evaluateGuess: evaluateGuess, // IIFE extraction
       validateHardMode: validateHardMode, // IIFE extraction
+      buildShareText: buildShareText, // IIFE extraction
     };
 
     return customElements.define("countdown-timer", Us), e.CountdownTimer = Us, e.GameApp = ts, e.GameHelp = Hs, e.GameIcon = Fs, e.GameKeyboard = us, e.GameModal = ns, e.GamePage = Ds, e.GameRow = x, e.GameSettings = _a, e.GameStats = Os, e.GameSwitch = Ps, e.GameThemeManager = _, e.GameTile = v, e.GameToast = Aa, Object.defineProperty(e, "__esModule", {
