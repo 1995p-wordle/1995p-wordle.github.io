@@ -84,6 +84,7 @@ const GAME_STATUS_WIN = testExports.GAME_STATUS_WIN;   // es -> GAME_STATUS_WIN
 const GAME_STATUS_FAIL = testExports.GAME_STATUS_FAIL;  // as -> GAME_STATUS_FAIL
 const FAIL_KEY = testExports.FAIL_KEY;          // Ja -> FAIL_KEY
 const DEFAULT_STATISTICS = testExports.DEFAULT_STATISTICS; // Ua -> DEFAULT_STATISTICS
+const ICON_PATHS = testExports.ICON_PATHS;                // Bs -> ICON_PATHS
 
 // Functions
 const aggregateLetterEvaluations = testExports.aggregateLetterEvaluations; // Pa -> aggregateLetterEvaluations
@@ -140,6 +141,28 @@ describe('Constants', () => {
         expect(DEFAULT_STATISTICS.guesses).toBeDefined();
         expect(DEFAULT_STATISTICS.guesses[1]).toBe(0);
         expect(DEFAULT_STATISTICS.guesses.fail).toBe(0);
+    });
+});
+
+describe('ICON_PATHS (previously Bs)', () => {
+    test('contains all expected icon keys', () => {
+        const expectedKeys = ['help', 'settings', 'backspace', 'close', 'share', 'statistics', 'save'];
+        expectedKeys.forEach(function(key) {
+            expect(ICON_PATHS[key]).toBeDefined();
+        });
+    });
+
+    test('all values are non-empty SVG path strings', () => {
+        Object.values(ICON_PATHS).forEach(function(path) {
+            expect(typeof path).toBe('string');
+            expect(path.length).toBeGreaterThan(0);
+            expect(path).toMatch(/^[MmLlHhVvCcSsQqTtAaZz0-9\s.,\-]+$/);
+        });
+    });
+
+    test('has no unexpected keys', () => {
+        var keys = Object.keys(ICON_PATHS);
+        expect(keys).toHaveLength(7);
     });
 });
 
