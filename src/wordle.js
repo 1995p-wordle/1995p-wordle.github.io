@@ -1180,10 +1180,10 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                     }
                 }]), t
         }(c(HTMLElement));
-    function Ca() {
+    function gtag() {
         dataLayer.push(arguments)
     }
-    customElements.define("game-toast", GameToast), window.dataLayer = window.dataLayer || [], Ca("js", new Date);Ca("config", "G-2SSGMHY3NP", {
+    customElements.define("game-toast", GameToast), window.dataLayer = window.dataLayer || [], gtag("js", new Date);gtag("config", "G-2SSGMHY3NP", {
         app_version: null === (Ea = window.wordle) || void 0 === Ea ? void 0 : Ea.hash,
         debug_mode: !1
     });
@@ -1227,13 +1227,13 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     function getDayOffset(e) {
         return calculateDaysBetween(PUZZLE_START_DATE, e)
     }
-    var Ba = "abcdefghijklmnopqrstuvwxyz",
-        Fa = [].concat(g(Ba.split("").slice(13)), g(Ba.split("").slice(0, 13)));
+    var ALPHABET = "abcdefghijklmnopqrstuvwxyz",
+        ROT13_MAP = [].concat(g(ALPHABET.split("").slice(13)), g(ALPHABET.split("").slice(0, 13)));
     function encodeWord(e) {
         console.debug('parsing stats', e);
         for (var a = "", s = 0; s < e.length; s++) {
-            var t = Ba.indexOf(e[s]);
-            a += t >= 0 ? Fa[t] : "_"
+            var t = ALPHABET.indexOf(e[s]);
+            a += t >= 0 ? ROT13_MAP[t] : "_"
         }
         return a
     }
@@ -1387,7 +1387,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                         evaluations: e.evaluations,
                         solution: e.solution,
                         gameStatus: e.gameStatus
-                    }), Ca("event", "level_start", {
+                    }), gtag("event", "level_start", {
                         level_name: encodeWord(e.solution)
                     })) : (e.boardState = o.boardState, e.evaluations = o.evaluations, e.rowIndex = o.rowIndex, e.solution = o.solution, e.dayOffset = getDayOffset(e.today), e.letterEvaluations = aggregateLetterEvaluations(e.boardState, e.evaluations), e.gameStatus = o.gameStatus, e.lastCompletedTs = o.lastCompletedTs, e.hardMode = o.hardMode, e.gameStatus !== GAME_STATUS_IN_PROGRESS && (e.canInput = !1), e.restoringFromLocalStorage = !0), e
             }
@@ -1417,7 +1417,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                                     numGuesses: this.rowIndex
                                 }), ja({
                                     lastCompletedTs: Date.now()
-                                }), this.gameStatus = l ? GAME_STATUS_WIN : GAME_STATUS_FAIL, Ca("event", "level_end", {
+                                }), this.gameStatus = l ? GAME_STATUS_WIN : GAME_STATUS_FAIL, gtag("event", "level_end", {
                                     level_name: encodeWord(this.solution),
                                     num_guesses: this.rowIndex,
                                     success: l
@@ -1496,7 +1496,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                         }
                         this.$game.addEventListener("game-key-press", (function(a) {
                             var s = a.detail.key;
-                            "←" === s || "Backspace" === s ? e.removeLetter() : "↵" === s || "Enter" === s ? e.submitGuess() : Ba.includes(s.toLowerCase()) && e.addLetter(s.toLowerCase())
+                            "←" === s || "Backspace" === s ? e.removeLetter() : "↵" === s || "Enter" === s ? e.submitGuess() : ALPHABET.includes(s.toLowerCase()) && e.addLetter(s.toLowerCase())
                         })), this.$game.addEventListener("game-last-tile-revealed-in-row", (function(a) {
                             e.$keyboard.letterEvaluations = e.letterEvaluations, e.rowIndex < 6 && (e.canInput = !0);
                             var s = e.$board.querySelectorAll("game-row")[e.rowIndex - 1];
@@ -1854,7 +1854,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                                 var s = a.key,
                                     t = a.metaKey,
                                     o = a.ctrlKey;
-                                t || o || (Ba.includes(s.toLowerCase()) || "Backspace" === s || "Enter" === s) && e.dispatchKeyPressEvent(s)
+                                t || o || (ALPHABET.includes(s.toLowerCase()) || "Backspace" === s || "Enter" === s) && e.dispatchKeyPressEvent(s)
                             }
                         })), this.$keyboard.addEventListener("transitionend", (function(a) {
                             var s = a.target.closest("button");
@@ -2340,7 +2340,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     </button>
   </div>
 `;
-    var Ms = {
+    var STATISTIC_LABELS = {
             currentStreak: "Current Streak",
             maxStreak: "Max Streak",
             winPercentage: "Win %",
@@ -2385,7 +2385,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                                 s.appendChild(l)
                         }
                         if (["gamesPlayed", "winPercentage", "currentStreak", "maxStreak"].forEach((function(s) {
-                                    var t = Ms[s],
+                                    var t = STATISTIC_LABELS[s],
                                         o = e.stats[s],
                                         n = statisticItemTemplate.content.cloneNode(!0);
                                     n.querySelector(".label").textContent = t, n.querySelector(".statistic").textContent = o, a.appendChild(n)
@@ -2763,8 +2763,8 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     customElements.define("game-icon", GameIcon);
     var timerTemplate = document.createElement("template");
     timerTemplate.innerHTML = `<div id="timer"></div>`;
-    var Ys = 6e4,
-        Js = 36e5,
+    var MS_PER_MINUTE = 6e4,
+        MS_PER_HOUR = 36e5,
         CountdownTimer = function(e) {
             r(t, e);
             var a = h(t);
@@ -2789,9 +2789,9 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                         if (s <= 0)
                             e = "00:00:00";
                         else {
-                            var t = Math.floor(s % 864e5 / Js),
-                                o = Math.floor(s % Js / Ys),
-                                n = Math.floor(s % Ys / 1e3);
+                            var t = Math.floor(s % 864e5 / MS_PER_HOUR),
+                                o = Math.floor(s % MS_PER_HOUR / MS_PER_MINUTE),
+                                n = Math.floor(s % MS_PER_MINUTE / 1e3);
                             e = "".concat(this.padDigit(t), ":").concat(this.padDigit(o), ":").concat(this.padDigit(n))
                         }
                         this.$timer.textContent = e
