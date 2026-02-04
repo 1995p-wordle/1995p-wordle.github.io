@@ -67,7 +67,7 @@ const wordleCode = fs.readFileSync(wordleJsPath, 'utf8');
 dom.window.eval(wordleCode);
 
 // Get the test exports
-const testExports = dom.window.wordle.bundle._testExports;
+const testExports = dom.window.wordleTestExports;
 
 // ============================================================================
 // ALIAS DEFINITIONS - Update these as you rename functions in wordle.js

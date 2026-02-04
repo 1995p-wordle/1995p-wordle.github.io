@@ -1,4 +1,4 @@
-this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
+(function() {
     "use strict";
     function a(e) {
         return (a = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(e) {
@@ -340,468 +340,21 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                     }
                 }]), t
         }(c(HTMLElement));
-    function q(e, a) {
-        return e === a || e != e && a != a
-    }
-    function E(e, a) {
-        for (var s = e.length; s--;)
-            if (q(e[s][0], a)) return s;
-        return -1
-    }
     customElements.define("game-theme-manager", GameThemeManager);
-    var A = Array.prototype.splice;
-    function C(e) {
-        var a = -1,
-            s = null == e ? 0 : e.length;
-        for (this.clear(); ++a < s;) {
-            var t = e[a];
-            this.set(t[0], t[1])
-        }
-    }
-    C.prototype.clear = function() {
-        this.__data__ = [], this.size = 0
-    }, C.prototype.delete = function(e) {
-        var a = this.__data__,
-            s = E(a, e);
-        return !(s < 0) && (s == a.length - 1 ? a.pop() : A.call(a, s, 1), --this.size, !0)
-    }, C.prototype.get = function(e) {
-        var a = this.__data__,
-            s = E(a, e);
-        return s < 0 ? void 0 : a[s][1]
-    }, C.prototype.has = function(e) {
-        return E(this.__data__, e) > -1
-    }, C.prototype.set = function(e, a) {
-        var s = this.__data__,
-            t = E(s, e);
-        return t < 0 ? (++this.size, s.push([e, a])) : s[t][1] = a, this
-    };
-    var L = "object" == ("undefined" == typeof global ? "undefined" : a(global)) && global && global.Object === Object && global,
-        T = "object" == ("undefined" == typeof self ? "undefined" : a(self)) && self && self.Object === Object && self,
-        I = L || T || Function("return this")(),
-        M = I.Symbol,
-        O = Object.prototype,
-        R = O.hasOwnProperty,
-        P = O.toString,
-        $ = M ? M.toStringTag : void 0;
-    var H = Object.prototype.toString;
-    var N = M ? M.toStringTag : void 0;
-    function D(e) {
-        return null == e ? void 0 === e ? "[object Undefined]" : "[object Null]" : N && N in Object(e) ? function(e) {
-            var a = R.call(e, $),
-                s = e[$];
-            try {
-                e[$] = void 0;var t = !0
-            } catch ( e ) {}
-            var o = P.call(e);
-            return t && (a ? e[$] = s :
-                    delete e[$]
-                ), o
-        }(e) : function(e) {
-            return H.call(e)
-        }(e)
-    }
-    function G(e) {
-        var s = a(e);
-        return null != e && ("object" == s || "function" == s)
-    }
-    function B(e) {
-        if (!G(e)) return !1;
-        var a = D(e);
-        return "[object Function]" == a || "[object GeneratorFunction]" == a || "[object AsyncFunction]" == a || "[object Proxy]" == a
-    }
-    var F,
-        W = I["__core-js_shared__"],
-        Y = (F = /[^.]+$/.exec(W && W.keys && W.keys.IE_PROTO || "")) ? "Symbol(src)_1." + F : "";
-    var J = Function.prototype.toString;
-    var U = /^\[object .+?Constructor\]$/,
-        X = Function.prototype,
-        V = Object.prototype,
-        K = X.toString,
-        Q = V.hasOwnProperty,
-        Z = RegExp("^" + K.call(Q).replace(/[\\^$.*+?()[\]{}|]/g, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$");
-    function ee(e) {
-        return !(!G(e) || (a = e, Y && Y in a)) && (B(e) ? Z : U).test(function(e) {
-                if (null != e) {
-                    try {
-                        return J.call(e)
-                    } catch ( e ) {} try {
-                        return e + ""
-                    } catch ( e ) {}
-                }
-                return ""
-            }(e));var a
-    }
-    function ae(e, a) {
-        var s = function(e, a) {
-            return null == e ? void 0 : e[a]
-        }(e, a);
-        return ee(s) ? s : void 0
-    }
-    var se = ae(I, "Map"),
-        te = ae(Object, "create");
-    var oe = Object.prototype.hasOwnProperty;
-    var ne = Object.prototype.hasOwnProperty;
-    function re(e) {
-        var a = -1,
-            s = null == e ? 0 : e.length;
-        for (this.clear(); ++a < s;) {
-            var t = e[a];
-            this.set(t[0], t[1])
-        }
-    }
-    function ie(e, s) {
-        var t,
-            o,
-            n = e.__data__;
-        return ("string" == (o = a(t = s)) || "number" == o || "symbol" == o || "boolean" == o ? "__proto__" !== t : null === t) ? n["string" == typeof s ? "string" : "hash"] : n.map
-    }
-    function le(e) {
-        var a = -1,
-            s = null == e ? 0 : e.length;
-        for (this.clear(); ++a < s;) {
-            var t = e[a];
-            this.set(t[0], t[1])
-        }
-    }
-    re.prototype.clear = function() {
-        this.__data__ = te ? te(null) : {}, this.size = 0
-    }, re.prototype.delete = function(e) {
-        var a = this.has(e) &&
-            delete this.__data__[e];
-        return this.size -= a ? 1 : 0, a
-    }, re.prototype.get = function(e) {
-        var a = this.__data__;
-        if (te) {
-            var s = a[e];
-            return "__lodash_hash_undefined__" === s ? void 0 : s
-        }
-        return oe.call(a, e) ? a[e] : void 0
-    }, re.prototype.has = function(e) {
-        var a = this.__data__;
-        return te ? void 0 !== a[e] : ne.call(a, e)
-    }, re.prototype.set = function(e, a) {
-        var s = this.__data__;
-        return this.size += this.has(e) ? 0 : 1, s[e] = te && void 0 === a ? "__lodash_hash_undefined__" : a, this
-    }, le.prototype.clear = function() {
-        this.size = 0, this.__data__ = {
-            hash: new re,
-            map: new (se || C),
-            string: new re
-        }
-    }, le.prototype.delete = function(e) {
-        var a = ie(this, e).delete(e);
-        return this.size -= a ? 1 : 0, a
-    }, le.prototype.get = function(e) {
-        return ie(this, e).get(e)
-    }, le.prototype.has = function(e) {
-        return ie(this, e).has(e)
-    }, le.prototype.set = function(e, a) {
-        var s = ie(this, e),
-            t = s.size;
-        return s.set(e, a), this.size += s.size == t ? 0 : 1, this
-    };
-    function de(e) {
-        var a = this.__data__ = new C(e);
-        this.size = a.size
-    }
-    de.prototype.clear = function() {
-        this.__data__ = new C, this.size = 0
-    }, de.prototype.delete = function(e) {
-        var a = this.__data__,
-            s = a.delete(e);
-        return this.size = a.size, s
-    }, de.prototype.get = function(e) {
-        return this.__data__.get(e)
-    }, de.prototype.has = function(e) {
-        return this.__data__.has(e)
-    }, de.prototype.set = function(e, a) {
-        var s = this.__data__;
-        if (s instanceof C) {
-            var t = s.__data__;
-            if (!se || t.length < 199) return t.push([e, a]), this.size = ++s.size, this;
-            s = this.__data__ = new le(t)
-        }
-        return s.set(e, a), this.size = s.size, this
-    };
-    var ue = function() {
-        try {
-            var e = ae(Object, "defineProperty");
-            return e({}, "", {}), e
-        } catch ( e ) {}
-    }();
-    function ce(e, a, s) {
-        "__proto__" == a && ue ? ue(e, a, {
-            configurable: !0,
-            enumerable: !0,
-            value: s,
-            writable: !0
-        }) : e[a] = s
-    }
-    function pe(e, a, s) {
-        (void 0 !== s && !q(e[a], s) || void 0 === s && !(a in e)) && ce(e, a, s)
-    }
-    var me,
-        he = function(e, a, s) {
-            for (var t = -1, o = Object(e), n = s(e), r = n.length; r--;) {
-                var i = n[me ? r : ++t];
-                if (!1 === a(o[i], i, o)) break
+    function deepMerge(target, source) {
+        var result = Object.assign({}, target);
+        for (var key in source) {
+            if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])
+                && target[key] && typeof target[key] === 'object' && !Array.isArray(target[key])) {
+                result[key] = deepMerge(target[key], source[key]);
+            } else {
+                result[key] = source[key];
             }
-            return e
-        },
-        ye = "object" == (void 0 === e ? "undefined" : a(e)) && e && !e.nodeType && e,
-        ge = ye && "object" == ("undefined" == typeof module ? "undefined" : a(module)) && module && !module.nodeType && module,
-        be = ge && ge.exports === ye ? I.Buffer : void 0,
-        fe = be ? be.allocUnsafe : void 0;
-    var ke = I.Uint8Array;
-    function ve(e, a) {
-        var s,
-            t,
-            o = a ? (s = e.buffer, t = new s.constructor(s.byteLength), new ke(t).set(new ke(s)), t) : e.buffer;
-        return new e.constructor(o, e.byteOffset, e.length)
-    }
-    var we = Object.create,
-        xe = function() {
-            function e() {
-            }
-            return function(a) {
-                if (!G(a)) return {};
-                if (we) return we(a);
-                e.prototype = a;
-                var s = new e;
-                return e.prototype = void 0, s
-            }
-        }();
-    var ze,
-        je,
-        Se = (ze = Object.getPrototypeOf, je = Object, function(e) {
-            return ze(je(e))
-        }),
-        _e = Object.prototype;
-    function qe(e) {
-        var a = e && e.constructor;
-        return e === ("function" == typeof a && a.prototype || _e)
-    }
-    function Ee(e) {
-        return null != e && "object" == a(e)
-    }
-    function Ae(e) {
-        return Ee(e) && "[object Arguments]" == D(e)
-    }
-    var Ce = Object.prototype,
-        Le = Ce.hasOwnProperty,
-        Te = Ce.propertyIsEnumerable,
-        Ie = Ae(function() {
-            return arguments
-        }()) ? Ae : function(e) {
-            return Ee(e) && Le.call(e, "callee") && !Te.call(e, "callee")
-        },
-        Me = Array.isArray;
-    function Oe(e) {
-        return "number" == typeof e && e > -1 && e % 1 == 0 && e <= 9007199254740991
-    }
-    function Re(e) {
-        return null != e && Oe(e.length) && !B(e)
-    }
-    var Pe = "object" == (void 0 === e ? "undefined" : a(e)) && e && !e.nodeType && e,
-        $e = Pe && "object" == ("undefined" == typeof module ? "undefined" : a(module)) && module && !module.nodeType && module,
-        He = $e && $e.exports === Pe ? I.Buffer : void 0,
-        Ne = (He ? He.isBuffer : void 0) || function() {
-            return !1
-        },
-        De = Function.prototype,
-        Ge = Object.prototype,
-        Be = De.toString,
-        Fe = Ge.hasOwnProperty,
-        We = Be.call(Object);
-    var Ye = {};
-    Ye["[object Float32Array]"] = Ye["[object Float64Array]"] = Ye["[object Int8Array]"] = Ye["[object Int16Array]"] = Ye["[object Int32Array]"] = Ye["[object Uint8Array]"] = Ye["[object Uint8ClampedArray]"] = Ye["[object Uint16Array]"] = Ye["[object Uint32Array]"] = !0, Ye["[object Arguments]"] = Ye["[object Array]"] = Ye["[object ArrayBuffer]"] = Ye["[object Boolean]"] = Ye["[object DataView]"] = Ye["[object Date]"] = Ye["[object Error]"] = Ye["[object Function]"] = Ye["[object Map]"] = Ye["[object Number]"] = Ye["[object Object]"] = Ye["[object RegExp]"] = Ye["[object Set]"] = Ye["[object String]"] = Ye["[object WeakMap]"] = !1;
-    var Je = "object" == (void 0 === e ? "undefined" : a(e)) && e && !e.nodeType && e,
-        Ue = Je && "object" == ("undefined" == typeof module ? "undefined" : a(module)) && module && !module.nodeType && module,
-        Xe = Ue && Ue.exports === Je && L.process,
-        Ve = function() {
-            try {
-                var e = Ue && Ue.require && Ue.require("util").types;
-                return e || Xe && Xe.binding && Xe.binding("util")
-            } catch ( e ) {}
-        }(),
-        Ke = Ve && Ve.isTypedArray,
-        Qe = Ke ? function(e) {
-            return function(a) {
-                return e(a)
-            }
-        }(Ke) : function(e) {
-            return Ee(e) && Oe(e.length) && !!Ye[D(e)]
-        };
-    function Ze(e, a) {
-        if (("constructor" !== a || "function" != typeof e[a]) && "__proto__" != a) return e[a]
-    }
-    var ea = Object.prototype.hasOwnProperty;
-    function aa(e, a, s) {
-        var t = e[a];
-        ea.call(e, a) && q(t, s) && (void 0 !== s || a in e) || ce(e, a, s)
-    }
-    var sa = /^(?:0|[1-9]\d*)$/;
-    function ta(e, s) {
-        var t = a(e);
-        return !!(s = null == s ? 9007199254740991 : s) && ("number" == t || "symbol" != t && sa.test(e)) && e > -1 && e % 1 == 0 && e < s
-    }
-    var oa = Object.prototype.hasOwnProperty;
-    function na(e, a) {
-        var s = Me(e),
-            t = !s && Ie(e),
-            o = !s && !t && Ne(e),
-            n = !s && !t && !o && Qe(e),
-            r = s || t || o || n,
-            i = r ? function(e, a) {
-                for (var s = -1, t = Array(e); ++s < e;) t[s] = a(s);
-                return t
-            }(e.length, String) : [],
-            l = i.length;
-        for (var d in e) !a && !oa.call(e, d) || r && ("length" == d || o && ("offset" == d || "parent" == d) || n && ("buffer" == d || "byteLength" == d || "byteOffset" == d) || ta(d, l)) || i.push(d);
-        return i
-    }
-    var ra = Object.prototype.hasOwnProperty;
-    function ia(e) {
-        if (!G(e)) return function(e) {
-                var a = [];
-                if (null != e)
-                    for (var s in Object(e)) a.push(s);
-                return a
-            }(e);
-        var a = qe(e),
-            s = [];
-        for (var t in e) ("constructor" != t || !a && ra.call(e, t)) && s.push(t);
-        return s
-    }
-    function la(e) {
-        return Re(e) ? na(e, !0) : ia(e)
-    }
-    function da(e) {
-        return function(e, a, s, t) {
-            var o = !s;
-            s || (s = {});
-            for (var n = -1, r = a.length; ++n < r;) {
-                var i = a[n],
-                    l = t ? t(s[i], e[i], i, s, e) : void 0;
-                void 0 === l && (l = e[i]), o ? ce(s, i, l) : aa(s, i, l)
-            }
-            return s
-        }(e, la(e))
-    }
-    function ua(e, a, s, t, o, n, r) {
-        var i = Ze(e, s),
-            l = Ze(a, s),
-            d = r.get(l);
-        if (d) pe(e, s, d);
-        else {
-            var u,
-                c = n ? n(i, l, s + "", e, a, r) : void 0,
-                p = void 0 === c;
-            if (p) {
-                var m = Me(l),
-                    h = !m && Ne(l),
-                    y = !m && !h && Qe(l);
-                c = l, m || h || y ? Me(i) ? c = i : Ee(u = i) && Re(u) ? c = function(e, a) {
-                    var s = -1,
-                        t = e.length;
-                    for (a || (a = Array(t)); ++s < t;) a[s] = e[s];
-                    return a
-                }(i) : h ? (p = !1, c = function(e, a) {
-                    if (a) return e.slice();
-                    var s = e.length,
-                        t = fe ? fe(s) : new e.constructor(s);
-                    return e.copy(t), t
-                }(l, !0)) : y ? (p = !1, c = ve(l, !0)) : c = [] : function(e) {
-                    if (!Ee(e) || "[object Object]" != D(e)) return !1;
-                    var a = Se(e);
-                    if (null === a) return !0;
-                    var s = Fe.call(a, "constructor") && a.constructor;
-                    return "function" == typeof s && s instanceof s && Be.call(s) == We
-                }(l) || Ie(l) ? (c = i, Ie(i) ? c = da(i) : G(i) && !B(i) || (c = function(e) {
-                    return "function" != typeof e.constructor || qe(e) ? {} : xe(Se(e))
-                }(l))) : p = !1
-            }
-            p && (r.set(l, c), o(c, l, t, n, r), r.delete(l)), pe(e, s, c)
         }
+        return result;
     }
-    function ca(e, a, s, t, o) {
-        e !== a && he(a, (function(n, r) {
-            if (o || (o = new de), G(n)) ua(e, a, r, s, ca, t, o);
-            else {
-                var i = t ? t(Ze(e, r), n, r + "", e, a, o) : void 0;
-                void 0 === i && (i = n), pe(e, r, i)
-            }
-        }), la)
-    }
-    function pa(e) {
-        return e
-    }
-    function ma(e, a, s) {
-        switch (s.length) {
-        case 0:
-            return e.call(a);case 1:
-            return e.call(a, s[0]);case 2:
-            return e.call(a, s[0], s[1]);case 3:
-            return e.call(a, s[0], s[1], s[2])
-        }
-        return e.apply(a, s)
-    }
-    var ha = Math.max;
-    var ya = ue ? function(e, a) {
-            return ue(e, "toString", {
-                configurable: !0,
-                enumerable: !1,
-                value: (s = a, function() {
-                    return s
-                }),
-                writable: !0
-            });
-            var s
-        } : pa,
-        ga = Date.now;
-    var ba = function(e) {
-        var a = 0,
-            s = 0;
-        return function() {
-            var t = ga(),
-                o = 16 - (t - s);
-            if (s = t, o > 0) {
-                if (++a >= 800) return arguments[0]
-            } else
-                a = 0;
-            return e.apply(void 0, arguments)
-        }
-    }(ya);
-    function fa(e, a) {
-        return ba(function(e, a, s) {
-            return a = ha(void 0 === a ? e.length - 1 : a, 0), function() {
-                    for (var t = arguments, o = -1, n = ha(t.length - a, 0), r = Array(n); ++o < n;) r[o] = t[a + o];
-                    o = -1;
-                    for (var i = Array(a + 1); ++o < a;) i[o] = t[o];
-                    return i[a] = s(r), ma(e, this, i)
-            }
-        }(e, a, pa), e + "")
-    }
-    var ka,
-        va = (ka = function(e, a, s) {
-            ca(e, a, s)
-        }, fa((function(e, s) {
-            var t = -1,
-                o = s.length,
-                n = o > 1 ? s[o - 1] : void 0,
-                r = o > 2 ? s[2] : void 0;
-            for (n = ka.length > 3 && "function" == typeof n ? (o--, n) : void 0, r && function(e, s, t) {
-                    if (!G(t)) return !1;
-                    var o = a(s);
-                    return !!("number" == o ? Re(t) && ta(s, t.length) : "string" == o && s in t) && q(t[s], e)
-                }(s[0], s[1], r) && (n = o < 3 ? void 0 : n, o = 1), e = Object(e);++t < o;) {
-                var i = s[t];
-                i && ka(e, i, t, n)
-            }
-            return e
-        }))),
-        wa = "gameState",
-        xa = {
+    var GAME_STATE_KEY = "gameState",
+        DEFAULT_GAME_STATE = {
             boardState: null,
             evaluations: null,
             rowIndex: null,
@@ -812,15 +365,14 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
             restoringFromLocalStorage: null,
             hardMode: !1
         };
-    function za() {
-        var e = window.localStorage.getItem(wa) || JSON.stringify(xa);
+    function getGameState() {
+        var e = window.localStorage.getItem(GAME_STATE_KEY) || JSON.stringify(DEFAULT_GAME_STATE);
         return JSON.parse(e)
     }
-    function ja(e) {
-        var a = za();
-        !function(e) {
-            window.localStorage.setItem(wa, JSON.stringify(e))
-        }(va(a, e))
+    function saveGameState(e) {
+        var current = getGameState();
+        var merged = deepMerge(current, e);
+        window.localStorage.setItem(GAME_STATE_KEY, JSON.stringify(merged));
     }
     var gameSettingsTemplate = document.createElement("template");
     gameSettingsTemplate.innerHTML = `
@@ -899,7 +451,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 value: function() {
                     var e = document.querySelector("body");
                     e.classList.contains("nightmode") && this.querySelector("#dark-theme").setAttribute("checked", ""), e.classList.contains("colorblind") && this.querySelector("#color-blind-theme").setAttribute("checked", "");
-                    var a = za();
+                    var a = getGameState();
                     a.hardMode && this.querySelector("#hard-mode").setAttribute("checked", ""), a.hardMode || "IN_PROGRESS" !== a.gameStatus || 0 === a.rowIndex || (this.querySelector("#hard-mode").removeAttribute("checked"), this.querySelector("#hard-mode").setAttribute("disabled", ""))
                 }
             }]), t
@@ -1126,8 +678,8 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
             var a = h(t);
             function t() {
                 var e;
-                s(this, t), n(p(e = a.call(this)), "tileIndex", 0), n(p(e), "rowIndex", 0), n(p(e), "solution", void 0), n(p(e), "boardState", void 0), n(p(e), "evaluations", void 0), n(p(e), "canInput", !0), n(p(e), "gameStatus", GAME_STATUS_IN_PROGRESS), n(p(e), "letterEvaluations", {}), n(p(e), "$board", void 0), n(p(e), "$keyboard", void 0), n(p(e), "$game", void 0), n(p(e), "today", void 0), n(p(e), "lastPlayedTs", void 0), n(p(e), "lastCompletedTs", void 0), n(p(e), "hardMode", void 0), n(p(e), "dayOffset", void 0), e.today = new Date;var o = za();
-                return e.lastPlayedTs = o.lastPlayedTs, !e.lastPlayedTs || calculateDaysBetween(new Date(e.lastPlayedTs), e.today) >= 1 ? (e.boardState = new Array(6).fill(""), e.evaluations = new Array(6).fill(null), e.solution = getSolution(e.today), e.dayOffset = getDayOffset(e.today), e.lastCompletedTs = o.lastCompletedTs, e.hardMode = o.hardMode, e.restoringFromLocalStorage = !1, ja({
+                s(this, t), n(p(e = a.call(this)), "tileIndex", 0), n(p(e), "rowIndex", 0), n(p(e), "solution", void 0), n(p(e), "boardState", void 0), n(p(e), "evaluations", void 0), n(p(e), "canInput", !0), n(p(e), "gameStatus", GAME_STATUS_IN_PROGRESS), n(p(e), "letterEvaluations", {}), n(p(e), "$board", void 0), n(p(e), "$keyboard", void 0), n(p(e), "$game", void 0), n(p(e), "today", void 0), n(p(e), "lastPlayedTs", void 0), n(p(e), "lastCompletedTs", void 0), n(p(e), "hardMode", void 0), n(p(e), "dayOffset", void 0), e.today = new Date;var o = getGameState();
+                return e.lastPlayedTs = o.lastPlayedTs, !e.lastPlayedTs || calculateDaysBetween(new Date(e.lastPlayedTs), e.today) >= 1 ? (e.boardState = new Array(6).fill(""), e.evaluations = new Array(6).fill(null), e.solution = getSolution(e.today), e.dayOffset = getDayOffset(e.today), e.lastCompletedTs = o.lastCompletedTs, e.hardMode = o.hardMode, e.restoringFromLocalStorage = !1, saveGameState({
                         rowIndex: e.rowIndex,
                         boardState: e.boardState,
                         evaluations: e.evaluations,
@@ -1161,14 +713,14 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                                     isWin: l,
                                     isStreak: !!this.lastCompletedTs && 1 === calculateDaysBetween(new Date(this.lastCompletedTs), new Date),
                                     numGuesses: this.rowIndex
-                                }), ja({
+                                }), saveGameState({
                                     lastCompletedTs: Date.now()
                                 }), this.gameStatus = l ? GAME_STATUS_WIN : GAME_STATUS_FAIL, gtag("event", "level_end", {
                                     level_name: encodeWord(this.solution),
                                     num_guesses: this.rowIndex,
                                     success: l
                                 });
-                            this.tileIndex = 0, this.canInput = !1, ja({
+                            this.tileIndex = 0, this.canInput = !1, saveGameState({
                                 rowIndex: this.rowIndex,
                                 boardState: this.boardState,
                                 evaluations: this.evaluations,
@@ -1256,7 +808,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                                 n = s.disabled;
                             switch (t) {
                             case "hard-mode":
-                                return void (n ? e.addToast("Hard mode can only be enabled at the start of a round", 1500, !0) : (e.hardMode = o, ja({
+                                return void (n ? e.addToast("Hard mode can only be enabled at the start of a round", 1500, !0) : (e.hardMode = o, saveGameState({
                                     hardMode: o
                                 })))
                             }
@@ -1428,196 +980,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                     }
                 }]), t
         }(c(HTMLElement));
-    /*! *****************************************************************************
-      Copyright (c) Microsoft Corporation.
-
-      Permission to use, copy, modify, and/or distribute this software for any
-      purpose with or without fee is hereby granted.
-
-      THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-      REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-      AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-      INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-      LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-      OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-      PERFORMANCE OF THIS SOFTWARE.
-      ***************************************************************************** */
-    function cs(e, a, s, t) {
-        return new (s || (s = Promise))((function(o, n) {
-            function r(e) {
-                try {
-                    l(t.next(e))
-                } catch ( e ) {
-                    n(e)
-                }
-            }
-            function i(e) {
-                try {
-                    l(t.throw(e))
-                } catch ( e ) {
-                    n(e)
-                }
-            }
-            function l(e) {
-                var a;
-                e.done ? o(e.value) : (a = e.value, a instanceof s ? a : new s((function(e) {
-                    e(a)
-                }))).then(r, i)
-            }
-            l((t = t.apply(e, a || [])).next())
-        }))
-    }
-    function ps(e, a) {
-        var s,
-            t,
-            o,
-            n,
-            r = {
-                label: 0,
-                sent: function() {
-                    if (1 & o[0])
-                        throw o[1];
-                    return o[1]
-                },
-                trys: [],
-                ops: []
-            };
-        return n = {
-                next: i(0),
-                throw: i(1),
-                return: i(2)
-            }, "function" == typeof Symbol && (n[Symbol.iterator] = function() {
-                return this
-            }), n;
-        function i(n) {
-            return function(i) {
-                return function(n) {
-                    if (s)
-                        throw new TypeError("Generator is already executing.");
-                    for (; r;) try {
-                            if (s = 1, t && (o = 2 & n[0] ? t.return : n[0] ? t.throw || ((o = t.return) && o.call(t), 0) : t.next) && !(o = o.call(t, n[1])).done) return o;
-                            switch (t = 0, o && (n = [2 & n[0], o.value]), n[0]) {
-                            case 0:
-                            case 1:
-                                o = n;
-                                break;case 4:
-                                return r.label++, {
-                                        value: n[1],
-                                        done: !1
-                                    };case 5:
-                                r.label++, t = n[1], n = [0];continue;case 7:
-                                n = r.ops.pop(), r.trys.pop();continue;default:
-                                if (!((o = (o = r.trys).length > 0 && o[o.length - 1]) || 6 !== n[0] && 2 !== n[0])) {
-                                    r = 0;continue
-                                }
-                                if (3 === n[0] && (!o || n[1] > o[0] && n[1] < o[3])) {
-                                    r.label = n[1];break
-                                }
-                                if (6 === n[0] && r.label < o[1]) {
-                                    r.label = o[1], o = n;break
-                                }
-                                if (o && r.label < o[2]) {
-                                    r.label = o[2], r.ops.push(n);
-                                    break
-                                }
-                                o[2] && r.ops.pop(), r.trys.pop();continue
-                            }
-                            n = a.call(e, r)
-                        } catch ( e ) {
-                            n = [6, e], t = 0
-                        } finally {
-                            s = o = 0
-                    }
-                    if (5 & n[0])
-                        throw n[1];
-                    return {
-                        value: n[0] ? n[1] : void 0,
-                        done: !0
-                    }
-                }([n, i])
-            }
-        }
-    }
-    customElements.define("game-keyboard", GameKeyboard), function() {
-        (console.warn || console.log).apply(console, arguments)
-    }.bind("[clipboard-polyfill]");
-    var ms,
-        hs,
-        ys,
-        gs,
-        bs = "undefined" == typeof navigator ? void 0 : navigator,
-        fs = null == bs ? void 0 : bs.clipboard;
-    null === (ms = null == fs ? void 0 : fs.read) || void 0 === ms || ms.bind(fs), null === (hs = null == fs ? void 0 : fs.readText) || void 0 === hs || hs.bind(fs);
-    var ks = (null === (ys = null == fs ? void 0 : fs.write) || void 0 === ys || ys.bind(fs), null === (gs = null == fs ? void 0 : fs.writeText) || void 0 === gs ? void 0 : gs.bind(fs)),
-        vs = "undefined" == typeof window ? void 0 : window,
-        ws = (null == vs || vs.ClipboardItem, vs);
-    var xs = function() {
-        this.success = !1
-    };
-    function zs(e, a, s) {
-        for (var t in e.success = !0, a) {
-            var o = a[t],
-                n = s.clipboardData;
-            n.setData(t, o), "text/plain" === t && n.getData(t) !== o && (e.success = !1)
-        }
-        s.preventDefault()
-    }
-    function js(e) {
-        var a = new xs,
-            s = zs.bind(this, a, e);
-        document.addEventListener("copy", s);try {
-            document.execCommand("copy")
-        } finally {
-            document.removeEventListener("copy", s)
-        }
-        return a.success
-    }
-    function Ss(e, a) {
-        _s(e);var s = js(a);
-        return qs(), s
-    }
-    function _s(e) {
-        var a = document.getSelection();
-        if (a) {
-            var s = document.createRange();
-            s.selectNodeContents(e), a.removeAllRanges(), a.addRange(s)
-        }
-    }
-    function qs() {
-        var e = document.getSelection();
-        e && e.removeAllRanges()
-    }
-    function Es(e) {
-        return cs(this, void 0, void 0, (function() {
-            var a;
-            return ps(this, (function(s) {
-                if (a = "text/plain" in e, "undefined" == typeof ClipboardEvent && void 0 !== ws.clipboardData && void 0 !== ws.clipboardData.setData) {
-                    if (!a)
-                        throw new Error("No `text/plain` value was specified.");
-                    if (t = e["text/plain"], ws.clipboardData.setData("Text", t)) return [2, !0];
-                    throw new Error("Copying failed, possibly because the user rejected it.")
-                }
-                var t;
-                return js(e) || navigator.userAgent.indexOf("Edge") > -1 || Ss(document.body, e) || function(e) {
-                    var a = document.createElement("div");
-                    a.setAttribute("style", "-webkit-user-select: text !important"), a.textContent = "temporary element", document.body.appendChild(a);
-                    var s = Ss(a, e);
-                    return document.body.removeChild(a), s
-                }(e) || function(e) {
-                    var a = document.createElement("div");
-                    a.setAttribute("style", "-webkit-user-select: text !important");
-                    var s = a;
-                    a.attachShadow && (s = a.attachShadow({
-                        mode: "open"
-                    }));
-                    var t = document.createElement("span");
-                    t.innerText = e, s.appendChild(t), document.body.appendChild(a), _s(t);
-                    var o = document.execCommand("copy");
-                    return qs(), document.body.removeChild(a), o
-                }(e["text/plain"]) ? [2, !0] : [2, !1]
-            }))
-        }))
-    }
+    customElements.define("game-keyboard", GameKeyboard);
     // Share results via native share API or fall back to clipboard
     async function shareOrCopy(data, onSuccess, onError) {
         try {
@@ -1957,23 +1320,6 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
             statistics: "M16,11V3H8v6H2v12h20V11H16z M10,5h4v14h-4V5z M4,11h4v8H4V11z M20,19h-4v-6h4V19z",
             save: "M3,20.05V3.72H17.48L21,7.58V20.05ZM6.85,9.64m0-5.92V9.64h8.23V3.72m-2.76,0v4M6.85,13.11h8.23M6.85,16.46H17.13"
         };
-    function createGameIcon(iconName) {
-        var el = document.createElement("game-icon");
-        el.setAttribute("icon", iconName);
-        var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        svg.setAttribute("height", "24");
-        svg.setAttribute("viewBox", "0 0 24 24");
-        svg.setAttribute("width", "24");
-        var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        var fillColor = "var(--color-tone-3)";
-        if (iconName === "backspace") fillColor = "var(--color-tone-1)";
-        if (iconName === "share") fillColor = "var(--white)";
-        path.setAttribute("fill", fillColor);
-        path.setAttribute("d", ICON_PATHS[iconName]);
-        svg.appendChild(path);
-        el.appendChild(svg);
-        return el;
-    }
     var GameIcon = function(e) {
         r(t, e);
         var a = h(t);
@@ -2053,36 +1399,31 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                     }
                 }]), t
         }(c(HTMLElement));
-    // Export pure functions for testing (obfuscated names will be renamed during refactoring)
-    e._testExports = {
-      // Constants
-      PRESENT: PRESENT, // PRESENT = "present"
-      CORRECT: CORRECT, // CORRECT = "correct"
-      ABSENT: ABSENT, // ABSENT = "absent"
-      STATE_PRECEDENCE: STATE_PRECEDENCE, // STATE_PRECEDENCE
-      PUZZLE_START_DATE: PUZZLE_START_DATE, // PUZZLE_START_DATE
-      GAME_STATUS_IN_PROGRESS: GAME_STATUS_IN_PROGRESS, // GAME_STATUS_IN_PROGRESS = "IN_PROGRESS"
-      GAME_STATUS_WIN: GAME_STATUS_WIN, // GAME_STATUS_WIN = "WIN"
-      GAME_STATUS_FAIL: GAME_STATUS_FAIL, // GAME_STATUS_FAIL = "FAIL"
-      FAIL_KEY: FAIL_KEY, // FAIL_KEY = "fail"
-      DEFAULT_STATISTICS: DEFAULT_STATISTICS, // DEFAULT_STATISTICS
-      ICON_PATHS: ICON_PATHS, // Bs -> ICON_PATHS
+    customElements.define("countdown-timer", CountdownTimer);
 
-      // Functions
-      aggregateLetterEvaluations: aggregateLetterEvaluations, // aggregateLetterEvaluations(boardState, evaluations)
-      getOrdinal: getOrdinal, // getOrdinal(n)
-      calculateDaysBetween: calculateDaysBetween, // calculateDaysBetween(startDate, endDate)
-      getSolution: getSolution, // getSolution(date)
-      getDayOffset: getDayOffset, // getDayOffset(date)
-      encodeWord: encodeWord, // encodeWord(word) - ROT13-like cipher
-      getStatistics: getStatistics, // Xa - > getStatistics
-      updateStatistics: updateStatistics, // Va -> updateStatistics
-      evaluateGuess: evaluateGuess, // IIFE extraction
-      validateHardMode: validateHardMode, // IIFE extraction
-      buildShareText: buildShareText, // IIFE extraction
+    // Export pure functions for testing
+    window.wordleTestExports = {
+      PRESENT: PRESENT,
+      CORRECT: CORRECT,
+      ABSENT: ABSENT,
+      STATE_PRECEDENCE: STATE_PRECEDENCE,
+      PUZZLE_START_DATE: PUZZLE_START_DATE,
+      GAME_STATUS_IN_PROGRESS: GAME_STATUS_IN_PROGRESS,
+      GAME_STATUS_WIN: GAME_STATUS_WIN,
+      GAME_STATUS_FAIL: GAME_STATUS_FAIL,
+      FAIL_KEY: FAIL_KEY,
+      DEFAULT_STATISTICS: DEFAULT_STATISTICS,
+      ICON_PATHS: ICON_PATHS,
+      aggregateLetterEvaluations: aggregateLetterEvaluations,
+      getOrdinal: getOrdinal,
+      calculateDaysBetween: calculateDaysBetween,
+      getSolution: getSolution,
+      getDayOffset: getDayOffset,
+      encodeWord: encodeWord,
+      getStatistics: getStatistics,
+      updateStatistics: updateStatistics,
+      evaluateGuess: evaluateGuess,
+      validateHardMode: validateHardMode,
+      buildShareText: buildShareText,
     };
-
-    return customElements.define("countdown-timer", CountdownTimer), e.CountdownTimer = CountdownTimer, e.GameApp = GameApp, e.GameHelp = GameHelp, e.GameIcon = GameIcon, e.GameKeyboard = GameKeyboard, e.GameModal = GameModal, e.GamePage = GamePage, e.GameRow = GameRow, e.GameSettings = GameSettings, e.GameStats = GameStats, e.GameSwitch = GameSwitch, e.GameThemeManager = GameThemeManager, e.GameTile = GameTile, e.GameToast = GameToast, Object.defineProperty(e, "__esModule", {
-            value: !0
-        }), e
-}({});
+})();
