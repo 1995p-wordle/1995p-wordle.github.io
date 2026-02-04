@@ -273,7 +273,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
 </style>
 <div class="tile" data-state="empty" data-animation="idle"></div>
 `;
-    var v = function(e) {
+    var GameTile = function(e) {
         r(t, e);
         var a = h(t);
         function t() {
@@ -326,7 +326,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 }
             }]), t
     }(c(HTMLElement));
-    customElements.define("game-tile", v);
+    customElements.define("game-tile", GameTile);
     var gameRow = document.createElement("template");
     gameRow.innerHTML = `
   <style>
@@ -388,7 +388,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
   </style>
   <div class="row"></div>
 `;
-    var x = function(e) {
+    var GameRow = function(e) {
         r(t, e);
         var a = h(t);
         function t() {
@@ -463,12 +463,12 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 }
             }]), t
     }(c(HTMLElement));
-    customElements.define("game-row", x);
+    customElements.define("game-row", GameRow);
     var themeManagerTemplate = document.createElement("template");
     themeManagerTemplate.innerHTML = `<slot></slot>`;
     var DARK_THEME_KEY = "darkTheme",
         COLOR_BLIND_THEME_KEY = "colorBlindTheme",
-        _ = function(e) {
+        GameThemeManager = function(e) {
             r(t, e);
             var a = h(t);
             function t() {
@@ -517,7 +517,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
             if (q(e[s][0], a)) return s;
         return -1
     }
-    customElements.define("game-theme-manager", _);
+    customElements.define("game-theme-manager", GameThemeManager);
     var A = Array.prototype.splice;
     function C(e) {
         var a = -1,
@@ -1087,7 +1087,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     </div>
   </div>
 `;
-    var _a = function(e) {
+    var GameSettings = function(e) {
         r(t, e);
         var a = h(t);
         function t() {
@@ -1128,7 +1128,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 }
             }]), t
     }(c(HTMLElement));
-    customElements.define("game-settings", _a);
+    customElements.define("game-settings", GameSettings);
     var toastStyles = document.createElement("template");
     toastStyles.innerHTML = `
   <style>
@@ -1157,7 +1157,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
   <div class="toast"></div>
 `;
     var Ea,
-        Aa = function(e) {
+        GameToast = function(e) {
             r(t, e);
             var a = h(t);
             function t() {
@@ -1183,7 +1183,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     function Ca() {
         dataLayer.push(arguments)
     }
-    customElements.define("game-toast", Aa), window.dataLayer = window.dataLayer || [], Ca("js", new Date);Ca("config", "G-2SSGMHY3NP", {
+    customElements.define("game-toast", GameToast), window.dataLayer = window.dataLayer || [], Ca("js", new Date);Ca("config", "G-2SSGMHY3NP", {
         app_version: null === (Ea = window.wordle) || void 0 === Ea ? void 0 : Ea.hash,
         debug_mode: !1
     });
@@ -1373,7 +1373,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     const GAME_STATUS_WIN = "WIN";
     const GAME_STATUS_FAIL = "FAIL";
     const WIN_COMMENTS = ["Genius", "Magnificent", "Impressive", "Splendid", "Great", "Phew"];
-    var ts = function(e) {
+    var GameApp = function(e) {
             r(t, e);
             var a = h(t);
             function t() {
@@ -1557,7 +1557,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                     }
                 }]), t
         }(c(HTMLElement));
-    customElements.define("game-app", ts);
+    customElements.define("game-app", GameApp);
     var modalOverlayTemplate = document.createElement("template");
     modalOverlayTemplate.innerHTML = `
   <style>
@@ -1646,7 +1646,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     </div>
   </div>
 `;
-    var ns = function(e) {
+    var GameModal = function(e) {
         r(t, e);
         var a = h(t);
         function t() {
@@ -1667,7 +1667,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 }
             }]), t
     }(c(HTMLElement));
-    customElements.define("game-modal", ns);
+    customElements.define("game-modal", GameModal);
     var keyboardTemplate = document.createElement("template");
     keyboardTemplate.innerHTML = `
   <style>
@@ -1817,7 +1817,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     var keyLabels = [["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
         ["-", "a", "s", "d", "f", "g", "h", "j", "k", "l", "-"],
         ["↵", "z", "x", "c", "v", "b", "n", "m", "←"]],
-        us = function(e) {
+        GameKeyboard = function(e) {
             r(t, e);
             var a = h(t);
             function t() {
@@ -1994,7 +1994,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
             }
         }
     }
-    customElements.define("game-keyboard", us), function() {
+    customElements.define("game-keyboard", GameKeyboard), function() {
         (console.warn || console.log).apply(console, arguments)
     }.bind("[clipboard-polyfill]");
     var ms,
@@ -2348,7 +2348,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
             gamesWon: "Won",
             averageGuesses: "Av. Guesses"
         },
-        Os = function(e) {
+        GameStats = function(e) {
             r(t, e);
             var a = h(t);
             function t() {
@@ -2411,7 +2411,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                     }
                 }]), t
         }(c(HTMLElement));
-    customElements.define("game-stats", Os);
+    customElements.define("game-stats", GameStats);
     var toggleSwitchTemplate = document.createElement("template");
     toggleSwitchTemplate.innerHTML = `
   <style>
@@ -2465,7 +2465,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     </div>
   </div>
 `;
-    var Ps = function(e) {
+    var GameSwitch = function(e) {
         r(t, e);
         var a = h(t);
         function t() {
@@ -2497,7 +2497,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 }
             }]), t
     }(c(HTMLElement));
-    customElements.define("game-switch", Ps);
+    customElements.define("game-switch", GameSwitch);
     var helpTemplate = document.createElement("template");
     helpTemplate.innerHTML = `
   <style>
@@ -2569,7 +2569,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     </div>
   </section>
 `;
-    var Hs = function(e) {
+    var GameHelp = function(e) {
         r(t, e);
         var a = h(t);
         function t() {
@@ -2585,7 +2585,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 }
             }]), t
     }(c(HTMLElement));
-    customElements.define("game-help", Hs);
+    customElements.define("game-help", GameHelp);
     var pageOverlayTemplate = document.createElement("template");
     pageOverlayTemplate.innerHTML = `
   <style>
@@ -2696,7 +2696,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     </div>
   </div>
 `;
-    var Ds = function(e) {
+    var GamePage = function(e) {
         r(t, e);
         var a = h(t);
         function t() {
@@ -2719,7 +2719,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 }
             }]), t
     }(c(HTMLElement));
-    customElements.define("game-page", Ds);
+    customElements.define("game-page", GamePage);
     var iconTemplate = document.createElement("template");
     iconTemplate.innerHTML = `
   <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
@@ -2735,7 +2735,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
             statistics: "M16,11V3H8v6H2v12h20V11H16z M10,5h4v14h-4V5z M4,11h4v8H4V11z M20,19h-4v-6h4V19z",
             save: "M3,20.05V3.72H17.48L21,7.58V20.05ZM6.85,9.64m0-5.92V9.64h8.23V3.72m-2.76,0v4M6.85,13.11h8.23M6.85,16.46H17.13"
         },
-        Fs = function(e) {
+        GameIcon = function(e) {
             r(t, e);
             var a = h(t);
             function t() {
@@ -2760,12 +2760,12 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                     }
                 }]), t
         }(c(HTMLElement));
-    customElements.define("game-icon", Fs);
+    customElements.define("game-icon", GameIcon);
     var timerTemplate = document.createElement("template");
     timerTemplate.innerHTML = `<div id="timer"></div>`;
     var Ys = 6e4,
         Js = 36e5,
-        Us = function(e) {
+        CountdownTimer = function(e) {
             r(t, e);
             var a = h(t);
             function t() {
@@ -2840,7 +2840,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
       buildShareText: buildShareText, // IIFE extraction
     };
 
-    return customElements.define("countdown-timer", Us), e.CountdownTimer = Us, e.GameApp = ts, e.GameHelp = Hs, e.GameIcon = Fs, e.GameKeyboard = us, e.GameModal = ns, e.GamePage = Ds, e.GameRow = x, e.GameSettings = _a, e.GameStats = Os, e.GameSwitch = Ps, e.GameThemeManager = _, e.GameTile = v, e.GameToast = Aa, Object.defineProperty(e, "__esModule", {
+    return customElements.define("countdown-timer", CountdownTimer), e.CountdownTimer = CountdownTimer, e.GameApp = GameApp, e.GameHelp = GameHelp, e.GameIcon = GameIcon, e.GameKeyboard = GameKeyboard, e.GameModal = GameModal, e.GamePage = GamePage, e.GameRow = GameRow, e.GameSettings = GameSettings, e.GameStats = GameStats, e.GameSwitch = GameSwitch, e.GameThemeManager = GameThemeManager, e.GameTile = GameTile, e.GameToast = GameToast, Object.defineProperty(e, "__esModule", {
             value: !0
         }), e
 }({});
