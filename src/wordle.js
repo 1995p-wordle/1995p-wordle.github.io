@@ -225,50 +225,7 @@
         window.localStorage.setItem(GAME_STATE_KEY, JSON.stringify(merged));
     }
 
-    var gameSettingsTemplate = document.createElement("template");
-    gameSettingsTemplate.innerHTML = `
-  <div class="sections">
-    <section>
-      <div class="setting">
-        <div class="text">
-          <div class="title">Hard Mode</div>
-          <div class="description">Any revealed hints must be used in subsequent guesses</div>
-        </div>
-        <div class="control">
-          <game-switch id="hard-mode" name="hard-mode"></game-switch>
-        </div>
-      </div>
-      <div class="setting">
-        <div class="text">
-          <div class="title">Dark Theme</div>
-        </div>
-        <div class="control">
-          <game-switch id="dark-theme" name="dark-theme"></game-switch>
-        </div>
-      </div>
-      <div class="setting">
-        <div class="text">
-          <div class="title">Color Blind Mode</div>
-          <div class="description">High contrast colors</div>
-        </div>
-        <div class="control">
-          <game-switch id="color-blind-theme" name="color-blind-theme"></game-switch>
-        </div>
-      </div>
-    </section>
-  </div>
-
-  <div id="footnote">
-    <div>
-      <div id="privacy-policy"><a href="https://www.powerlanguage.co.uk/privacy-policy.html" target="_blank">Privacy Policy</a></div>
-      <div id="copyright">Copyright 2021-2022. All Rights Reserved.</div>
-    </div>
-    <div>
-      <div id="puzzle-number"></div>
-      <div id="hash"></div>
-    </div>
-  </div>
-`;
+    var gameSettingsTemplate = document.getElementById("settings-template");
 
     class GameSettings extends HTMLElement {
         gameApp;
@@ -794,16 +751,7 @@
     }
     customElements.define("game-app", GameApp);
 
-    var modalOverlayTemplate = document.createElement("template");
-    modalOverlayTemplate.innerHTML = `
-  <div class="modal-overlay">
-    <div class="modal-content">
-      <div class="close-icon">
-        <game-icon icon="close"></game-icon>
-      </div>
-    </div>
-  </div>
-`;
+    var modalOverlayTemplate = document.getElementById("modal-overlay-template");
 
     class GameModal extends HTMLElement {
         connectedCallback() {
@@ -987,52 +935,10 @@
         return { text: header + "\n\n" + grid.trimEnd() };
     }
 
-    var statsContainerTemplate = document.createElement("template");
-    statsContainerTemplate.innerHTML = `
-  <div class="stats-container">
-    <h1>Statistics</h1>
-    <div id="statistics"></div>
-    <h1>Guess Distribution</h1>
-    <div id="guess-distribution"></div>
-    <div class="stats-footer"></div>
-  </div>
-`;
-    var statisticItemTemplate = document.createElement("template");
-    statisticItemTemplate.innerHTML = `
-  <div class="statistic-container">
-    <div class="statistic"></div>
-    <div class="label"></div>
-  </div>
-`;
-    var graphBarTemplate = document.createElement("template");
-    graphBarTemplate.innerHTML = `
-  <div class="graph-container">
-    <div class="guess"></div>
-    <div class="graph">
-      <div class="graph-bar">
-        <div class="num-guesses"></div>
-      </div>
-    </div>
-  </div>
-`;
-    var countdownTemplate = document.createElement("template");
-    countdownTemplate.innerHTML = `
-  <div class="countdown">
-    <h1>Next WORDLE</h1>
-    <div id="timer">
-      <div class="statistic-container">
-        <div class="statistic timer">
-          <countdown-timer></countdown-timer>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="share">
-    <button id="share-button">
-      Share <game-icon icon="share"></game-icon>
-    </button>
-  </div>
-`;
+    var statsContainerTemplate = document.getElementById("stats-container-template");
+    var statisticItemTemplate = document.getElementById("statistic-item-template");
+    var graphBarTemplate = document.getElementById("graph-bar-template");
+    var countdownTemplate = document.getElementById("countdown-template");
     var STATISTIC_LABELS = {
         currentStreak: "Current Streak",
         maxStreak: "Max Streak",
@@ -1139,50 +1045,7 @@
     }
     customElements.define("game-switch", GameSwitch);
 
-    var helpTemplate = document.createElement("template");
-    helpTemplate.innerHTML = `
-  <section>
-    <div class="instructions">
-      <p>Guess the <strong>WORDLE</strong> in 6 tries.</p>
-      <p>Each guess must be a valid 5 letter word. Hit the enter button to submit.</p>
-      <p>After each guess, the color of the tiles will change to show how close your guess was to the word.</p>
-      <div class="examples">
-        <p><strong>Examples</strong></p>
-        <div class="example">
-          <div class="row">
-            <game-tile letter="w" evaluation="correct" reveal></game-tile>
-            <game-tile letter="e"></game-tile>
-            <game-tile letter="a"></game-tile>
-            <game-tile letter="r"></game-tile>
-            <game-tile letter="y"></game-tile>
-          </div>
-          <p>The letter <strong>W</strong> is in the word and in the correct spot.</p>
-        </div>
-        <div class="example">
-          <div class="row">
-            <game-tile letter="p"></game-tile>
-            <game-tile letter="i" evaluation="present" reveal></game-tile>
-            <game-tile letter="l"></game-tile>
-            <game-tile letter="l"></game-tile>
-            <game-tile letter="s"></game-tile>
-          </div>
-          <p>The letter <strong>I</strong> is in the word but in the wrong spot.</p>
-        </div>
-        <div class="example">
-          <div class="row">
-            <game-tile letter="v"></game-tile>
-            <game-tile letter="a"></game-tile>
-            <game-tile letter="g"></game-tile>
-            <game-tile letter="u" evaluation="absent" reveal></game-tile>
-            <game-tile letter="e"></game-tile>
-          </div>
-          <p>The letter <strong>U</strong> is not in the word in any spot.</p>
-        </div>
-      </div>
-      <p><strong>A new WORDLE will be available each day!</strong></p>
-    </div>
-  </section>
-`;
+    var helpTemplate = document.getElementById("help-template");
 
     class GameHelp extends HTMLElement {
         connectedCallback() {
@@ -1191,18 +1054,7 @@
     }
     customElements.define("game-help", GameHelp);
 
-    var pageOverlayTemplate = document.createElement("template");
-    pageOverlayTemplate.innerHTML = `
-  <div class="page-overlay">
-    <div class="page-content">
-      <header>
-        <h1 class="page-title"></h1>
-        <game-icon icon="close"></game-icon>
-      </header>
-      <div class="page-content-container"></div>
-    </div>
-  </div>
-`;
+    var pageOverlayTemplate = document.getElementById("page-overlay-template");
 
     class GamePage extends HTMLElement {
         connectedCallback() {
