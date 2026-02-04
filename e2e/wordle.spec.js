@@ -70,9 +70,9 @@ async function waitForTileReveal(page, rowIndex) {
     const rows = app.shadowRoot.querySelectorAll('game-row');
     const row = rows[ri];
     if (!row) return false;
-    const tiles = row.shadowRoot.querySelectorAll('game-tile');
+    const tiles = row.querySelectorAll('game-tile');
     return Array.from(tiles).every(tile => {
-      const inner = tile.shadowRoot.querySelector('.tile');
+      const inner = tile.querySelector('.tile');
       return ['correct', 'present', 'absent'].includes(inner.dataset.state);
     });
   }, rowIndex, { timeout: 10000 });
@@ -84,9 +84,9 @@ async function getRowTileStates(page, rowIndex) {
     const app = document.querySelector('game-app');
     const rows = app.shadowRoot.querySelectorAll('game-row');
     const row = rows[ri];
-    const tiles = row.shadowRoot.querySelectorAll('game-tile');
+    const tiles = row.querySelectorAll('game-tile');
     return Array.from(tiles).map(tile => {
-      const inner = tile.shadowRoot.querySelector('.tile');
+      const inner = tile.querySelector('.tile');
       return inner.dataset.state;
     });
   }, rowIndex);
@@ -98,9 +98,9 @@ async function getRowTileLetters(page, rowIndex) {
     const app = document.querySelector('game-app');
     const rows = app.shadowRoot.querySelectorAll('game-row');
     const row = rows[ri];
-    const tiles = row.shadowRoot.querySelectorAll('game-tile');
+    const tiles = row.querySelectorAll('game-tile');
     return Array.from(tiles).map(tile => {
-      const inner = tile.shadowRoot.querySelector('.tile');
+      const inner = tile.querySelector('.tile');
       return inner.textContent;
     });
   }, rowIndex);
@@ -139,7 +139,7 @@ test.describe('Wordle E2E Tests', () => {
         const app = document.querySelector('game-app');
         const rows = app.shadowRoot.querySelectorAll('game-row');
         return Array.from(rows).map(row =>
-          row.shadowRoot.querySelectorAll('game-tile').length
+          row.querySelectorAll('game-tile').length
         );
       });
       expect(tileCounts).toEqual([5, 5, 5, 5, 5, 5]);
@@ -493,6 +493,58 @@ test.describe('Wordle E2E Tests', () => {
         const app = document.querySelector('game-app');
         const modal = app.shadowRoot.querySelector('game-modal');
         return modal && modal.hasAttribute('open');
+      }, { timeout: 5000 });
+    });
+  });
+
+  // ─── 9b. Toast Styling & Behavior ────────────────────────────────────────
+  // These tests document expected toast appearance. They are marked test.fail()
+  // because toast styles in wordle.css can't penetrate game-app's shadow DOM yet.
+  // They will start passing (and need .fail() removed) after Phase 5.
+  test.describe('Toast Styling', () => {
+    test.fail('toast has white-on-dark styling', async ({ page }) => {
+      await freshGame(page);
+      await dismissHelpModal(page);
+
+      await submitWord(page, 'zzzzz');
+
+      const styles = await page.evaluate(() => {
+        const app = document.querySelector('game-app');
+        const toast = app.shadowRoot.querySelector('#game-toaster game-toast');
+        const toastDiv = toast.querySelector('.toast');
+        const cs = getComputedStyle(toastDiv);
+        return {
+          backgroundColor: cs.backgroundColor,
+          color: cs.color,
+          fontWeight: cs.fontWeight
+        };
+      });
+
+      // Dark background (--color-tone-1 = #1a1a1b in light mode)
+      expect(styles.backgroundColor).toBe('rgb(26, 26, 27)');
+      // White text (--color-tone-7 = #ffffff in light mode)
+      expect(styles.color).toBe('rgb(255, 255, 255)');
+      // Bold
+      expect(styles.fontWeight).toBe('700');
+    });
+
+    test.fail('toast auto-removes after default duration', async ({ page }) => {
+      await freshGame(page);
+      await dismissHelpModal(page);
+
+      await submitWord(page, 'zzzzz');
+
+      // Toast should exist initially
+      const hasToast = await page.evaluate(() => {
+        const app = document.querySelector('game-app');
+        return !!app.shadowRoot.querySelector('#game-toaster game-toast');
+      });
+      expect(hasToast).toBe(true);
+
+      // After default 1s duration + 300ms fade transition + buffer, toast should be gone
+      await page.waitForFunction(() => {
+        const app = document.querySelector('game-app');
+        return !app.shadowRoot.querySelector('#game-toaster game-toast');
       }, { timeout: 5000 });
     });
   });

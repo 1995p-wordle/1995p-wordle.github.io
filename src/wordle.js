@@ -161,126 +161,12 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
         for (var s = 0, t = new Array(a); s < a; s++) t[s] = e[s];
         return t
     }
-    var tileTemplate = document.createElement("template");
-    tileTemplate.innerHTML = `
-<style>
-  :host {
-    display: inline-block;
-  }
-
-  .tile {
-    width: 100%;
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 2rem;
-    line-height: 2rem;
-    font-weight: bold;
-    vertical-align: middle;
-    box-sizing: border-box;
-    color: var(--tile-text-color);
-    text-transform: uppercase;
-    user-select: none;
-  }
-
-  .tile::before {
-    content: '';
-    display: inline-block;
-    padding-bottom: 100%;
-  }
-
-  @media (max-height: 600px) {
-    .tile {
-      font-size: 1em;
-      line-height: 1em;
-    }
-  }
-
-  @media (max-width: 330px) {
-    .tile {
-      font-size: 1.7rem;
-      line-height: 1.7rem;
-    }
-  }
-
-  .tile[data-state='empty'] {
-    border: 2px solid var(--color-tone-4);
-  }
-
-  .tile[data-state='tbd'] {
-    background-color: var(--color-tone-7);
-    border: 2px solid var(--color-tone-3);
-    color: var(--color-tone-1);
-  }
-
-  .tile[data-state='correct'] {
-    background-color: var(--color-correct);
-  }
-
-  .tile[data-state='present'] {
-    background-color: var(--color-present);
-  }
-
-  .tile[data-state='absent'] {
-    background-color: var(--color-absent);
-  }
-
-  .tile[data-animation='pop'] {
-    animation-name: PopIn;
-    animation-duration: 100ms;
-  }
-
-  @keyframes PopIn {
-    from {
-      transform: scale(0.8);
-      opacity: 0;
-    }
-    40% {
-      transform: scale(1.1);
-      opacity: 1;
-    }
-  }
-
-  .tile[data-animation='flip-in'] {
-    animation-name: FlipIn;
-    animation-duration: 250ms;
-    animation-timing-function: ease-in;
-  }
-
-  @keyframes FlipIn {
-    0% {
-      transform: rotateX(0);
-    }
-    100% {
-      transform: rotateX(-90deg);
-    }
-  }
-
-  .tile[data-animation='flip-out'] {
-    animation-name: FlipOut;
-    animation-duration: 250ms;
-    animation-timing-function: ease-in;
-  }
-
-  @keyframes FlipOut {
-    0% {
-      transform: rotateX(-90deg);
-    }
-    100% {
-      transform: rotateX(0);
-    }
-  }
-</style>
-<div class="tile" data-state="empty" data-animation="idle"></div>
-`;
     var GameTile = function(e) {
         r(t, e);
         var a = h(t);
         function t() {
             var e;
-            return s(this, t), n(p(e = a.call(this)), "_letter", ""), n(p(e), "_state", "empty"), n(p(e), "_animation", "idle"), n(p(e), "_last", !1), n(p(e), "_reveal", !1), e.attachShadow({
-                    mode: "open"
-                }), e
+            return s(this, t), n(p(e = a.call(this)), "_letter", ""), n(p(e), "_state", "empty"), n(p(e), "_animation", "idle"), n(p(e), "_last", !1), n(p(e), "_reveal", !1), e
         }
         return o(t, [{
                 key: "last",
@@ -291,12 +177,20 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 key: "connectedCallback",
                 value: function() {
                     var e = this;
-                    this.shadowRoot.appendChild(tileTemplate.content.cloneNode(!0)), this.$tile = this.shadowRoot.querySelector(".tile"), this.$tile.addEventListener("animationend", (function(a) {
-                        "PopIn" === a.animationName && (e._animation = "idle"), "FlipIn" === a.animationName && (e.$tile.dataset.state = e._state, e._animation = "flip-out"), "FlipOut" === a.animationName && (e._animation = "idle", e._last && e.dispatchEvent(new CustomEvent("game-last-tile-revealed-in-row", {
-                            bubbles: !0,
-                            composed: !0
-                        }))), e._render()
-                    })), this._render()
+                    if (!this.$tile) {
+                        var tileDiv = document.createElement("div");
+                        tileDiv.classList.add("tile");
+                        tileDiv.dataset.state = "empty";
+                        tileDiv.dataset.animation = "idle";
+                        this.appendChild(tileDiv);
+                        this.$tile = tileDiv;
+                        this.$tile.addEventListener("animationend", (function(a) {
+                            "PopIn" === a.animationName && (e._animation = "idle"), "FlipIn" === a.animationName && (e.$tile.dataset.state = e._state, e._animation = "flip-out"), "FlipOut" === a.animationName && (e._animation = "idle", e._last && e.dispatchEvent(new CustomEvent("game-last-tile-revealed-in-row", {
+                                bubbles: !0
+                            }))), e._render()
+                        }));
+                    }
+                    this._render()
                 }
             }, {
                 key: "attributeChangedCallback",
@@ -327,75 +221,12 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
             }]), t
     }(c(HTMLElement));
     customElements.define("game-tile", GameTile);
-    var gameRow = document.createElement("template");
-    gameRow.innerHTML = `
-  <style>
-    :host {
-      display: block;
-    }
-
-    :host([invalid]) {
-      animation-name: Shake;
-      animation-duration: 600ms;
-    }
-
-    .row {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      grid-gap: 5px;
-    }
-
-    .win {
-      animation-name: Bounce;
-      animation-duration: 1000ms;
-    }
-
-    @keyframes Bounce {
-      0%, 20% {
-        transform: translateY(0);
-      }
-      40% {
-        transform: translateY(-30px);
-      }
-      50% {
-        transform: translateY(5px);
-      }
-      60% {
-        transform: translateY(-15px);
-      }
-      80% {
-        transform: translateY(2px);
-      }
-      100% {
-        transform: translateY(0);
-      }
-    }
-
-    @keyframes Shake {
-      10%, 90% {
-        transform: translateX(-1px);
-      }
-      20%, 80% {
-        transform: translateX(2px);
-      }
-      30%, 50%, 70% {
-        transform: translateX(-4px);
-      }
-      40%, 60% {
-        transform: translateX(4px);
-      }
-    }
-  </style>
-  <div class="row"></div>
-`;
     var GameRow = function(e) {
         r(t, e);
         var a = h(t);
         function t() {
             var e;
-            return s(this, t), (e = a.call(this)).attachShadow({
-                    mode: "open"
-                }), e._letters = "", e._evaluation = [], e._length, e
+            return s(this, t), (e = a.call(this))._letters = "", e._evaluation = [], e._length, e
         }
         return o(t, [{
                 key: "evaluation",
@@ -414,7 +245,10 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 key: "connectedCallback",
                 value: function() {
                     var e = this;
-                    this.shadowRoot.appendChild(gameRow.content.cloneNode(!0)), this.$row = this.shadowRoot.querySelector(".row");
+                    var rowDiv = document.createElement("div");
+                    rowDiv.classList.add("row");
+                    this.appendChild(rowDiv);
+                    this.$row = rowDiv;
                     for (var a = function(a) {
                                 var s = document.createElement("game-tile"),
                                     t = e._letters[a];
@@ -422,7 +256,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                                     s.setAttribute("reveal", "")
                                 }), 100 * a));a === e._length - 1 && (s.last = !0), e.$row.appendChild(s)
                             }, s = 0;s < this._length; s++) a(s);
-                    this.$tiles = this.shadowRoot.querySelectorAll("game-tile"), this.addEventListener("animationend", (function(a) {
+                    this.$tiles = this.querySelectorAll("game-tile"), this.addEventListener("animationend", (function(a) {
                         "Shake" === a.animationName && e.removeAttribute("invalid")
                     }))
                 }
