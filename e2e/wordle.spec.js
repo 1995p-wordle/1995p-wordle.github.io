@@ -5,17 +5,17 @@ async function freshGame(page) {
   await page.goto('/');
   await page.evaluate(() => localStorage.clear());
   await page.goto('/');
-  // Wait for game-app shadow DOM to be ready
+  // Wait for game-app to be ready
   await page.waitForFunction(() => {
     const app = document.querySelector('game-app');
-    return app && app.shadowRoot && app.shadowRoot.querySelector('#board');
+    return app && app.querySelector('#board');
   });
 }
 
 // Helper: close the auto-opening help modal if present
 async function dismissHelpModal(page) {
   // The help modal auto-opens on first visit (no lastPlayedTs).
-  // It's a game-page inside game-app's shadow DOM with [open] attribute.
+  // It's a game-page inside game-app with [open] attribute.
   // Wait briefly for the modal to appear, then close it.
   try {
     const closeable = page.locator('game-page[open] game-icon[icon="close"]');
@@ -67,7 +67,7 @@ async function waitForRowEvaluation(page) {
 async function waitForTileReveal(page, rowIndex) {
   await page.waitForFunction((ri) => {
     const app = document.querySelector('game-app');
-    const rows = app.shadowRoot.querySelectorAll('game-row');
+    const rows = app.querySelectorAll('game-row');
     const row = rows[ri];
     if (!row) return false;
     const tiles = row.querySelectorAll('game-tile');
@@ -82,7 +82,7 @@ async function waitForTileReveal(page, rowIndex) {
 async function getRowTileStates(page, rowIndex) {
   return page.evaluate((ri) => {
     const app = document.querySelector('game-app');
-    const rows = app.shadowRoot.querySelectorAll('game-row');
+    const rows = app.querySelectorAll('game-row');
     const row = rows[ri];
     const tiles = row.querySelectorAll('game-tile');
     return Array.from(tiles).map(tile => {
@@ -96,7 +96,7 @@ async function getRowTileStates(page, rowIndex) {
 async function getRowTileLetters(page, rowIndex) {
   return page.evaluate((ri) => {
     const app = document.querySelector('game-app');
-    const rows = app.shadowRoot.querySelectorAll('game-row');
+    const rows = app.querySelectorAll('game-row');
     const row = rows[ri];
     const tiles = row.querySelectorAll('game-tile');
     return Array.from(tiles).map(tile => {
@@ -131,13 +131,13 @@ test.describe('Wordle E2E Tests', () => {
 
       const rowCount = await page.evaluate(() => {
         const app = document.querySelector('game-app');
-        return app.shadowRoot.querySelectorAll('game-row').length;
+        return app.querySelectorAll('game-row').length;
       });
       expect(rowCount).toBe(6);
 
       const tileCounts = await page.evaluate(() => {
         const app = document.querySelector('game-app');
-        const rows = app.shadowRoot.querySelectorAll('game-row');
+        const rows = app.querySelectorAll('game-row');
         return Array.from(rows).map(row =>
           row.querySelectorAll('game-tile').length
         );
@@ -161,7 +161,7 @@ test.describe('Wordle E2E Tests', () => {
 
       const keys = await page.evaluate(() => {
         const app = document.querySelector('game-app');
-        const keyboard = app.shadowRoot.querySelector('game-keyboard');
+        const keyboard = app.querySelector('game-keyboard');
         const buttons = keyboard.querySelectorAll('button[data-key]');
         return Array.from(buttons).map(b => b.dataset.key);
       });
@@ -181,13 +181,13 @@ test.describe('Wordle E2E Tests', () => {
 
       const title = await page.evaluate(() => {
         const app = document.querySelector('game-app');
-        return app.shadowRoot.querySelector('.title').textContent.trim();
+        return app.querySelector('.title').textContent.trim();
       });
       expect(title).toBe('Wordle');
 
       const buttonIds = await page.evaluate(() => {
         const app = document.querySelector('game-app');
-        const header = app.shadowRoot.querySelector('header');
+        const header = app.querySelector('header');
         const buttons = header.querySelectorAll('button');
         return Array.from(buttons).map(b => b.id);
       });
@@ -282,7 +282,7 @@ test.describe('Wordle E2E Tests', () => {
       // Check for toast
       const toastText = await page.evaluate(() => {
         const app = document.querySelector('game-app');
-        const toast = app.shadowRoot.querySelector('#game-toaster game-toast');
+        const toast = app.querySelector('#game-toaster game-toast');
         return toast ? toast.getAttribute('text') : null;
       });
       expect(toastText).toBe('Not in word list');
@@ -296,7 +296,7 @@ test.describe('Wordle E2E Tests', () => {
 
       const hasInvalid = await page.evaluate(() => {
         const app = document.querySelector('game-app');
-        const row = app.shadowRoot.querySelectorAll('game-row')[0];
+        const row = app.querySelectorAll('game-row')[0];
         return row.hasAttribute('invalid');
       });
       expect(hasInvalid).toBe(true);
@@ -327,7 +327,7 @@ test.describe('Wordle E2E Tests', () => {
 
       const toastText = await page.evaluate(() => {
         const app = document.querySelector('game-app');
-        const toast = app.shadowRoot.querySelector('#game-toaster game-toast');
+        const toast = app.querySelector('#game-toaster game-toast');
         return toast ? toast.getAttribute('text') : null;
       });
       expect(toastText).toBe('Not enough letters');
@@ -387,7 +387,7 @@ test.describe('Wordle E2E Tests', () => {
       // Check that at least some keyboard keys have data-state set
       const keyStates = await page.evaluate((word) => {
         const app = document.querySelector('game-app');
-        const keyboard = app.shadowRoot.querySelector('game-keyboard');
+        const keyboard = app.querySelector('game-keyboard');
         const results = {};
         for (const letter of word) {
           const btn = keyboard.querySelector(`button[data-key="${letter}"]`);
@@ -425,11 +425,11 @@ test.describe('Wordle E2E Tests', () => {
       // Toast appears after tile animations complete; wait for it
       await page.waitForFunction(() => {
         const app = document.querySelector('game-app');
-        return app.shadowRoot.querySelector('#game-toaster game-toast') !== null;
+        return app.querySelector('#game-toaster game-toast') !== null;
       }, { timeout: 5000 });
       const toastText = await page.evaluate(() => {
         const app = document.querySelector('game-app');
-        const toasts = app.shadowRoot.querySelectorAll('#game-toaster game-toast');
+        const toasts = app.querySelectorAll('#game-toaster game-toast');
         if (toasts.length === 0) return null;
         return toasts[0].getAttribute('text');
       });
@@ -438,7 +438,7 @@ test.describe('Wordle E2E Tests', () => {
       // Stats modal should open after delay
       await page.waitForFunction(() => {
         const app = document.querySelector('game-app');
-        const modal = app.shadowRoot.querySelector('game-modal');
+        const modal = app.querySelector('game-modal');
         return modal && modal.hasAttribute('open');
       }, { timeout: 5000 });
     });
@@ -473,14 +473,14 @@ test.describe('Wordle E2E Tests', () => {
       // Wait for the solution toast to appear (it's added after tile animations)
       await page.waitForFunction((expected) => {
         const app = document.querySelector('game-app');
-        const toasts = app.shadowRoot.querySelectorAll('#game-toaster game-toast');
+        const toasts = app.querySelectorAll('#game-toaster game-toast');
         return Array.from(toasts).some(t => t.getAttribute('text') === expected);
       }, solution.toUpperCase(), { timeout: 10000 });
 
       // Solution should be shown in a toast (uppercase)
       const toastText = await page.evaluate(() => {
         const app = document.querySelector('game-app');
-        const toasts = app.shadowRoot.querySelectorAll('#game-toaster game-toast');
+        const toasts = app.querySelectorAll('#game-toaster game-toast');
         for (const t of toasts) {
           if (t.getAttribute('text') === app.solution.toUpperCase()) return t.getAttribute('text');
         }
@@ -491,18 +491,15 @@ test.describe('Wordle E2E Tests', () => {
       // Stats modal opens after delay
       await page.waitForFunction(() => {
         const app = document.querySelector('game-app');
-        const modal = app.shadowRoot.querySelector('game-modal');
+        const modal = app.querySelector('game-modal');
         return modal && modal.hasAttribute('open');
       }, { timeout: 5000 });
     });
   });
 
   // ─── 9b. Toast Styling & Behavior ────────────────────────────────────────
-  // These tests document expected toast appearance. They are marked test.fail()
-  // because toast styles in wordle.css can't penetrate game-app's shadow DOM yet.
-  // They will start passing (and need .fail() removed) after Phase 5.
   test.describe('Toast Styling', () => {
-    test.fail('toast has white-on-dark styling', async ({ page }) => {
+    test('toast has white-on-dark styling', async ({ page }) => {
       await freshGame(page);
       await dismissHelpModal(page);
 
@@ -510,7 +507,7 @@ test.describe('Wordle E2E Tests', () => {
 
       const styles = await page.evaluate(() => {
         const app = document.querySelector('game-app');
-        const toast = app.shadowRoot.querySelector('#game-toaster game-toast');
+        const toast = app.querySelector('#game-toaster game-toast');
         const toastDiv = toast.querySelector('.toast');
         const cs = getComputedStyle(toastDiv);
         return {
@@ -528,7 +525,7 @@ test.describe('Wordle E2E Tests', () => {
       expect(styles.fontWeight).toBe('700');
     });
 
-    test.fail('toast auto-removes after default duration', async ({ page }) => {
+    test('toast auto-removes after default duration', async ({ page }) => {
       await freshGame(page);
       await dismissHelpModal(page);
 
@@ -537,14 +534,14 @@ test.describe('Wordle E2E Tests', () => {
       // Toast should exist initially
       const hasToast = await page.evaluate(() => {
         const app = document.querySelector('game-app');
-        return !!app.shadowRoot.querySelector('#game-toaster game-toast');
+        return !!app.querySelector('#game-toaster game-toast');
       });
       expect(hasToast).toBe(true);
 
       // After default 1s duration + 300ms fade transition + buffer, toast should be gone
       await page.waitForFunction(() => {
         const app = document.querySelector('game-app');
-        return !app.shadowRoot.querySelector('#game-toaster game-toast');
+        return !app.querySelector('#game-toaster game-toast');
       }, { timeout: 5000 });
     });
   });
@@ -558,20 +555,20 @@ test.describe('Wordle E2E Tests', () => {
       // Click help button
       await page.evaluate(() => {
         const app = document.querySelector('game-app');
-        app.shadowRoot.getElementById('help-button').click();
+        app.querySelector('#help-button').click();
       });
 
       // game-page should have [open] attribute
       await page.waitForFunction(() => {
         const app = document.querySelector('game-app');
-        const gamePage = app.shadowRoot.querySelector('game-page');
+        const gamePage = app.querySelector('game-page');
         return gamePage && gamePage.hasAttribute('open');
       }, { timeout: 3000 });
 
       // Close it by clicking the close icon
       await page.evaluate(() => {
         const app = document.querySelector('game-app');
-        const gamePage = app.shadowRoot.querySelector('game-page');
+        const gamePage = app.querySelector('game-page');
         const closeIcon = gamePage.querySelector('game-icon[icon="close"]');
         closeIcon.click();
       });
@@ -579,7 +576,7 @@ test.describe('Wordle E2E Tests', () => {
       // Wait for the page to close
       await page.waitForFunction(() => {
         const app = document.querySelector('game-app');
-        const gamePage = app.shadowRoot.querySelector('game-page');
+        const gamePage = app.querySelector('game-page');
         return gamePage && !gamePage.hasAttribute('open');
       }, { timeout: 3000 });
     });
@@ -591,19 +588,19 @@ test.describe('Wordle E2E Tests', () => {
       // Open settings
       await page.evaluate(() => {
         const app = document.querySelector('game-app');
-        app.shadowRoot.getElementById('settings-button').click();
+        app.querySelector('#settings-button').click();
       });
 
       await page.waitForFunction(() => {
         const app = document.querySelector('game-app');
-        const gamePage = app.shadowRoot.querySelector('game-page');
+        const gamePage = app.querySelector('game-page');
         return gamePage && gamePage.hasAttribute('open');
       }, { timeout: 3000 });
 
       // Verify 3 game-switch elements exist with visible switch+knob structure
       const switchInfo = await page.evaluate(() => {
         const app = document.querySelector('game-app');
-        const gamePage = app.shadowRoot.querySelector('game-page');
+        const gamePage = app.querySelector('game-page');
         const settings = gamePage.querySelector('game-settings');
         const switches = settings.querySelectorAll('game-switch');
         return Array.from(switches).map(sw => {
@@ -631,14 +628,14 @@ test.describe('Wordle E2E Tests', () => {
       // Close settings
       await page.evaluate(() => {
         const app = document.querySelector('game-app');
-        const gamePage = app.shadowRoot.querySelector('game-page');
+        const gamePage = app.querySelector('game-page');
         const closeIcon = gamePage.querySelector('game-icon[icon="close"]');
         closeIcon.click();
       });
 
       await page.waitForFunction(() => {
         const app = document.querySelector('game-app');
-        const gamePage = app.shadowRoot.querySelector('game-page');
+        const gamePage = app.querySelector('game-page');
         return gamePage && !gamePage.hasAttribute('open');
       }, { timeout: 3000 });
     });
@@ -650,27 +647,27 @@ test.describe('Wordle E2E Tests', () => {
       // Click settings button
       await page.evaluate(() => {
         const app = document.querySelector('game-app');
-        app.shadowRoot.getElementById('settings-button').click();
+        app.querySelector('#settings-button').click();
       });
 
       // game-page should have [open] attribute
       await page.waitForFunction(() => {
         const app = document.querySelector('game-app');
-        const gamePage = app.shadowRoot.querySelector('game-page');
+        const gamePage = app.querySelector('game-page');
         return gamePage && gamePage.hasAttribute('open');
       }, { timeout: 3000 });
 
       // Close it
       await page.evaluate(() => {
         const app = document.querySelector('game-app');
-        const gamePage = app.shadowRoot.querySelector('game-page');
+        const gamePage = app.querySelector('game-page');
         const closeIcon = gamePage.querySelector('game-icon[icon="close"]');
         closeIcon.click();
       });
 
       await page.waitForFunction(() => {
         const app = document.querySelector('game-app');
-        const gamePage = app.shadowRoot.querySelector('game-page');
+        const gamePage = app.querySelector('game-page');
         return gamePage && !gamePage.hasAttribute('open');
       }, { timeout: 3000 });
     });
@@ -682,27 +679,27 @@ test.describe('Wordle E2E Tests', () => {
       // Click statistics button
       await page.evaluate(() => {
         const app = document.querySelector('game-app');
-        app.shadowRoot.getElementById('statistics-button').click();
+        app.querySelector('#statistics-button').click();
       });
 
       // game-modal should have [open] attribute
       await page.waitForFunction(() => {
         const app = document.querySelector('game-app');
-        const modal = app.shadowRoot.querySelector('game-modal');
+        const modal = app.querySelector('game-modal');
         return modal && modal.hasAttribute('open');
       }, { timeout: 3000 });
 
       // Close it by clicking the close icon inside game-modal
       await page.evaluate(() => {
         const app = document.querySelector('game-app');
-        const modal = app.shadowRoot.querySelector('game-modal');
+        const modal = app.querySelector('game-modal');
         const closeIcon = modal.querySelector('game-icon[icon="close"]');
         closeIcon.click();
       });
 
       await page.waitForFunction(() => {
         const app = document.querySelector('game-app');
-        const modal = app.shadowRoot.querySelector('game-modal');
+        const modal = app.querySelector('game-modal');
         return modal && !modal.hasAttribute('open');
       }, { timeout: 3000 });
     });
@@ -717,12 +714,12 @@ test.describe('Wordle E2E Tests', () => {
       // Open settings
       await page.evaluate(() => {
         const app = document.querySelector('game-app');
-        app.shadowRoot.getElementById('settings-button').click();
+        app.querySelector('#settings-button').click();
       });
 
       await page.waitForFunction(() => {
         const app = document.querySelector('game-app');
-        const gamePage = app.shadowRoot.querySelector('game-page');
+        const gamePage = app.querySelector('game-page');
         return gamePage && gamePage.hasAttribute('open');
       }, { timeout: 3000 });
 
@@ -731,11 +728,9 @@ test.describe('Wordle E2E Tests', () => {
       // dispatches a game-setting-change event that triggers theme manager
       await page.evaluate(() => {
         const app = document.querySelector('game-app');
-        const gamePage = app.shadowRoot.querySelector('game-page');
+        const gamePage = app.querySelector('game-page');
         const settings = gamePage.querySelector('game-settings');
-        // The dark-theme switch is identified by its id in game-settings shadow DOM
         const darkSwitch = settings.querySelector('#dark-theme');
-        // game-switch no longer uses shadow DOM — .container is a direct child
         const container = darkSwitch.querySelector('.container');
         container.click();
       });

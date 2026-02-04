@@ -57,10 +57,7 @@ h1 {
 }
 
 game-icon {
-	position: absolute;
-	right: 0;
-	user-select: none;
-	cursor: pointer;
+	display: inline-block;
 }
 
 @media only screen and (min-device-width:320px) and (max-device-width:480px) {
@@ -69,7 +66,7 @@ game-icon {
 		padding: 0;
 	}
 
-	game-icon {
+	#save game-icon {
 		padding: 0 16px;
 	}
 

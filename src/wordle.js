@@ -1126,9 +1126,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
             var a = h(t);
             function t() {
                 var e;
-                s(this, t), n(p(e = a.call(this)), "tileIndex", 0), n(p(e), "rowIndex", 0), n(p(e), "solution", void 0), n(p(e), "boardState", void 0), n(p(e), "evaluations", void 0), n(p(e), "canInput", !0), n(p(e), "gameStatus", GAME_STATUS_IN_PROGRESS), n(p(e), "letterEvaluations", {}), n(p(e), "$board", void 0), n(p(e), "$keyboard", void 0), n(p(e), "$game", void 0), n(p(e), "today", void 0), n(p(e), "lastPlayedTs", void 0), n(p(e), "lastCompletedTs", void 0), n(p(e), "hardMode", void 0), n(p(e), "dayOffset", void 0), e.attachShadow({
-                    mode: "open"
-                }), e.today = new Date;var o = za();
+                s(this, t), n(p(e = a.call(this)), "tileIndex", 0), n(p(e), "rowIndex", 0), n(p(e), "solution", void 0), n(p(e), "boardState", void 0), n(p(e), "evaluations", void 0), n(p(e), "canInput", !0), n(p(e), "gameStatus", GAME_STATUS_IN_PROGRESS), n(p(e), "letterEvaluations", {}), n(p(e), "$board", void 0), n(p(e), "$keyboard", void 0), n(p(e), "$game", void 0), n(p(e), "today", void 0), n(p(e), "lastPlayedTs", void 0), n(p(e), "lastCompletedTs", void 0), n(p(e), "hardMode", void 0), n(p(e), "dayOffset", void 0), e.today = new Date;var o = za();
                 return e.lastPlayedTs = o.lastPlayedTs, !e.lastPlayedTs || calculateDaysBetween(new Date(e.lastPlayedTs), e.today) >= 1 ? (e.boardState = new Array(6).fill(""), e.evaluations = new Array(6).fill(null), e.solution = getSolution(e.today), e.dayOffset = getDayOffset(e.today), e.lastCompletedTs = o.lastCompletedTs, e.hardMode = o.hardMode, e.restoringFromLocalStorage = !1, ja({
                         rowIndex: e.rowIndex,
                         boardState: e.boardState,
@@ -1207,12 +1205,12 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                     value: function(e, a) {
                         var s = arguments.length > 2 && void 0 !== arguments[2] && arguments[2],
                             t = document.createElement("game-toast");
-                        t.setAttribute("text", e), a && t.setAttribute("duration", a), s ? this.shadowRoot.querySelector("#system-toaster").prepend(t) : this.shadowRoot.querySelector("#game-toaster").prepend(t)
+                        t.setAttribute("text", e), a && t.setAttribute("duration", a), s ? this.querySelector("#system-toaster").prepend(t) : this.querySelector("#game-toaster").prepend(t)
                     }
                 }, {
                     key: "sizeBoard",
                     value: function() {
-                        var e = this.shadowRoot.querySelector("#board-container"),
+                        var e = this.querySelector("#board-container"),
                             maxBoardWidth = window.innerWidth < 331 ? 268 : window.innerWidth < 560 ? 315 : 350,
                             a = Math.min(Math.floor(e.clientHeight * (5 / 6)), maxBoardWidth),
                             s = 6 * Math.floor(a / 5);
@@ -1235,7 +1233,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                     key: "connectedCallback",
                     value: function() {
                         var e = this;
-                        this.shadowRoot.appendChild(gameAppTemplate.content.cloneNode(!0)), this.$game = this.shadowRoot.querySelector("#game"), this.$board = this.shadowRoot.querySelector("#board"), this.$keyboard = this.shadowRoot.querySelector("game-keyboard"), this.sizeBoard(), this.lastPlayedTs || setTimeout((function() {
+                        this.appendChild(gameAppTemplate.content.cloneNode(!0)), this.$game = this.querySelector("#game"), this.$board = this.querySelector("#board"), this.$keyboard = this.querySelector("game-keyboard"), this.sizeBoard(), this.lastPlayedTs || setTimeout((function() {
                             return e.showHelpModal()
                         }), 100);
                         for (var a = 0; a < 6; a++) {
@@ -1251,7 +1249,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                             (a.path || a.composedPath && a.composedPath()).includes(s) && ([GAME_STATUS_WIN, GAME_STATUS_FAIL].includes(e.gameStatus) && (e.restoringFromLocalStorage ? e.showStatsModal() : (e.gameStatus === GAME_STATUS_WIN && (s.setAttribute("win", ""), e.addToast(WIN_COMMENTS[e.rowIndex - 1], 2e3)), e.gameStatus === GAME_STATUS_FAIL && e.addToast(e.solution.toUpperCase(), 1 / 0), setTimeout((function() {
                                 e.showStatsModal()
                             }), 2500))), e.restoringFromLocalStorage = !1)
-                        })), this.shadowRoot.addEventListener("game-setting-change", (function(a) {
+                        })), this.addEventListener("game-setting-change", (function(a) {
                             var s = a.detail,
                                 t = s.name,
                                 o = s.checked,
@@ -1262,21 +1260,21 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                                     hardMode: o
                                 })))
                             }
-                        })), this.shadowRoot.getElementById("settings-button").addEventListener("click", (function(a) {
+                        })), this.querySelector("#settings-button").addEventListener("click", (function(a) {
                             var s = e.$game.querySelector("game-page"),
                                 t = document.createTextNode("Settings");
                             s.appendChild(t);
                             var o = document.createElement("game-settings");
                             o.setAttribute("slot", "content"), o.gameApp = e, s.appendChild(o), s.setAttribute("open", "")
-                        })), this.shadowRoot.getElementById("help-button").addEventListener("click", (function(a) {
+                        })), this.querySelector("#help-button").addEventListener("click", (function(a) {
                             var s = e.$game.querySelector("game-page"),
                                 t = document.createTextNode("How to play");
                             s.appendChild(t);
                             var o = document.createElement("game-help");
                             o.setAttribute("page", ""), o.setAttribute("slot", "content"), s.appendChild(o), s.setAttribute("open", "")
-                        })), this.shadowRoot.getElementById("statistics-button").addEventListener("click", (function(a) {
+                        })), this.querySelector("#statistics-button").addEventListener("click", (function(a) {
                             e.showStatsModal()
-                        })), this.shadowRoot.getElementById("save-button").addEventListener("click", (function(a) {
+                        })), this.querySelector("#save-button").addEventListener("click", (function(a) {
                             var s = document.querySelector('#save');
                             s.classList.toggle('hidden');
 
@@ -1289,16 +1287,16 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                     key: "debugTools",
                     value: function() {
                         var e = this;
-                        this.shadowRoot.getElementById("debug-tools").appendChild(qaButtons.content.cloneNode(!0)), this.shadowRoot.getElementById("toast").addEventListener("click", (function(a) {
+                        this.querySelector("#debug-tools").appendChild(qaButtons.content.cloneNode(!0)), this.querySelector("#toast").addEventListener("click", (function(a) {
                             e.addToast("hello world")
-                        })), this.shadowRoot.getElementById("modal").addEventListener("click", (function(a) {
+                        })), this.querySelector("#modal").addEventListener("click", (function(a) {
                             var s = e.$game.querySelector("game-modal");
                             s.textContent = "hello plz", s.setAttribute("open", "")
-                        })), this.shadowRoot.getElementById("reveal").addEventListener("click", (function() {
+                        })), this.querySelector("#reveal").addEventListener("click", (function() {
                             e.evaluateRow()
-                        })), this.shadowRoot.getElementById("shake").addEventListener("click", (function() {
+                        })), this.querySelector("#shake").addEventListener("click", (function() {
                             e.$board.querySelectorAll("game-row")[e.rowIndex].setAttribute("invalid", "")
-                        })), this.shadowRoot.getElementById("bounce").addEventListener("click", (function() {
+                        })), this.querySelector("#bounce").addEventListener("click", (function() {
                             var a = e.$board.querySelectorAll("game-row")[e.rowIndex - 1];
                             "" === a.getAttribute("win") ? a.removeAttribute("win") : a.setAttribute("win", "")
                         }))
