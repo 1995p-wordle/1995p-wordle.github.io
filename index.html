@@ -291,6 +291,32 @@
             bottom: 0;
         }
 
+        /* game-help styles (inside game-app shadow DOM context) */
+        game-help .instructions {
+            font-size: 14px;
+            color: var(--color-tone-1);
+        }
+
+        game-help .examples {
+            border-bottom: 1px solid var(--color-tone-4);
+            border-top: 1px solid var(--color-tone-4);
+        }
+
+        game-help .example {
+            margin-top: 24px;
+            margin-bottom: 24px;
+        }
+
+        game-help game-tile {
+            width: 40px;
+            height: 40px;
+        }
+
+        game-help[page] section {
+            padding: 16px;
+            padding-top: 0px;
+        }
+
         #save-buttion game-icon svg path {
             transform: translate(-1.99 -2.72);
             fill: none !important;

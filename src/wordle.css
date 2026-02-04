@@ -166,3 +166,93 @@ game-icon {
 #inputload {
 	padding:  0.5em 0;
 }
+
+/* Toast styles (moved from game-toast shadow DOM) */
+game-toast .toast {
+    position: relative;
+    margin: 16px;
+    background-color: var(--color-tone-1);
+    color: var(--color-tone-7);
+    padding: 16px;
+    border: none;
+    border-radius: 4px;
+    opacity: 1;
+    transition: opacity 300ms cubic-bezier(0.645, 0.045, 0.355, 1);
+    font-weight: 700;
+}
+
+game-toast .toast.win {
+    background-color: var(--color-correct);
+    color: var(--tile-text-color);
+}
+
+game-toast .toast.fade {
+    opacity: 0;
+}
+
+/* Game Switch styles (moved from game-switch shadow DOM) */
+game-switch .container {
+    display: flex;
+    justify-content: space-between;
+}
+
+game-switch .switch {
+    height: 20px;
+    width: 32px;
+    vertical-align: middle;
+    background: var(--color-tone-3);
+    border-radius: 999px;
+    display: block;
+    position: relative;
+}
+
+game-switch .knob {
+    display: block;
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    height: calc(100% - 4px);
+    width: 50%;
+    border-radius: 8px;
+    background: var(--white);
+    transform: translateX(0);
+    transition: transform 0.3s;
+}
+
+game-switch[checked] .switch {
+    background: var(--color-correct);
+}
+
+game-switch[checked] .knob {
+    transform: translateX(calc(100% - 4px));
+}
+
+game-switch[disabled] .switch {
+    opacity: 0.5;
+}
+
+/* Game Help styles (moved from game-help shadow DOM) */
+game-help .instructions {
+    font-size: 14px;
+    color: var(--color-tone-1);
+}
+
+game-help .examples {
+    border-bottom: 1px solid var(--color-tone-4);
+    border-top: 1px solid var(--color-tone-4);
+}
+
+game-help .example {
+    margin-top: 24px;
+    margin-bottom: 24px;
+}
+
+game-help game-tile {
+    width: 40px;
+    height: 40px;
+}
+
+game-help[page] section {
+    padding: 16px;
+    padding-top: 0px;
+}

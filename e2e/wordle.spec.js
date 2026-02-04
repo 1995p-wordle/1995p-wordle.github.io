@@ -532,6 +532,65 @@ test.describe('Wordle E2E Tests', () => {
       }, { timeout: 3000 });
     });
 
+    test('settings page shows 3 toggle switches with visible sliders', async ({ page }) => {
+      await freshGame(page);
+      await dismissHelpModal(page);
+
+      // Open settings
+      await page.evaluate(() => {
+        const app = document.querySelector('game-app');
+        app.shadowRoot.getElementById('settings-button').click();
+      });
+
+      await page.waitForFunction(() => {
+        const app = document.querySelector('game-app');
+        const gamePage = app.shadowRoot.querySelector('game-page');
+        return gamePage && gamePage.hasAttribute('open');
+      }, { timeout: 3000 });
+
+      // Verify 3 game-switch elements exist with visible switch+knob structure
+      const switchInfo = await page.evaluate(() => {
+        const app = document.querySelector('game-app');
+        const gamePage = app.shadowRoot.querySelector('game-page');
+        const settings = gamePage.querySelector('game-settings');
+        const switches = settings.shadowRoot.querySelectorAll('game-switch');
+        return Array.from(switches).map(sw => {
+          const switchDiv = sw.querySelector('.switch');
+          const knob = sw.querySelector('.knob');
+          return {
+            id: sw.id,
+            hasSwitchDiv: !!switchDiv,
+            hasKnob: !!knob,
+            switchVisible: switchDiv ? getComputedStyle(switchDiv).display !== 'none' : false,
+            switchWidth: switchDiv ? getComputedStyle(switchDiv).width : '0px'
+          };
+        });
+      });
+
+      expect(switchInfo).toHaveLength(3);
+      for (const sw of switchInfo) {
+        expect(sw.hasSwitchDiv).toBe(true);
+        expect(sw.hasKnob).toBe(true);
+        expect(sw.switchVisible).toBe(true);
+        expect(sw.switchWidth).toBe('32px');
+      }
+      expect(switchInfo.map(s => s.id)).toEqual(['hard-mode', 'dark-theme', 'color-blind-theme']);
+
+      // Close settings
+      await page.evaluate(() => {
+        const app = document.querySelector('game-app');
+        const gamePage = app.shadowRoot.querySelector('game-page');
+        const closeIcon = gamePage.shadowRoot.querySelector('game-icon[icon="close"]');
+        closeIcon.click();
+      });
+
+      await page.waitForFunction(() => {
+        const app = document.querySelector('game-app');
+        const gamePage = app.shadowRoot.querySelector('game-page');
+        return gamePage && !gamePage.hasAttribute('open');
+      }, { timeout: 3000 });
+    });
+
     test('settings button opens settings page and it can be closed', async ({ page }) => {
       await freshGame(page);
       await dismissHelpModal(page);
@@ -624,8 +683,8 @@ test.describe('Wordle E2E Tests', () => {
         const settings = gamePage.querySelector('game-settings');
         // The dark-theme switch is identified by its id in game-settings shadow DOM
         const darkSwitch = settings.shadowRoot.querySelector('#dark-theme');
-        // game-switch uses a .container div with a click handler (no <input>)
-        const container = darkSwitch.shadowRoot.querySelector('.container');
+        // game-switch no longer uses shadow DOM — .container is a direct child
+        const container = darkSwitch.querySelector('.container');
         container.click();
       });
 
