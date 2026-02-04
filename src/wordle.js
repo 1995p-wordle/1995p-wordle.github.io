@@ -161,8 +161,8 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
         for (var s = 0, t = new Array(a); s < a; s++) t[s] = e[s];
         return t
     }
-    var k = document.createElement("template");
-    k.innerHTML = `
+    var tileTemplate = document.createElement("template");
+    tileTemplate.innerHTML = `
 <style>
   :host {
     display: inline-block;
@@ -291,7 +291,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 key: "connectedCallback",
                 value: function() {
                     var e = this;
-                    this.shadowRoot.appendChild(k.content.cloneNode(!0)), this.$tile = this.shadowRoot.querySelector(".tile"), this.$tile.addEventListener("animationend", (function(a) {
+                    this.shadowRoot.appendChild(tileTemplate.content.cloneNode(!0)), this.$tile = this.shadowRoot.querySelector(".tile"), this.$tile.addEventListener("animationend", (function(a) {
                         "PopIn" === a.animationName && (e._animation = "idle"), "FlipIn" === a.animationName && (e.$tile.dataset.state = e._state, e._animation = "flip-out"), "FlipOut" === a.animationName && (e._animation = "idle", e._last && e.dispatchEvent(new CustomEvent("game-last-tile-revealed-in-row", {
                             bubbles: !0,
                             composed: !0
@@ -464,8 +464,8 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
             }]), t
     }(c(HTMLElement));
     customElements.define("game-row", x);
-    var z = document.createElement("template");
-    z.innerHTML = `<slot></slot>`;
+    var themeManagerTemplate = document.createElement("template");
+    themeManagerTemplate.innerHTML = `<slot></slot>`;
     var DARK_THEME_KEY = "darkTheme",
         COLOR_BLIND_THEME_KEY = "colorBlindTheme",
         _ = function(e) {
@@ -496,7 +496,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                     key: "connectedCallback",
                     value: function() {
                         var e = this;
-                        this.shadowRoot.appendChild(z.content.cloneNode(!0)), this.shadowRoot.addEventListener("game-setting-change", (function(a) {
+                        this.shadowRoot.appendChild(themeManagerTemplate.content.cloneNode(!0)), this.shadowRoot.addEventListener("game-setting-change", (function(a) {
                             var s = a.detail,
                                 t = s.name,
                                 o = s.checked;
@@ -991,8 +991,8 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
             window.localStorage.setItem(wa, JSON.stringify(e))
         }(va(a, e))
     }
-    var Sa = document.createElement("template");
-    Sa.innerHTML = `
+    var gameSettingsTemplate = document.createElement("template");
+    gameSettingsTemplate.innerHTML = `
   <style>
   .setting {
     display: flex;
@@ -1101,7 +1101,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 value: function() {
                     var e,
                         a = this;
-                    this.shadowRoot.appendChild(Sa.content.cloneNode(!0)), this.shadowRoot.querySelector("#hash").textContent = null === (e = window.wordle) || void 0 === e ? void 0 : e.hash, this.shadowRoot.querySelector("#puzzle-number").textContent = "#".concat(this.gameApp.dayOffset), this.shadowRoot.addEventListener("game-switch-change", (function(e) {
+                    this.shadowRoot.appendChild(gameSettingsTemplate.content.cloneNode(!0)), this.shadowRoot.querySelector("#hash").textContent = null === (e = window.wordle) || void 0 === e ? void 0 : e.hash, this.shadowRoot.querySelector("#puzzle-number").textContent = "#".concat(this.gameApp.dayOffset), this.shadowRoot.addEventListener("game-switch-change", (function(e) {
                         e.stopPropagation();
                         var s = e.detail,
                             t = s.name,
@@ -1359,8 +1359,8 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
 
         return { validGuess: true };
     }
-    var Ka = document.createElement("template");
-    Ka.innerHTML = document.getElementById('header-container').innerHTML;
+    var gameAppTemplate = document.createElement("template");
+    gameAppTemplate.innerHTML = document.getElementById('header-container').innerHTML;
     var qaButtons = document.createElement("template");
     qaButtons.innerHTML = `
 <button id="reveal">reveal</button>
@@ -1487,7 +1487,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                     key: "connectedCallback",
                     value: function() {
                         var e = this;
-                        this.shadowRoot.appendChild(Ka.content.cloneNode(!0)), this.$game = this.shadowRoot.querySelector("#game"), this.$board = this.shadowRoot.querySelector("#board"), this.$keyboard = this.shadowRoot.querySelector("game-keyboard"), this.sizeBoard(), this.lastPlayedTs || setTimeout((function() {
+                        this.shadowRoot.appendChild(gameAppTemplate.content.cloneNode(!0)), this.$game = this.shadowRoot.querySelector("#game"), this.$board = this.shadowRoot.querySelector("#board"), this.$keyboard = this.shadowRoot.querySelector("game-keyboard"), this.sizeBoard(), this.lastPlayedTs || setTimeout((function() {
                             return e.showHelpModal()
                         }), 100);
                         for (var a = 0; a < 6; a++) {
@@ -1558,8 +1558,8 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 }]), t
         }(c(HTMLElement));
     customElements.define("game-app", ts);
-    var os = document.createElement("template");
-    os.innerHTML = `
+    var modalOverlayTemplate = document.createElement("template");
+    modalOverlayTemplate.innerHTML = `
   <style>
     .overlay {
       display: none;
@@ -1659,7 +1659,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 key: "connectedCallback",
                 value: function() {
                     var e = this;
-                    this.shadowRoot.appendChild(os.content.cloneNode(!0)), this.addEventListener("click", (function(a) {
+                    this.shadowRoot.appendChild(modalOverlayTemplate.content.cloneNode(!0)), this.addEventListener("click", (function(a) {
                         e.shadowRoot.querySelector(".content").classList.add("closing")
                     })), this.shadowRoot.addEventListener("animationend", (function(a) {
                         "SlideOut" === a.animationName && (e.shadowRoot.querySelector(".content").classList.remove("closing"), e.removeChild(e.firstChild), e.removeAttribute("open"))
@@ -1668,8 +1668,8 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
             }]), t
     }(c(HTMLElement));
     customElements.define("game-modal", ns);
-    var rs = document.createElement("template");
-    rs.innerHTML = `
+    var keyboardTemplate = document.createElement("template");
+    keyboardTemplate.innerHTML = `
   <style>
   :host {
     height: var(--keyboard-height);
@@ -1810,8 +1810,8 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
   </style>
   <div id="keyboard"></div>
 `;
-    var is = document.createElement("template");
-    is.innerHTML = `<button>key</button>`;
+    var keyButtonTemplate = document.createElement("template");
+    keyButtonTemplate.innerHTML = `<button>key</button>`;
     var spacerDiv = document.createElement("template");
     spacerDiv.innerHTML = `<div class="spacer"></div>`;
     var keyLabels = [["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
@@ -1846,7 +1846,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                     key: "connectedCallback",
                     value: function() {
                         var e = this;
-                        this.shadowRoot.appendChild(rs.content.cloneNode(!0)), this.$keyboard = this.shadowRoot.getElementById("keyboard"), this.$keyboard.addEventListener("click", (function(a) {
+                        this.shadowRoot.appendChild(keyboardTemplate.content.cloneNode(!0)), this.$keyboard = this.shadowRoot.getElementById("keyboard"), this.$keyboard.addEventListener("click", (function(a) {
                             var s = a.target.closest("button");
                             s && e.$keyboard.contains(s) && e.dispatchKeyPressEvent(s.dataset.key)
                         })), window.addEventListener("keydown", (function(a) {
@@ -1864,7 +1864,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                             s.classList.add("row"), a.forEach((function(e) {
                                 var a;
                                 if (e >= "a" && e <= "z" || "←" === e || "↵" === e) {
-                                    if ((a = is.content.cloneNode(!0).firstElementChild).dataset.key = e, a.textContent = e, "←" === e) {
+                                    if ((a = keyButtonTemplate.content.cloneNode(!0).firstElementChild).dataset.key = e, a.textContent = e, "←" === e) {
                                         var t = document.createElement("game-icon");
                                         t.setAttribute("icon", "backspace"), a.textContent = "", a.appendChild(t), a.classList.add("one-and-a-half")
                                     }
@@ -2142,8 +2142,8 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
       return { text: header + "\n\n" + grid.trimEnd() };
     }
 
-    var Cs = document.createElement("template");
-    Cs.innerHTML = `
+    var statsContainerTemplate = document.createElement("template");
+    statsContainerTemplate.innerHTML = `
   <style>
     .container {
       display: flex;
@@ -2304,15 +2304,15 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     <div class="footer"></div>
   </div>
 `;
-    var Ls = document.createElement("template");
-    Ls.innerHTML = `
+    var statisticItemTemplate = document.createElement("template");
+    statisticItemTemplate.innerHTML = `
   <div class="statistic-container">
     <div class="statistic"></div>
     <div class="label"></div>
   </div>
 `;
-    var Ts = document.createElement("template");
-    Ts.innerHTML = `
+    var graphBarTemplate = document.createElement("template");
+    graphBarTemplate.innerHTML = `
   <div class="graph-container">
     <div class="guess"></div>
     <div class="graph">
@@ -2322,8 +2322,8 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     </div>
   </div>
 `;
-    var Is = document.createElement("template");
-    Is.innerHTML = `
+    var countdownTemplate = document.createElement("template");
+    countdownTemplate.innerHTML = `
   <div class="countdown">
     <h1>Next WORDLE</h1>
     <div id="timer">
@@ -2361,7 +2361,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                     key: "connectedCallback",
                     value: function() {
                         var e = this;
-                        this.shadowRoot.appendChild(Cs.content.cloneNode(!0));
+                        this.shadowRoot.appendChild(statsContainerTemplate.content.cloneNode(!0));
                         var a = this.shadowRoot.getElementById("statistics"),
                             s = this.shadowRoot.getElementById("guess-distribution"),
                             t = Math.max.apply(Math, g(Object.values(this.stats.guesses)));
@@ -2374,7 +2374,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                             for (var n = 1; n < Object.keys(this.stats.guesses).length; n++) {
                                 var r = n,
                                     i = this.stats.guesses[n],
-                                    l = Ts.content.cloneNode(!0),
+                                    l = graphBarTemplate.content.cloneNode(!0),
                                     d = Math.max(7, Math.round(i / t * 100));
                                 l.querySelector(".guess").textContent = r;var u = l.querySelector(".graph-bar");
                                 if (u.style.width = "".concat(d, "%"), "number" == typeof i) {
@@ -2387,11 +2387,11 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                         if (["gamesPlayed", "winPercentage", "currentStreak", "maxStreak"].forEach((function(s) {
                                     var t = Ms[s],
                                         o = e.stats[s],
-                                        n = Ls.content.cloneNode(!0);
+                                        n = statisticItemTemplate.content.cloneNode(!0);
                                     n.querySelector(".label").textContent = t, n.querySelector(".statistic").textContent = o, a.appendChild(n)
                                 })), this.gameApp.gameStatus !== GAME_STATUS_IN_PROGRESS) {
                             var p = this.shadowRoot.querySelector(".footer"),
-                                m = Is.content.cloneNode(!0);
+                                m = countdownTemplate.content.cloneNode(!0);
                             p.appendChild(m), this.shadowRoot.querySelector("button#share-button").addEventListener("click", (function(a) {
                                 a.preventDefault();
                                 a.stopPropagation();
@@ -2412,8 +2412,8 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 }]), t
         }(c(HTMLElement));
     customElements.define("game-stats", Os);
-    var Rs = document.createElement("template");
-    Rs.innerHTML = `
+    var toggleSwitchTemplate = document.createElement("template");
+    toggleSwitchTemplate.innerHTML = `
   <style>
     :host {
     }
@@ -2478,7 +2478,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 key: "connectedCallback",
                 value: function() {
                     var e = this;
-                    this.shadowRoot.appendChild(Rs.content.cloneNode(!0)), this.shadowRoot.querySelector(".container").addEventListener("click", (function(a) {
+                    this.shadowRoot.appendChild(toggleSwitchTemplate.content.cloneNode(!0)), this.shadowRoot.querySelector(".container").addEventListener("click", (function(a) {
                         a.stopPropagation(), e.hasAttribute("checked") ? e.removeAttribute("checked") : e.setAttribute("checked", ""), e.dispatchEvent(new CustomEvent("game-switch-change", {
                             bubbles: !0,
                             composed: !0,
@@ -2498,8 +2498,8 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
             }]), t
     }(c(HTMLElement));
     customElements.define("game-switch", Ps);
-    var $s = document.createElement("template");
-    $s.innerHTML = `
+    var helpTemplate = document.createElement("template");
+    helpTemplate.innerHTML = `
   <style>
   .instructions {
     font-size: 14px;
@@ -2581,13 +2581,13 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
         return o(t, [{
                 key: "connectedCallback",
                 value: function() {
-                    this.shadowRoot.appendChild($s.content.cloneNode(!0))
+                    this.shadowRoot.appendChild(helpTemplate.content.cloneNode(!0))
                 }
             }]), t
     }(c(HTMLElement));
     customElements.define("game-help", Hs);
-    var Ns = document.createElement("template");
-    Ns.innerHTML = `
+    var pageOverlayTemplate = document.createElement("template");
+    pageOverlayTemplate.innerHTML = `
   <style>
     .overlay {
       display: none;
@@ -2709,7 +2709,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 key: "connectedCallback",
                 value: function() {
                     var e = this;
-                    this.shadowRoot.appendChild(Ns.content.cloneNode(!0)), this.shadowRoot.querySelector("game-icon").addEventListener("click", (function(a) {
+                    this.shadowRoot.appendChild(pageOverlayTemplate.content.cloneNode(!0)), this.shadowRoot.querySelector("game-icon").addEventListener("click", (function(a) {
                         e.shadowRoot.querySelector(".overlay").classList.add("closing")
                     })), this.shadowRoot.addEventListener("animationend", (function(a) {
                         "SlideOut" === a.animationName && (e.shadowRoot.querySelector(".overlay").classList.remove("closing"), Array.from(e.childNodes).forEach((function(a) {
@@ -2761,8 +2761,8 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 }]), t
         }(c(HTMLElement));
     customElements.define("game-icon", Fs);
-    var Ws = document.createElement("template");
-    Ws.innerHTML = `<div id="timer"></div>`;
+    var timerTemplate = document.createElement("template");
+    timerTemplate.innerHTML = `<div id="timer"></div>`;
     var Ys = 6e4,
         Js = 36e5,
         Us = function(e) {
@@ -2800,7 +2800,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                     key: "connectedCallback",
                     value: function() {
                         var e = this;
-                        this.shadowRoot.appendChild(Ws.content.cloneNode(!0)), this.$timer = this.shadowRoot.querySelector("#timer"), this.intervalId = setInterval((function() {
+                        this.shadowRoot.appendChild(timerTemplate.content.cloneNode(!0)), this.$timer = this.shadowRoot.querySelector("#timer"), this.intervalId = setInterval((function() {
                             e.updateTimer()
                         }), 200)
                     }
