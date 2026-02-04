@@ -298,8 +298,6 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
             }]), t
     }(c(HTMLElement));
     customElements.define("game-row", GameRow);
-    var themeManagerTemplate = document.createElement("template");
-    themeManagerTemplate.innerHTML = `<slot></slot>`;
     var DARK_THEME_KEY = "darkTheme",
         COLOR_BLIND_THEME_KEY = "colorBlindTheme",
         GameThemeManager = function(e) {
@@ -307,9 +305,8 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
             var a = h(t);
             function t() {
                 var e;
-                s(this, t), n(p(e = a.call(this)), "isDarkTheme", !1), n(p(e), "isColorBlindTheme", !1), e.attachShadow({
-                    mode: "open"
-                });var o = JSON.parse(window.localStorage.getItem(DARK_THEME_KEY)),
+                s(this, t), n(p(e = a.call(this)), "isDarkTheme", !1), n(p(e), "isColorBlindTheme", !1);
+                var o = JSON.parse(window.localStorage.getItem(DARK_THEME_KEY)),
                     r = window.matchMedia("(prefers-color-scheme: dark)").matches,
                     i = JSON.parse(window.localStorage.getItem(COLOR_BLIND_THEME_KEY));
                 return !0 === o || !1 === o ? e.setDarkTheme(o) : r && e.setDarkTheme(!0), !0 !== i && !1 !== i || e.setColorBlindTheme(i), e
@@ -330,7 +327,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                     key: "connectedCallback",
                     value: function() {
                         var e = this;
-                        this.shadowRoot.appendChild(themeManagerTemplate.content.cloneNode(!0)), this.shadowRoot.addEventListener("game-setting-change", (function(a) {
+                        this.addEventListener("game-setting-change", (function(a) {
                             var s = a.detail,
                                 t = s.name,
                                 o = s.checked;
@@ -827,99 +824,6 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     }
     var gameSettingsTemplate = document.createElement("template");
     gameSettingsTemplate.innerHTML = `
-  <style>
-  .setting {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--color-tone-4);
-    padding: 16px 0;
-  }
-
-  a, a:visited {
-    color: var(--color-tone-2);
-  }
-
-  .title {
-    font-size: 18px;
-  }
-
-  .text {
-    padding-right: 8px;
-  }
-
-  .description {
-    font-size: 12px;
-    color: var(--color-tone-2);
-  }
-
-  #footnote {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 16px;
-    color: var(--color-tone-2);
-    font-size: 12px;
-    text-align: right;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-  }
-
-  #privacy-policy,
-  #copyright {
-    text-align: left;
-  }
-
-  @media only screen and (min-device-width: 320px) and (max-device-width: 480px) {
-    .setting {
-      padding: 16px;
-    }
-  }
-
-  /* game-switch styles (no longer in shadow DOM, but inside game-settings shadow DOM) */
-  game-switch .container {
-    display: flex;
-    justify-content: space-between;
-  }
-
-  game-switch .switch {
-    height: 20px;
-    width: 32px;
-    vertical-align: middle;
-    background: var(--color-tone-3);
-    border-radius: 999px;
-    display: block;
-    position: relative;
-  }
-
-  game-switch .knob {
-    display: block;
-    position: absolute;
-    left: 2px;
-    top: 2px;
-    height: calc(100% - 4px);
-    width: 50%;
-    border-radius: 8px;
-    background: var(--white);
-    transform: translateX(0);
-    transition: transform 0.3s;
-  }
-
-  game-switch[checked] .switch {
-    background: var(--color-correct);
-  }
-
-  game-switch[checked] .knob {
-    transform: translateX(calc(100% - 4px));
-  }
-
-  game-switch[disabled] .switch {
-    opacity: 0.5;
-  }
-  </style>
-
   <div class="sections">
     <section>
       <div class="setting">
@@ -967,16 +871,14 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
         var a = h(t);
         function t() {
             var e;
-            return s(this, t), n(p(e = a.call(this)), "gameApp", void 0), e.attachShadow({
-                    mode: "open"
-                }), e
+            return s(this, t), n(p(e = a.call(this)), "gameApp", void 0), e
         }
         return o(t, [{
                 key: "connectedCallback",
                 value: function() {
                     var e,
                         a = this;
-                    this.shadowRoot.appendChild(gameSettingsTemplate.content.cloneNode(!0)), this.shadowRoot.querySelector("#hash").textContent = null === (e = window.wordle) || void 0 === e ? void 0 : e.hash, this.shadowRoot.querySelector("#puzzle-number").textContent = "#".concat(this.gameApp.dayOffset), this.shadowRoot.addEventListener("game-switch-change", (function(e) {
+                    this.appendChild(gameSettingsTemplate.content.cloneNode(!0)), this.querySelector("#hash").textContent = null === (e = window.wordle) || void 0 === e ? void 0 : e.hash, this.querySelector("#puzzle-number").textContent = "#".concat(this.gameApp.dayOffset), this.addEventListener("game-switch-change", (function(e) {
                         e.stopPropagation();
                         var s = e.detail,
                             t = s.name,
@@ -984,7 +886,6 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                             n = s.disabled;
                         a.dispatchEvent(new CustomEvent("game-setting-change", {
                             bubbles: !0,
-                            composed: !0,
                             detail: {
                                 name: t,
                                 checked: o,
@@ -997,9 +898,9 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 key: "render",
                 value: function() {
                     var e = document.querySelector("body");
-                    e.classList.contains("nightmode") && this.shadowRoot.querySelector("#dark-theme").setAttribute("checked", ""), e.classList.contains("colorblind") && this.shadowRoot.querySelector("#color-blind-theme").setAttribute("checked", "");
+                    e.classList.contains("nightmode") && this.querySelector("#dark-theme").setAttribute("checked", ""), e.classList.contains("colorblind") && this.querySelector("#color-blind-theme").setAttribute("checked", "");
                     var a = za();
-                    a.hardMode && this.shadowRoot.querySelector("#hard-mode").setAttribute("checked", ""), a.hardMode || "IN_PROGRESS" !== a.gameStatus || 0 === a.rowIndex || (this.shadowRoot.querySelector("#hard-mode").removeAttribute("checked"), this.shadowRoot.querySelector("#hard-mode").setAttribute("disabled", ""))
+                    a.hardMode && this.querySelector("#hard-mode").setAttribute("checked", ""), a.hardMode || "IN_PROGRESS" !== a.gameStatus || 0 === a.rowIndex || (this.querySelector("#hard-mode").removeAttribute("checked"), this.querySelector("#hard-mode").setAttribute("disabled", ""))
                 }
             }]), t
     }(c(HTMLElement));
@@ -1407,86 +1308,8 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     customElements.define("game-app", GameApp);
     var modalOverlayTemplate = document.createElement("template");
     modalOverlayTemplate.innerHTML = `
-  <style>
-    .overlay {
-      display: none;
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      justify-content: center;
-      align-items: center;
-      background-color: var(--opacity-50);
-      z-index: ${3e3};
-    }
-
-    :host([open]) .overlay {
-      display: flex;
-    }
-
-    .content {
-      position: relative;
-      border-radius: 8px;
-      border: 1px solid var(--color-tone-6);
-      background-color: var(--modal-content-bg);
-      color: var(--color-tone-1);
-      box-shadow: 0 4px 23px 0 rgba(0, 0, 0, 0.2);
-      width: 90%;
-      max-height: 90%;
-      overflow-y: auto;
-      animation: SlideIn 200ms;
-      max-width: var(--game-max-width);
-      padding: 16px;
-      box-sizing: border-box;
-    }
-
-    .content.closing {
-      animation: SlideOut 200ms;
-    }
-
-    .close-icon {
-      width: 24px;
-      height: 24px;
-      position: absolute;
-      top: 16px;
-      right: 16px;
-    }
-
-    game-icon {
-      position: fixed;
-      user-select: none;
-      cursor: pointer;
-    }
-
-    @keyframes SlideIn {
-      0% {
-        transform: translateY(30px);
-        opacity: 0;
-      }
-      100% {
-        transform: translateY(0px);
-        opacity: 1;
-      }
-    }
-
-    @keyframes SlideOut {
-      0% {
-        transform: translateY(0px);
-        opacity: 1;
-      }
-      90% {
-        opacity: 0;
-      }
-      100% {
-        opacity: 0;
-        transform: translateY(60px);
-      }
-    }
-  </style>
-  <div class="overlay">
-    <div class="content">
-      <slot></slot>
+  <div class="modal-overlay">
+    <div class="modal-content">
       <div class="close-icon">
         <game-icon icon="close"></game-icon>
       </div>
@@ -1497,166 +1320,41 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
         r(t, e);
         var a = h(t);
         function t() {
-            var e;
-            return s(this, t), (e = a.call(this)).attachShadow({
-                    mode: "open"
-                }), e
+            return s(this, t), a.call(this)
         }
         return o(t, [{
                 key: "connectedCallback",
                 value: function() {
                     var e = this;
-                    this.shadowRoot.appendChild(modalOverlayTemplate.content.cloneNode(!0)), this.addEventListener("click", (function(a) {
-                        e.shadowRoot.querySelector(".content").classList.add("closing")
-                    })), this.shadowRoot.addEventListener("animationend", (function(a) {
-                        "SlideOut" === a.animationName && (e.shadowRoot.querySelector(".content").classList.remove("closing"), e.removeChild(e.firstChild), e.removeAttribute("open"))
+                    this.appendChild(modalOverlayTemplate.content.cloneNode(!0));
+                    this.$overlay = this.querySelector(".modal-overlay");
+                    this.$content = this.querySelector(".modal-content");
+                    this.addEventListener("click", (function(a) {
+                        e.$content.classList.add("closing")
+                    })), this.addEventListener("animationend", (function(a) {
+                        "SlideOut" === a.animationName && (e.$content.classList.remove("closing"), e.removeAttribute("open"),
+                        Array.from(e.$content.childNodes).forEach((function(node) {
+                            if (!node.classList || !node.classList.contains("close-icon")) {
+                                e.$content.removeChild(node)
+                            }
+                        })))
                     }))
+                }
+            }, {
+                key: "appendChild",
+                value: function(child) {
+                    if (this.$content && child !== this.$overlay) {
+                        var closeIcon = this.$content.querySelector(".close-icon");
+                        this.$content.insertBefore(child, closeIcon);
+                    } else {
+                        HTMLElement.prototype.appendChild.call(this, child);
+                    }
+                    return child;
                 }
             }]), t
     }(c(HTMLElement));
     customElements.define("game-modal", GameModal);
-    var keyboardTemplate = document.createElement("template");
-    keyboardTemplate.innerHTML = `
-  <style>
-  :host {
-    height: var(--keyboard-height);
-  }
-
-  #keyboard {
-    margin: 0 8px;
-    user-select: none;
-  }
-
-  @media (max-width: 509px) {
-    #keyboard {
-      margin: 0 4px;
-    }
-  }
-
-  @media (max-width: 480px) {
-    #keyboard {
-      margin: 0 2px;
-    }
-  }
-
-  @media (max-width: 330px) {
-    #keyboard {
-      margin: 0 1px;
-    }
-  }
-
-  .row {
-    display: flex;
-    width: 100%;
-    margin: 0 auto 8px;
-    touch-action: manipulation;
-  }
-
-  button {
-    font-family: "Libre Franklin", "Helvetica Neue", Arial, sans-serif;
-    font-weight: 700;
-    border: 0;
-    padding: 0;
-    margin: 0 6px 0 0;
-    height: 58px;
-    border-radius: 4px;
-    cursor: pointer;
-    user-select: none;
-    background-color: var(--key-bg);
-    color: var(--color-tone-1);
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-transform: uppercase;
-    -webkit-tap-highlight-color: rgba(0,0,0,0.3);
-    font-size: 20px;
-    -webkit-text-stroke: 0.5px currentColor;
-    letter-spacing: 0.025em;
-  }
-
-  @media (max-width: 559px) {
-    button {
-      height: 52px;
-      margin: 0 5px 0 0;
-      font-size: 18px;
-    }
-    .row {
-      margin: 0 auto 6px;
-    }
-  }
-
-  @media (max-width: 509px) {
-    button {
-      margin: 0 4px 0 0;
-    }
-  }
-
-  @media (max-width: 480px) {
-    button {
-      margin: 0 3px 0 0;
-      font-size: 18px;
-    }
-  }
-
-  @media (max-width: 330px) {
-    button {
-      height: 44px;
-      margin: 0 2px 0 0;
-      font-size: 15px;
-    }
-    .row {
-      margin: 0 auto 5px;
-    }
-  }
-
-  button:focus {
-    outline: none;
-  }
-
-  button.fade {
-    transition: background-color 0.1s ease, color 0.1s ease;
-  }
-
-  button:last-of-type {
-    margin: 0;
-  }
-
-  .half {
-    flex: 0.5;
-  }
-
-  .one {
-    flex: 1;
-  }
-
-  .one-and-a-half {
-    flex: 1.5;
-    font-size: 12px;
-  }
-
-  .two {
-    flex: 2;
-  }
-
-  button[data-state='correct'] {
-    background-color: var(--key-bg-correct);
-    color: var(--key-evaluated-text-color);
-  }
-
-  button[data-state='present'] {
-    background-color: var(--key-bg-present);
-    color: var(--key-evaluated-text-color);
-  }
-
-  button[data-state='absent'] {
-    background-color: var(--key-bg-absent);
-    color: var(--key-evaluated-text-color);
-  }
-
-  </style>
-  <div id="keyboard"></div>
-`;
+    // keyboard template - just the container div, styles moved to header-container
     var keyButtonTemplate = document.createElement("template");
     keyButtonTemplate.innerHTML = `<button>key</button>`;
     var spacerDiv = document.createElement("template");
@@ -1669,9 +1367,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
             var a = h(t);
             function t() {
                 var e;
-                return s(this, t), n(p(e = a.call(this)), "_letterEvaluations", {}), e.attachShadow({
-                        mode: "open"
-                    }), e
+                return s(this, t), n(p(e = a.call(this)), "_letterEvaluations", {}), e
             }
             return o(t, [{
                     key: "letterEvaluations",
@@ -1683,7 +1379,6 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                     value: function(e) {
                         this.dispatchEvent(new CustomEvent("game-key-press", {
                             bubbles: !0,
-                            composed: !0,
                             detail: {
                                 key: e
                             }
@@ -1693,7 +1388,11 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                     key: "connectedCallback",
                     value: function() {
                         var e = this;
-                        this.shadowRoot.appendChild(keyboardTemplate.content.cloneNode(!0)), this.$keyboard = this.shadowRoot.getElementById("keyboard"), this.$keyboard.addEventListener("click", (function(a) {
+                        var kbDiv = document.createElement("div");
+                        kbDiv.id = "keyboard";
+                        this.appendChild(kbDiv);
+                        this.$keyboard = kbDiv;
+                        this.$keyboard.addEventListener("click", (function(a) {
                             var s = a.target.closest("button");
                             s && e.$keyboard.contains(s) && e.dispatchKeyPressEvent(s.dataset.key)
                         })), window.addEventListener("keydown", (function(a) {
@@ -1991,164 +1690,12 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
 
     var statsContainerTemplate = document.createElement("template");
     statsContainerTemplate.innerHTML = `
-  <style>
-    .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 16px 0;
-    }
-
-    h1 {
-      font-weight: 700;
-      font-size: 16px;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      text-align: center;
-      margin-bottom: 10px;
-    }
-
-    #statistics {
-      display: flex;
-      margin-bottom: 10px;
-    }
-
-    .statistic-container {
-      flex: 1;
-    }
-
-    .statistic-container .statistic {
-      font-size: 36px;
-      font-weight: 400;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      letter-spacing: 0.05em;
-      font-variant-numeric: proportional-nums;
-    }
-
-    .statistic.timer {
-      font-variant-numeric: initial;
-    }
-
-    .statistic-container .label {
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-    }
-
-    #guess-distribution {
-      width: 80%;
-    }
-
-    .graph-container {
-      width: 100%;
-      height: 20px;
-      display: flex;
-      align-items: center;
-      padding-bottom: 4px;
-      font-size: 14px;
-      line-height: 20px;
-    }
-
-    .graph-container .graph {
-      width: 100%;
-      height: 100%;
-      padding-left: 4px;
-    }
-
-    .graph-container .graph .graph-bar {
-      height: 100%;
-      width: 0%;
-      position: relative;
-      background-color: var(--color-absent);
-      display: flex;
-      justify-content: center;
-    }
-
-    .graph-container .graph .graph-bar.highlight {
-      background-color: var(--color-correct);
-    }
-
-    .graph-container .graph .graph-bar.align-right {
-      justify-content: flex-end;
-      padding-right: 8px;
-    }
-
-    .graph-container .graph .num-guesses {
-      font-weight: bold;
-      color: var(--tile-text-color);
-    }
-
-    #statistics,
-    #guess-distribution {
-      padding-bottom: 10px;
-    }
-
-    .footer {
-      display: flex;
-      width: 100%;
-    }
-
-    .countdown {
-      border-right: 1px solid var(--color-tone-1);
-      padding-right: 12px;
-      width: 50%;
-    }
-
-    .share {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding-left: 12px;
-      width: 50%;
-    }
-
-    .no-data {
-      text-align: center;
-    }
-
-    button#share-button {
-      background-color: var(--key-bg-correct);
-      color: var(--key-evaluated-text-color);
-      font-family: inherit;
-      font-weight: bold;
-      border-radius: 4px;
-      cursor: pointer;
-      border: none;
-      user-select: none;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-transform: uppercase;
-      -webkit-tap-highlight-color: rgba(0,0,0,0.3);
-      width: 80%;
-      font-size: 20px;
-      height: 52px;
-      -webkit-filter: brightness(100%);
-    }
-
-    button#share-button:hover {
-      opacity: 0.9;
-    }
-
-    button#share-button game-icon {
-      width: 24px;
-      height: 24px;
-      padding-left: 8px;
-    }
-  </style>
-
-  <div class="container">
+  <div class="stats-container">
     <h1>Statistics</h1>
     <div id="statistics"></div>
     <h1>Guess Distribution</h1>
     <div id="guess-distribution"></div>
-    <div class="footer"></div>
+    <div class="stats-footer"></div>
   </div>
 `;
     var statisticItemTemplate = document.createElement("template");
@@ -2200,17 +1747,15 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
             var a = h(t);
             function t() {
                 var e;
-                return s(this, t), n(p(e = a.call(this)), "stats", {}), n(p(e), "gameApp", void 0), e.attachShadow({
-                        mode: "open"
-                    }), e.stats = getStatistics(), e
+                return s(this, t), n(p(e = a.call(this)), "stats", {}), n(p(e), "gameApp", void 0), e.stats = getStatistics(), e
             }
             return o(t, [{
                     key: "connectedCallback",
                     value: function() {
                         var e = this;
-                        this.shadowRoot.appendChild(statsContainerTemplate.content.cloneNode(!0));
-                        var a = this.shadowRoot.getElementById("statistics"),
-                            s = this.shadowRoot.getElementById("guess-distribution"),
+                        this.appendChild(statsContainerTemplate.content.cloneNode(!0));
+                        var a = this.querySelector("#statistics"),
+                            s = this.querySelector("#guess-distribution"),
                             t = Math.max.apply(Math, g(Object.values(this.stats.guesses)));
                         if (Object.values(this.stats.guesses).every((function(e) {
                                     return 0 === e
@@ -2237,9 +1782,9 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                                         n = statisticItemTemplate.content.cloneNode(!0);
                                     n.querySelector(".label").textContent = t, n.querySelector(".statistic").textContent = o, a.appendChild(n)
                                 })), this.gameApp.gameStatus !== GAME_STATUS_IN_PROGRESS) {
-                            var p = this.shadowRoot.querySelector(".footer"),
+                            var p = this.querySelector(".stats-footer"),
                                 m = countdownTemplate.content.cloneNode(!0);
-                            p.appendChild(m), this.shadowRoot.querySelector("button#share-button").addEventListener("click", (function(a) {
+                            p.appendChild(m), this.querySelector("button#share-button").addEventListener("click", (function(a) {
                                 a.preventDefault();
                                 a.stopPropagation();
                                 shareOrCopy(buildShareText({
@@ -2353,111 +1898,13 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     customElements.define("game-help", GameHelp);
     var pageOverlayTemplate = document.createElement("template");
     pageOverlayTemplate.innerHTML = `
-  <style>
-    .overlay {
-      display: none;
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      justify-content: center;
-      background-color: var(--color-background);
-      animation: SlideIn 100ms linear;
-      z-index: ${2e3};
-    }
-
-    :host([open]) .overlay {
-      display: flex;
-    }
-
-    .content {
-      position: relative;
-      color: var(--color-tone-1);
-      padding: 0 32px;
-      max-width: var(--game-max-width);
-      width: 100%;
-      overflow-y: auto;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .content-container {
-      height: 100%;
-    }
-
-    .overlay.closing {
-      animation: SlideOut 150ms linear;
-    }
-
-    header {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-    }
-
-    h1 {
-      font-weight: 700;
-      font-size: 16px;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      text-align: center;
-      margin-bottom: 10px;
-    }
-
-    game-icon {
-      position: absolute;
-      right: 0;
-      user-select: none;
-      cursor: pointer;
-    }
-
-    @media only screen and (min-device-width: 320px) and (max-device-width: 480px) {
-      .content {
-        max-width: 100%;
-        padding: 0;
-      }
-      game-icon {
-        padding: 0 16px;
-      }
-    }
-
-    @keyframes SlideIn {
-      0% {
-        transform: translateY(30px);
-        opacity: 0;
-      }
-      100% {
-        transform: translateY(0px);
-        opacity: 1;
-      }
-    }
-
-    @keyframes SlideOut {
-      0% {
-        transform: translateY(0px);
-        opacity: 1;
-      }
-      90% {
-        opacity: 0;
-      }
-      100% {
-        opacity: 0;
-        transform: translateY(60px);
-      }
-    }
-  </style>
-  <div class="overlay">
-    <div class="content">
+  <div class="page-overlay">
+    <div class="page-content">
       <header>
-        <h1><slot></slot></h1>
+        <h1 class="page-title"></h1>
         <game-icon icon="close"></game-icon>
       </header>
-      <div class="content-container">
-        <slot name="content"></slot>
-      </div>
+      <div class="page-content-container"></div>
     </div>
   </div>
 `;
@@ -2465,22 +1912,40 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
         r(t, e);
         var a = h(t);
         function t() {
-            var e;
-            return s(this, t), (e = a.call(this)).attachShadow({
-                    mode: "open"
-                }), e
+            return s(this, t), a.call(this)
         }
         return o(t, [{
                 key: "connectedCallback",
                 value: function() {
                     var e = this;
-                    this.shadowRoot.appendChild(pageOverlayTemplate.content.cloneNode(!0)), this.shadowRoot.querySelector("game-icon").addEventListener("click", (function(a) {
-                        e.shadowRoot.querySelector(".overlay").classList.add("closing")
-                    })), this.shadowRoot.addEventListener("animationend", (function(a) {
-                        "SlideOut" === a.animationName && (e.shadowRoot.querySelector(".overlay").classList.remove("closing"), Array.from(e.childNodes).forEach((function(a) {
-                            e.removeChild(a)
+                    this.appendChild(pageOverlayTemplate.content.cloneNode(!0));
+                    this.$overlay = this.querySelector(".page-overlay");
+                    this.$content = this.querySelector(".page-content");
+                    this.$title = this.querySelector(".page-title");
+                    this.$contentContainer = this.querySelector(".page-content-container");
+                    this.querySelector("game-icon").addEventListener("click", (function(a) {
+                        e.$overlay.classList.add("closing")
+                    })), this.addEventListener("animationend", (function(a) {
+                        "SlideOut" === a.animationName && (e.$overlay.classList.remove("closing"),
+                        e.$title.textContent = "",
+                        Array.from(e.$contentContainer.childNodes).forEach((function(a) {
+                            e.$contentContainer.removeChild(a)
                         })), e.removeAttribute("open"))
                     }))
+                }
+            }, {
+                key: "appendChild",
+                value: function(child) {
+                    if (this.$contentContainer && child !== this.$overlay) {
+                        if (child.nodeType === Node.TEXT_NODE) {
+                            this.$title.textContent = child.textContent;
+                        } else {
+                            this.$contentContainer.appendChild(child);
+                        }
+                    } else {
+                        HTMLElement.prototype.appendChild.call(this, child);
+                    }
+                    return child;
                 }
             }]), t
     }(c(HTMLElement));

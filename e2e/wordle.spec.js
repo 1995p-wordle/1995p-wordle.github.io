@@ -162,7 +162,7 @@ test.describe('Wordle E2E Tests', () => {
       const keys = await page.evaluate(() => {
         const app = document.querySelector('game-app');
         const keyboard = app.shadowRoot.querySelector('game-keyboard');
-        const buttons = keyboard.shadowRoot.querySelectorAll('button[data-key]');
+        const buttons = keyboard.querySelectorAll('button[data-key]');
         return Array.from(buttons).map(b => b.dataset.key);
       });
 
@@ -390,7 +390,7 @@ test.describe('Wordle E2E Tests', () => {
         const keyboard = app.shadowRoot.querySelector('game-keyboard');
         const results = {};
         for (const letter of word) {
-          const btn = keyboard.shadowRoot.querySelector(`button[data-key="${letter}"]`);
+          const btn = keyboard.querySelector(`button[data-key="${letter}"]`);
           results[letter] = btn ? btn.dataset.state : null;
         }
         return results;
@@ -572,7 +572,7 @@ test.describe('Wordle E2E Tests', () => {
       await page.evaluate(() => {
         const app = document.querySelector('game-app');
         const gamePage = app.shadowRoot.querySelector('game-page');
-        const closeIcon = gamePage.shadowRoot.querySelector('game-icon[icon="close"]');
+        const closeIcon = gamePage.querySelector('game-icon[icon="close"]');
         closeIcon.click();
       });
 
@@ -605,7 +605,7 @@ test.describe('Wordle E2E Tests', () => {
         const app = document.querySelector('game-app');
         const gamePage = app.shadowRoot.querySelector('game-page');
         const settings = gamePage.querySelector('game-settings');
-        const switches = settings.shadowRoot.querySelectorAll('game-switch');
+        const switches = settings.querySelectorAll('game-switch');
         return Array.from(switches).map(sw => {
           const switchDiv = sw.querySelector('.switch');
           const knob = sw.querySelector('.knob');
@@ -632,7 +632,7 @@ test.describe('Wordle E2E Tests', () => {
       await page.evaluate(() => {
         const app = document.querySelector('game-app');
         const gamePage = app.shadowRoot.querySelector('game-page');
-        const closeIcon = gamePage.shadowRoot.querySelector('game-icon[icon="close"]');
+        const closeIcon = gamePage.querySelector('game-icon[icon="close"]');
         closeIcon.click();
       });
 
@@ -664,7 +664,7 @@ test.describe('Wordle E2E Tests', () => {
       await page.evaluate(() => {
         const app = document.querySelector('game-app');
         const gamePage = app.shadowRoot.querySelector('game-page');
-        const closeIcon = gamePage.shadowRoot.querySelector('game-icon[icon="close"]');
+        const closeIcon = gamePage.querySelector('game-icon[icon="close"]');
         closeIcon.click();
       });
 
@@ -696,7 +696,7 @@ test.describe('Wordle E2E Tests', () => {
       await page.evaluate(() => {
         const app = document.querySelector('game-app');
         const modal = app.shadowRoot.querySelector('game-modal');
-        const closeIcon = modal.shadowRoot.querySelector('game-icon[icon="close"]');
+        const closeIcon = modal.querySelector('game-icon[icon="close"]');
         closeIcon.click();
       });
 
@@ -734,7 +734,7 @@ test.describe('Wordle E2E Tests', () => {
         const gamePage = app.shadowRoot.querySelector('game-page');
         const settings = gamePage.querySelector('game-settings');
         // The dark-theme switch is identified by its id in game-settings shadow DOM
-        const darkSwitch = settings.shadowRoot.querySelector('#dark-theme');
+        const darkSwitch = settings.querySelector('#dark-theme');
         // game-switch no longer uses shadow DOM — .container is a direct child
         const container = darkSwitch.querySelector('.container');
         container.click();
