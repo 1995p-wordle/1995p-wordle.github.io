@@ -466,8 +466,8 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     customElements.define("game-row", x);
     var z = document.createElement("template");
     z.innerHTML = `<slot></slot>`;
-    var j = "darkTheme",
-        S = "colorBlindTheme",
+    var DARK_THEME_KEY = "darkTheme",
+        COLOR_BLIND_THEME_KEY = "colorBlindTheme",
         _ = function(e) {
             r(t, e);
             var a = h(t);
@@ -475,22 +475,22 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                 var e;
                 s(this, t), n(p(e = a.call(this)), "isDarkTheme", !1), n(p(e), "isColorBlindTheme", !1), e.attachShadow({
                     mode: "open"
-                });var o = JSON.parse(window.localStorage.getItem(j)),
+                });var o = JSON.parse(window.localStorage.getItem(DARK_THEME_KEY)),
                     r = window.matchMedia("(prefers-color-scheme: dark)").matches,
-                    i = JSON.parse(window.localStorage.getItem(S));
+                    i = JSON.parse(window.localStorage.getItem(COLOR_BLIND_THEME_KEY));
                 return !0 === o || !1 === o ? e.setDarkTheme(o) : r && e.setDarkTheme(!0), !0 !== i && !1 !== i || e.setColorBlindTheme(i), e
             }
             return o(t, [{
                     key: "setDarkTheme",
                     value: function(e) {
                         var a = document.querySelector("body");
-                        e && !a.classList.contains("nightmode") ? a.classList.add("nightmode") : a.classList.remove("nightmode"), this.isDarkTheme = e, window.localStorage.setItem(j, JSON.stringify(e))
+                        e && !a.classList.contains("nightmode") ? a.classList.add("nightmode") : a.classList.remove("nightmode"), this.isDarkTheme = e, window.localStorage.setItem(DARK_THEME_KEY, JSON.stringify(e))
                     }
                 }, {
                     key: "setColorBlindTheme",
                     value: function(e) {
                         var a = document.querySelector("body");
-                        e && !a.classList.contains("colorblind") ? a.classList.add("colorblind") : a.classList.remove("colorblind"), this.isColorBlindTheme = e, window.localStorage.setItem(S, JSON.stringify(e))
+                        e && !a.classList.contains("colorblind") ? a.classList.add("colorblind") : a.classList.remove("colorblind"), this.isColorBlindTheme = e, window.localStorage.setItem(COLOR_BLIND_THEME_KEY, JSON.stringify(e))
                     }
                 }, {
                     key: "connectedCallback",
@@ -1372,7 +1372,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     const GAME_STATUS_IN_PROGRESS = "IN_PROGRESS";
     const GAME_STATUS_WIN = "WIN";
     const GAME_STATUS_FAIL = "FAIL";
-    const COMMENT_WDS = ["Genius", "Magnificent", "Impressive", "Splendid", "Great", "Phew"];
+    const WIN_COMMENTS = ["Genius", "Magnificent", "Impressive", "Splendid", "Great", "Phew"];
     var ts = function(e) {
             r(t, e);
             var a = h(t);
@@ -1500,7 +1500,7 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
                         })), this.$game.addEventListener("game-last-tile-revealed-in-row", (function(a) {
                             e.$keyboard.letterEvaluations = e.letterEvaluations, e.rowIndex < 6 && (e.canInput = !0);
                             var s = e.$board.querySelectorAll("game-row")[e.rowIndex - 1];
-                            (a.path || a.composedPath && a.composedPath()).includes(s) && ([GAME_STATUS_WIN, GAME_STATUS_FAIL].includes(e.gameStatus) && (e.restoringFromLocalStorage ? e.showStatsModal() : (e.gameStatus === GAME_STATUS_WIN && (s.setAttribute("win", ""), e.addToast(COMMENT_WDS[e.rowIndex - 1], 2e3)), e.gameStatus === GAME_STATUS_FAIL && e.addToast(e.solution.toUpperCase(), 1 / 0), setTimeout((function() {
+                            (a.path || a.composedPath && a.composedPath()).includes(s) && ([GAME_STATUS_WIN, GAME_STATUS_FAIL].includes(e.gameStatus) && (e.restoringFromLocalStorage ? e.showStatsModal() : (e.gameStatus === GAME_STATUS_WIN && (s.setAttribute("win", ""), e.addToast(WIN_COMMENTS[e.rowIndex - 1], 2e3)), e.gameStatus === GAME_STATUS_FAIL && e.addToast(e.solution.toUpperCase(), 1 / 0), setTimeout((function() {
                                 e.showStatsModal()
                             }), 2500))), e.restoringFromLocalStorage = !1)
                         })), this.shadowRoot.addEventListener("game-setting-change", (function(a) {
@@ -2101,45 +2101,45 @@ this.wordle = this.wordle || {}, this.wordle.bundle = function(e) {
     }
 
     function buildShareText(gameResults) {
-        var evaluations = gameResults.evaluations;
-        var dayOffset = gameResults.dayOffset;
-        var rowIndex = gameResults.rowIndex;
-        var isHardMode = gameResults.isHardMode;
-        var isWin = gameResults.isWin;
-        var isDarkTheme = JSON.parse(window.localStorage.getItem(j));
-        var isColorBlind = JSON.parse(window.localStorage.getItem(S));
+      var evaluations = gameResults.evaluations;
+      var dayOffset = gameResults.dayOffset;
+      var rowIndex = gameResults.rowIndex;
+      var isHardMode = gameResults.isHardMode;
+      var isWin = gameResults.isWin;
+      var isDarkTheme = JSON.parse(window.localStorage.getItem(DARK_THEME_KEY));
+      var isColorBlind = JSON.parse(window.localStorage.getItem(COLOR_BLIND_THEME_KEY));
 
-        // Build header line: "Wordle 123 4/6" or "Wordle 123 X/6*"
-        var header = "Wordle " + dayOffset;
-        header += " " + (isWin ? rowIndex : "X") + "/6";
-        if (isHardMode) {
-            header += "*";
-        }
-
-        // Build emoji grid
-        var grid = "";
-        evaluations.forEach(function(row) {
-            if (row) {
-                row.forEach(function(tile) {
-                    if (tile) {
-                        switch (tile) {
-                            case CORRECT:
-                                grid += isColorBlind ? "🟧" : "🟩";
-                                break;
-                            case PRESENT:
-                                grid += isColorBlind ? "🟦" : "🟨";
-                                break;
-                            case ABSENT:
-                                grid += isDarkTheme ? "⬛" : "⬜";
-                                break;
-                        }
-                    }
-                });
-                grid += "\n";
+      // Build header line: "Wordle 123 4/6 (1995p)" or "Wordle 123 X/6* (1995p)"
+      var header = "Wordle " + dayOffset.toLocaleString();
+      header += " " + (isWin ? rowIndex : "X") + "/6";
+      if (isHardMode) {
+        header += "*";
+      }
+      header += " (1995p)";
+      // Build emoji grid
+      var grid = "";
+      evaluations.forEach(function (row) {
+        if (row) {
+          row.forEach(function (tile) {
+            if (tile) {
+              switch (tile) {
+                case CORRECT:
+                  grid += isColorBlind ? "🟧" : "🟩";
+                  break;
+                case PRESENT:
+                  grid += isColorBlind ? "🟦" : "🟨";
+                  break;
+                case ABSENT:
+                  grid += isDarkTheme ? "⬛" : "⬜";
+                  break;
+              }
             }
-        });
+          });
+          grid += "\n";
+        }
+      });
 
-        return { text: header + "\n\n" + grid.trimEnd() };
+      return { text: header + "\n\n" + grid.trimEnd() };
     }
 
     var Cs = document.createElement("template");
