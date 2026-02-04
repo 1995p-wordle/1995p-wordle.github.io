@@ -21,10 +21,10 @@
                 tileDiv.dataset.animation = "idle";
                 this.appendChild(tileDiv);
                 this.$tile = tileDiv;
-                this.$tile.addEventListener("animationend", function(a) {
-                    "PopIn" === a.animationName && (self._animation = "idle");
-                    "FlipIn" === a.animationName && (self.$tile.dataset.state = self._state, self._animation = "flip-out");
-                    "FlipOut" === a.animationName && (self._animation = "idle", self._last && self.dispatchEvent(new CustomEvent("game-last-tile-revealed-in-row", {
+                this.$tile.addEventListener("animationend", function(event) {
+                    "PopIn" === event.animationName && (self._animation = "idle");
+                    "FlipIn" === event.animationName && (self.$tile.dataset.state = self._state, self._animation = "flip-out");
+                    "FlipOut" === event.animationName && (self._animation = "idle", self._last && self.dispatchEvent(new CustomEvent("game-last-tile-revealed-in-row", {
                         bubbles: true
                     })));
                     self._render();
@@ -89,18 +89,18 @@
             rowDiv.classList.add("row");
             this.appendChild(rowDiv);
             this.$row = rowDiv;
-            for (var a = function(a) {
-                        var s = document.createElement("game-tile"),
-                            t = self._letters[a];
-                        (t && s.setAttribute("letter", t), self._evaluation[a]) && (s.setAttribute("evaluation", self._evaluation[a]), setTimeout(function() {
-                            s.setAttribute("reveal", "");
-                        }, 100 * a));
-                        a === self._length - 1 && (s.last = true);
-                        self.$row.appendChild(s);
-                    }, idx = 0; idx < this._length; idx++) a(idx);
+            for (var createTile = function(i) {
+                        var tile = document.createElement("game-tile"),
+                            letter = self._letters[i];
+                        (letter && tile.setAttribute("letter", letter), self._evaluation[i]) && (tile.setAttribute("evaluation", self._evaluation[i]), setTimeout(function() {
+                            tile.setAttribute("reveal", "");
+                        }, 100 * i));
+                        i === self._length - 1 && (tile.last = true);
+                        self.$row.appendChild(tile);
+                    }, idx = 0; idx < this._length; idx++) createTile(idx);
             this.$tiles = this.querySelectorAll("game-tile");
-            this.addEventListener("animationend", function(a) {
-                "Shake" === a.animationName && self.removeAttribute("invalid");
+            this.addEventListener("animationend", function(event) {
+                "Shake" === event.animationName && self.removeAttribute("invalid");
             });
         }
 
@@ -173,8 +173,8 @@
 
         connectedCallback() {
             var self = this;
-            this.addEventListener("game-setting-change", function(a) {
-                var detail = a.detail,
+            this.addEventListener("game-setting-change", function(event) {
+                var detail = event.detail,
                     name = detail.name,
                     checked = detail.checked;
                 switch (name) {
@@ -215,8 +215,8 @@
         };
 
     function getGameState() {
-        var e = window.localStorage.getItem(GAME_STATE_KEY) || JSON.stringify(DEFAULT_GAME_STATE);
-        return JSON.parse(e);
+        var stored = window.localStorage.getItem(GAME_STATE_KEY) || JSON.stringify(DEFAULT_GAME_STATE);
+        return JSON.parse(stored);
     }
 
     function saveGameState(updates) {
@@ -236,9 +236,9 @@
             var wordleHash = window.wordle;
             this.querySelector("#hash").textContent = wordleHash ? wordleHash.hash : undefined;
             this.querySelector("#puzzle-number").textContent = "#".concat(this.gameApp.dayOffset);
-            this.addEventListener("game-switch-change", function(e) {
-                e.stopPropagation();
-                var detail = e.detail,
+            this.addEventListener("game-switch-change", function(event) {
+                event.stopPropagation();
+                var detail = event.detail,
                     name = detail.name,
                     checked = detail.checked,
                     disabled = detail.disabled;
@@ -573,8 +573,8 @@
                 row.evaluation = this.evaluations[this.rowIndex];
                 this.rowIndex += 1;
                 var outOfGuesses = this.rowIndex >= 6,
-                    isCorrect = evaluation.every(function(e) {
-                        return "correct" === e;
+                    isCorrect = evaluation.every(function(val) {
+                        return "correct" === val;
                     });
                 if (outOfGuesses || isCorrect) updateStatistics({
                         isWin: isCorrect,
@@ -670,20 +670,20 @@
                 this.evaluations[i] && (row.evaluation = this.evaluations[i]);
                 this.$board.appendChild(row);
             }
-            this.$game.addEventListener("game-key-press", function(a) {
-                var key = a.detail.key;
+            this.$game.addEventListener("game-key-press", function(event) {
+                var key = event.detail.key;
                 "←" === key || "Backspace" === key ? self.removeLetter() : "↵" === key || "Enter" === key ? self.submitGuess() : ALPHABET.includes(key.toLowerCase()) && self.addLetter(key.toLowerCase());
             });
-            this.$game.addEventListener("game-last-tile-revealed-in-row", function(a) {
+            this.$game.addEventListener("game-last-tile-revealed-in-row", function(event) {
                 self.$keyboard.letterEvaluations = self.letterEvaluations;
                 self.rowIndex < 6 && (self.canInput = true);
                 var lastRow = self.$board.querySelectorAll("game-row")[self.rowIndex - 1];
-                (a.path || a.composedPath && a.composedPath()).includes(lastRow) && ([GAME_STATUS_WIN, GAME_STATUS_FAIL].includes(self.gameStatus) && (self.restoringFromLocalStorage ? self.showStatsModal() : (self.gameStatus === GAME_STATUS_WIN && (lastRow.setAttribute("win", ""), self.addToast(WIN_COMMENTS[self.rowIndex - 1], 2e3)), self.gameStatus === GAME_STATUS_FAIL && self.addToast(self.solution.toUpperCase(), 1 / 0), setTimeout(function() {
+                (event.path || event.composedPath && event.composedPath()).includes(lastRow) && ([GAME_STATUS_WIN, GAME_STATUS_FAIL].includes(self.gameStatus) && (self.restoringFromLocalStorage ? self.showStatsModal() : (self.gameStatus === GAME_STATUS_WIN && (lastRow.setAttribute("win", ""), self.addToast(WIN_COMMENTS[self.rowIndex - 1], 2e3)), self.gameStatus === GAME_STATUS_FAIL && self.addToast(self.solution.toUpperCase(), 1 / 0), setTimeout(function() {
                     self.showStatsModal();
                 }, 2500))), self.restoringFromLocalStorage = false);
             });
-            this.addEventListener("game-setting-change", function(a) {
-                var detail = a.detail,
+            this.addEventListener("game-setting-change", function(event) {
+                var detail = event.detail,
                     name = detail.name,
                     checked = detail.checked,
                     disabled = detail.disabled;
@@ -762,8 +762,8 @@
             this.addEventListener("click", function() {
                 self.$content.classList.add("closing");
             });
-            this.addEventListener("animationend", function(a) {
-                "SlideOut" === a.animationName && (self.$content.classList.remove("closing"), self.removeAttribute("open"),
+            this.addEventListener("animationend", function(event) {
+                "SlideOut" === event.animationName && (self.$content.classList.remove("closing"), self.removeAttribute("open"),
                 Array.from(self.$content.childNodes).forEach(function(node) {
                     if (!node.classList || !node.classList.contains("close-icon")) {
                         self.$content.removeChild(node);
@@ -786,9 +786,9 @@
 
     var keyButtonTemplate = document.createElement("template");
     keyButtonTemplate.innerHTML = `<button>key</button>`;
-    var spacerDiv = document.createElement("template");
-    spacerDiv.innerHTML = `<div class="spacer"></div>`;
-    var keyLabels = [["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
+    var spacerTemplate = document.createElement("template");
+    spacerTemplate.innerHTML = `<div class="spacer"></div>`;
+    var KEYBOARD_LAYOUT = [["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
         ["-", "a", "s", "d", "f", "g", "h", "j", "k", "l", "-"],
         ["↵", "z", "x", "c", "v", "b", "n", "m", "←"]];
 
@@ -813,23 +813,23 @@
             kbDiv.id = "keyboard";
             this.appendChild(kbDiv);
             this.$keyboard = kbDiv;
-            this.$keyboard.addEventListener("click", function(a) {
-                var btn = a.target.closest("button");
+            this.$keyboard.addEventListener("click", function(event) {
+                var btn = event.target.closest("button");
                 btn && self.$keyboard.contains(btn) && self.dispatchKeyPressEvent(btn.dataset.key);
             });
-            window.addEventListener("keydown", function(a) {
-                if (true !== a.repeat) {
-                    var key = a.key,
-                        meta = a.metaKey,
-                        ctrl = a.ctrlKey;
+            window.addEventListener("keydown", function(event) {
+                if (true !== event.repeat) {
+                    var key = event.key,
+                        meta = event.metaKey,
+                        ctrl = event.ctrlKey;
                     meta || ctrl || (ALPHABET.includes(key.toLowerCase()) || "Backspace" === key || "Enter" === key) && self.dispatchKeyPressEvent(key);
                 }
             });
-            this.$keyboard.addEventListener("transitionend", function(a) {
-                var btn = a.target.closest("button");
+            this.$keyboard.addEventListener("transitionend", function(event) {
+                var btn = event.target.closest("button");
                 btn && self.$keyboard.contains(btn) && btn.classList.remove("fade");
             });
-            keyLabels.forEach(function(row) {
+            KEYBOARD_LAYOUT.forEach(function(row) {
                 var rowDiv = document.createElement("div");
                 rowDiv.classList.add("row");
                 row.forEach(function(keyLabel) {
@@ -847,7 +847,7 @@
                         }
                         "↵" == keyLabel && (el.textContent = "enter", el.classList.add("one-and-a-half"));
                     } else {
-                        el = spacerDiv.content.cloneNode(true).firstElementChild;
+                        el = spacerTemplate.content.cloneNode(true).firstElementChild;
                         el.classList.add(1 === keyLabel.length ? "half" : "one");
                     }
                     rowDiv.appendChild(el);
@@ -997,9 +997,9 @@
                 var footer = this.querySelector(".stats-footer"),
                     countdownFragment = countdownTemplate.content.cloneNode(true);
                 footer.appendChild(countdownFragment);
-                this.querySelector("button#share-button").addEventListener("click", function(a) {
-                    a.preventDefault();
-                    a.stopPropagation();
+                this.querySelector("button#share-button").addEventListener("click", function(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
                     shareOrCopy(buildShareText({
                         evaluations: self.gameApp.evaluations,
                         dayOffset: self.gameApp.dayOffset,
@@ -1024,8 +1024,8 @@
             container.classList.add("container");
             container.innerHTML = '<label></label><div class="switch"><span class="knob"></span></div>';
             this.appendChild(container);
-            container.addEventListener("click", function(a) {
-                a.stopPropagation();
+            container.addEventListener("click", function(event) {
+                event.stopPropagation();
                 self.hasAttribute("checked") ? self.removeAttribute("checked") : self.setAttribute("checked", "");
                 self.dispatchEvent(new CustomEvent("game-switch-change", {
                     bubbles: true,
@@ -1067,8 +1067,8 @@
             this.querySelector("game-icon").addEventListener("click", function() {
                 self.$overlay.classList.add("closing");
             });
-            this.addEventListener("animationend", function(a) {
-                "SlideOut" === a.animationName && (self.$overlay.classList.remove("closing"),
+            this.addEventListener("animationend", function(event) {
+                "SlideOut" === event.animationName && (self.$overlay.classList.remove("closing"),
                 self.$title.textContent = "",
                 Array.from(self.$contentContainer.childNodes).forEach(function(node) {
                     self.$contentContainer.removeChild(node);
