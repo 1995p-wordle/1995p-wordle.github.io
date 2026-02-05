@@ -174,7 +174,8 @@
     customElements.define("game-row", GameRow);
 
     var DARK_THEME_KEY = "darkTheme",
-        COLOR_BLIND_THEME_KEY = "colorBlindTheme";
+        COLOR_BLIND_THEME_KEY = "colorBlindTheme",
+        SHOW_HELP_ON_LOAD_KEY = "showHelpOnLoad";
 
     class GameThemeManager extends HTMLElement {
         isDarkTheme = false;
@@ -315,6 +316,11 @@
             if (!state.hardMode && state.gameStatus === "IN_PROGRESS" && state.rowIndex !== 0) {
                 this.querySelector("#hard-mode").removeAttribute("checked");
                 this.querySelector("#hard-mode").setAttribute("disabled", "");
+            }
+            // Show help on load - default to true (checked) if not set
+            var showHelpOnLoad = JSON.parse(window.localStorage.getItem(SHOW_HELP_ON_LOAD_KEY));
+            if (showHelpOnLoad !== false) {
+                this.querySelector("#show-help-on-load").setAttribute("checked", "");
             }
         }
     }
@@ -659,6 +665,7 @@
                         numGuesses: this.rowIndex
                     });
                     saveGameState({ lastCompletedTs: Date.now() });
+                    window.localStorage.setItem(SHOW_HELP_ON_LOAD_KEY, JSON.stringify(false));
                     if (isCorrect) {
                         this.gameStatus = GAME_STATUS_WIN;
                     } else {
@@ -767,9 +774,18 @@
             this.$board = this.querySelector("#board");
             this.$keyboard = this.querySelector("game-keyboard");
             this.sizeBoard();
-            this.lastPlayedTs || setTimeout(function() {
-                return self.showHelpModal();
-            }, 100);
+            var willShowStatsModal = this.restoringFromLocalStorage &&
+                (this.gameStatus === GAME_STATUS_WIN || this.gameStatus === GAME_STATUS_FAIL);
+            if (willShowStatsModal) {
+                window.localStorage.setItem(SHOW_HELP_ON_LOAD_KEY, JSON.stringify(false));
+            } else {
+                var showHelpOnLoad = JSON.parse(window.localStorage.getItem(SHOW_HELP_ON_LOAD_KEY));
+                if (showHelpOnLoad !== false) {
+                    setTimeout(function() {
+                        self.showHelpModal();
+                    }, 100);
+                }
+            }
             for (var i = 0; i < 6; i++) {
                 var row = document.createElement("game-row");
                 row.setAttribute("letters", this.boardState[i]);
@@ -829,6 +845,9 @@
                     }
                     self.hardMode = checked;
                     saveGameState({ hardMode: checked });
+                    return;
+                case "show-help-on-load":
+                    window.localStorage.setItem(SHOW_HELP_ON_LOAD_KEY, JSON.stringify(checked));
                     return;
                 }
             });

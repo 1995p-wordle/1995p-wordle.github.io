@@ -581,7 +581,7 @@ test.describe('Wordle E2E Tests', () => {
       }, { timeout: 3000 });
     });
 
-    test('settings page shows 3 toggle switches with visible sliders', async ({ page }) => {
+    test('settings page shows 4 toggle switches with visible sliders', async ({ page }) => {
       await freshGame(page);
       await dismissHelpModal(page);
 
@@ -616,14 +616,16 @@ test.describe('Wordle E2E Tests', () => {
         });
       });
 
-      expect(switchInfo).toHaveLength(3);
+      expect(switchInfo).toHaveLength(4);
       for (const sw of switchInfo) {
         expect(sw.hasSwitchDiv).toBe(true);
         expect(sw.hasKnob).toBe(true);
         expect(sw.switchVisible).toBe(true);
         expect(sw.switchWidth).toBe('32px');
       }
-      expect(switchInfo.map(s => s.id)).toEqual(['hard-mode', 'dark-theme', 'color-blind-theme']);
+      expect(switchInfo.map(s => s.id)).toEqual([
+        'hard-mode', 'dark-theme', 'color-blind-theme', 'show-help-on-load'
+      ]);
 
       // Close settings
       await page.evaluate(() => {
