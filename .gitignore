@@ -5,3 +5,7 @@ tmp/*
 node_modules/
 coverage/
 *.log
+
+# Playwright
+test-results/
+playwright-report/
