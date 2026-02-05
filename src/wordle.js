@@ -381,7 +381,7 @@
         return num + (suffixes[(mod100 - 20) % 10] || suffixes[mod100] || suffixes[0]);
     }
 
-    const PUZZLE_START_DATE = new Date(2021, 5, 19, 0, 0, 0, 0);
+    const PUZZLE_START_DATE = new Date(2021, 5, 19); // FUCKING JS 0 Index Month, 5 is JUNE
 
     function calculateDaysBetween(start, end) {
         var startDate = new Date(start);
@@ -394,6 +394,7 @@
 
     function getSolution(date) {
         var offset = getDayOffset(date);
+        // modulo will return the index in a loop if length is 100 and offset is 333 it will return 33
         return answer_list[offset % answer_list.length];
     }
 
