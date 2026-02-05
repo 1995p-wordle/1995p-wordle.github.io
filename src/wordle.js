@@ -22,11 +22,21 @@
                 this.appendChild(tileDiv);
                 this.$tile = tileDiv;
                 this.$tile.addEventListener("animationend", function(event) {
-                    "PopIn" === event.animationName && (self._animation = "idle");
-                    "FlipIn" === event.animationName && (self.$tile.dataset.state = self._state, self._animation = "flip-out");
-                    "FlipOut" === event.animationName && (self._animation = "idle", self._last && self.dispatchEvent(new CustomEvent("game-last-tile-revealed-in-row", {
-                        bubbles: true
-                    })));
+                    if (event.animationName === "PopIn") {
+                        self._animation = "idle";
+                    }
+                    if (event.animationName === "FlipIn") {
+                        self.$tile.dataset.state = self._state;
+                        self._animation = "flip-out";
+                    }
+                    if (event.animationName === "FlipOut") {
+                        self._animation = "idle";
+                        if (self._last) {
+                            self.dispatchEvent(new CustomEvent("game-last-tile-revealed-in-row", {
+                                bubbles: true
+                            }));
+                        }
+                    }
                     self._render();
                 });
             }
@@ -54,7 +64,18 @@
         }
 
         _render() {
-            this.$tile && (this.$tile.textContent = this._letter, ["empty", "tbd"].includes(this._state) && (this.$tile.dataset.state = this._state), (["empty", "tbd"].includes(this._state) || this._reveal) && this.$tile.dataset.animation != this._animation && (this.$tile.dataset.animation = this._animation));
+            if (!this.$tile) return;
+
+            this.$tile.textContent = this._letter;
+
+            if (this._state === "empty" || this._state === "tbd") {
+                this.$tile.dataset.state = this._state;
+            }
+
+            var shouldAnimate = this._state === "empty" || this._state === "tbd" || this._reveal;
+            if (shouldAnimate && this.$tile.dataset.animation !== this._animation) {
+                this.$tile.dataset.animation = this._animation;
+            }
         }
 
         static get observedAttributes() {
@@ -89,15 +110,26 @@
             rowDiv.classList.add("row");
             this.appendChild(rowDiv);
             this.$row = rowDiv;
-            for (var createTile = function(i) {
-                        var tile = document.createElement("game-tile"),
-                            letter = self._letters[i];
-                        (letter && tile.setAttribute("letter", letter), self._evaluation[i]) && (tile.setAttribute("evaluation", self._evaluation[i]), setTimeout(function() {
-                            tile.setAttribute("reveal", "");
-                        }, 100 * i));
-                        i === self._length - 1 && (tile.last = true);
-                        self.$row.appendChild(tile);
-                    }, idx = 0; idx < this._length; idx++) createTile(idx);
+            var createTile = function(i) {
+                var tile = document.createElement("game-tile");
+                var letter = self._letters[i];
+                if (letter) {
+                    tile.setAttribute("letter", letter);
+                }
+                if (self._evaluation[i]) {
+                    tile.setAttribute("evaluation", self._evaluation[i]);
+                    setTimeout(function() {
+                        tile.setAttribute("reveal", "");
+                    }, 100 * i);
+                }
+                if (i === self._length - 1) {
+                    tile.last = true;
+                }
+                self.$row.appendChild(tile);
+            };
+            for (var idx = 0; idx < this._length; idx++) {
+                createTile(idx);
+            }
             this.$tiles = this.querySelectorAll("game-tile");
             this.addEventListener("animationend", function(event) {
                 "Shake" === event.animationName && self.removeAttribute("invalid");
@@ -150,23 +182,39 @@
 
         constructor() {
             super();
-            var darkStored = JSON.parse(window.localStorage.getItem(DARK_THEME_KEY)),
-                prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches,
-                cbStored = JSON.parse(window.localStorage.getItem(COLOR_BLIND_THEME_KEY));
-            true === darkStored || false === darkStored ? this.setDarkTheme(darkStored) : prefersDark && this.setDarkTheme(true);
-            (true === cbStored || false === cbStored) && this.setColorBlindTheme(cbStored);
+            var darkStored = JSON.parse(window.localStorage.getItem(DARK_THEME_KEY));
+            var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            var cbStored = JSON.parse(window.localStorage.getItem(COLOR_BLIND_THEME_KEY));
+
+            if (darkStored === true || darkStored === false) {
+                this.setDarkTheme(darkStored);
+            } else if (prefersDark) {
+                this.setDarkTheme(true);
+            }
+
+            if (cbStored === true || cbStored === false) {
+                this.setColorBlindTheme(cbStored);
+            }
         }
 
         setDarkTheme(enabled) {
             var body = document.querySelector("body");
-            enabled && !body.classList.contains("nightmode") ? body.classList.add("nightmode") : body.classList.remove("nightmode");
+            if (enabled && !body.classList.contains("nightmode")) {
+                body.classList.add("nightmode");
+            } else {
+                body.classList.remove("nightmode");
+            }
             this.isDarkTheme = enabled;
             window.localStorage.setItem(DARK_THEME_KEY, JSON.stringify(enabled));
         }
 
         setColorBlindTheme(enabled) {
             var body = document.querySelector("body");
-            enabled && !body.classList.contains("colorblind") ? body.classList.add("colorblind") : body.classList.remove("colorblind");
+            if (enabled && !body.classList.contains("colorblind")) {
+                body.classList.add("colorblind");
+            } else {
+                body.classList.remove("colorblind");
+            }
             this.isColorBlindTheme = enabled;
             window.localStorage.setItem(COLOR_BLIND_THEME_KEY, JSON.stringify(enabled));
         }
@@ -253,11 +301,21 @@
 
         render() {
             var body = document.querySelector("body");
-            body.classList.contains("nightmode") && this.querySelector("#dark-theme").setAttribute("checked", "");
-            body.classList.contains("colorblind") && this.querySelector("#color-blind-theme").setAttribute("checked", "");
+            if (body.classList.contains("nightmode")) {
+                this.querySelector("#dark-theme").setAttribute("checked", "");
+            }
+            if (body.classList.contains("colorblind")) {
+                this.querySelector("#color-blind-theme").setAttribute("checked", "");
+            }
             var state = getGameState();
-            state.hardMode && this.querySelector("#hard-mode").setAttribute("checked", "");
-            state.hardMode || "IN_PROGRESS" !== state.gameStatus || 0 === state.rowIndex || (this.querySelector("#hard-mode").removeAttribute("checked"), this.querySelector("#hard-mode").setAttribute("disabled", ""));
+            if (state.hardMode) {
+                this.querySelector("#hard-mode").setAttribute("checked", "");
+            }
+            // Disable hard mode toggle if game is in progress and at least one guess has been made
+            if (!state.hardMode && state.gameStatus === "IN_PROGRESS" && state.rowIndex !== 0) {
+                this.querySelector("#hard-mode").removeAttribute("checked");
+                this.querySelector("#hard-mode").setAttribute("disabled", "");
+            }
         }
     }
     customElements.define("game-settings", GameSettings);
@@ -558,35 +616,56 @@
 
         evaluateRow() {
             if (5 === this.tileIndex && !(this.rowIndex >= 6)) {
-                var row = this.$board.querySelectorAll("game-row")[this.rowIndex],
-                    guess = this.boardState[this.rowIndex];
-                if (!valid_guesses.includes(guess) && !answer_list.includes(guess)) return row.setAttribute("invalid", ""), void this.addToast("Not in word list");
+                var row = this.$board.querySelectorAll("game-row")[this.rowIndex];
+                var guess = this.boardState[this.rowIndex];
+                if (!valid_guesses.includes(guess) && !answer_list.includes(guess)) {
+                    row.setAttribute("invalid", "");
+                    this.addToast("Not in word list");
+                    return;
+                }
                 if (this.hardMode) {
-                    var hardModeResult = validateHardMode(guess, this.boardState[this.rowIndex - 1], this.evaluations[this.rowIndex - 1]),
-                        validGuess = hardModeResult.validGuess,
-                        errorMessage = hardModeResult.errorMessage;
-                    if (!validGuess) return row.setAttribute("invalid", ""), void this.addToast(errorMessage || "Not valid in hard mode");
+                    var hardModeResult = validateHardMode(
+                        guess,
+                        this.boardState[this.rowIndex - 1],
+                        this.evaluations[this.rowIndex - 1]
+                    );
+                    var validGuess = hardModeResult.validGuess;
+                    var errorMessage = hardModeResult.errorMessage;
+                    if (!validGuess) {
+                        row.setAttribute("invalid", "");
+                        this.addToast(errorMessage || "Not valid in hard mode");
+                        return;
+                    }
                 }
                 var evaluation = evaluateGuess(guess, this.solution);
                 this.evaluations[this.rowIndex] = evaluation;
                 this.letterEvaluations = aggregateLetterEvaluations(this.boardState, this.evaluations);
                 row.evaluation = this.evaluations[this.rowIndex];
                 this.rowIndex += 1;
-                var outOfGuesses = this.rowIndex >= 6,
-                    isCorrect = evaluation.every(function(val) {
-                        return "correct" === val;
-                    });
-                if (outOfGuesses || isCorrect) updateStatistics({
+                var outOfGuesses = this.rowIndex >= 6;
+                var isCorrect = evaluation.every(function(val) {
+                    return val === "correct";
+                });
+                if (outOfGuesses || isCorrect) {
+                    var isStreak = !!this.lastCompletedTs &&
+                        calculateDaysBetween(new Date(this.lastCompletedTs), new Date) === 1;
+                    updateStatistics({
                         isWin: isCorrect,
-                        isStreak: !!this.lastCompletedTs && 1 === calculateDaysBetween(new Date(this.lastCompletedTs), new Date),
+                        isStreak: isStreak,
                         numGuesses: this.rowIndex
-                    }), saveGameState({
-                        lastCompletedTs: Date.now()
-                    }), this.gameStatus = isCorrect ? GAME_STATUS_WIN : GAME_STATUS_FAIL, gtag("event", "level_end", {
+                    });
+                    saveGameState({ lastCompletedTs: Date.now() });
+                    if (isCorrect) {
+                        this.gameStatus = GAME_STATUS_WIN;
+                    } else {
+                        this.gameStatus = GAME_STATUS_FAIL;
+                    }
+                    gtag("event", "level_end", {
                         level_name: encodeWord(this.solution),
                         num_guesses: this.rowIndex,
                         success: isCorrect
                     });
+                }
                 this.tileIndex = 0;
                 this.canInput = false;
                 saveGameState({
@@ -601,24 +680,42 @@
         }
 
         addLetter(letter) {
-            this.gameStatus === GAME_STATUS_IN_PROGRESS && (this.canInput && (this.tileIndex >= 5 || (this.boardState[this.rowIndex] += letter, this.$board.querySelectorAll("game-row")[this.rowIndex].setAttribute("letters", this.boardState[this.rowIndex]), this.tileIndex += 1)));
+            if (this.gameStatus !== GAME_STATUS_IN_PROGRESS) return;
+            if (!this.canInput) return;
+            if (this.tileIndex >= 5) return;
+
+            this.boardState[this.rowIndex] += letter;
+            var row = this.$board.querySelectorAll("game-row")[this.rowIndex];
+            row.setAttribute("letters", this.boardState[this.rowIndex]);
+            this.tileIndex += 1;
         }
 
         removeLetter() {
-            if (this.gameStatus === GAME_STATUS_IN_PROGRESS && this.canInput && !(this.tileIndex <= 0)) {
-                this.boardState[this.rowIndex] = this.boardState[this.rowIndex].slice(0, this.boardState[this.rowIndex].length - 1);
-                var row = this.$board.querySelectorAll("game-row")[this.rowIndex];
-                this.boardState[this.rowIndex] ? row.setAttribute("letters", this.boardState[this.rowIndex]) : row.removeAttribute("letters");
-                row.removeAttribute("invalid");
-                this.tileIndex -= 1;
+            if (this.gameStatus !== GAME_STATUS_IN_PROGRESS) return;
+            if (!this.canInput) return;
+            if (this.tileIndex <= 0) return;
+
+            this.boardState[this.rowIndex] = this.boardState[this.rowIndex].slice(0, -1);
+            var row = this.$board.querySelectorAll("game-row")[this.rowIndex];
+            if (this.boardState[this.rowIndex]) {
+                row.setAttribute("letters", this.boardState[this.rowIndex]);
+            } else {
+                row.removeAttribute("letters");
             }
+            row.removeAttribute("invalid");
+            this.tileIndex -= 1;
         }
 
         submitGuess() {
-            if (this.gameStatus === GAME_STATUS_IN_PROGRESS && this.canInput) {
-                if (5 !== this.tileIndex) return this.$board.querySelectorAll("game-row")[this.rowIndex].setAttribute("invalid", ""), void this.addToast("Not enough letters");
-                this.evaluateRow();
+            if (this.gameStatus !== GAME_STATUS_IN_PROGRESS) return;
+            if (!this.canInput) return;
+
+            if (this.tileIndex !== 5) {
+                this.$board.querySelectorAll("game-row")[this.rowIndex].setAttribute("invalid", "");
+                this.addToast("Not enough letters");
+                return;
             }
+            this.evaluateRow();
         }
 
         addToast(text, duration, isSystem) {
@@ -626,7 +723,11 @@
             var toast = document.createElement("game-toast");
             toast.setAttribute("text", text);
             duration && toast.setAttribute("duration", duration);
-            isSystem ? this.querySelector("#system-toaster").prepend(toast) : this.querySelector("#game-toaster").prepend(toast);
+            if (isSystem){
+                this.querySelector("#system-toaster").prepend(toast);
+            } else {
+                this.querySelector("#game-toaster").prepend(toast);
+            }
         }
 
         sizeBoard() {
@@ -641,7 +742,9 @@
         showStatsModal() {
             var modal = this.$game.querySelector("game-modal"),
                 stats = document.createElement("game-stats");
-            this.gameStatus === GAME_STATUS_WIN && this.rowIndex <= 6 && stats.setAttribute("highlight-guess", this.rowIndex);
+            this.gameStatus === GAME_STATUS_WIN
+                && this.rowIndex <= 6
+                && stats.setAttribute("highlight-guess", this.rowIndex);
             stats.gameApp = this;
             modal.appendChild(stats);
             modal.setAttribute("open", "");
@@ -672,26 +775,57 @@
             }
             this.$game.addEventListener("game-key-press", function(event) {
                 var key = event.detail.key;
-                "←" === key || "Backspace" === key ? self.removeLetter() : "↵" === key || "Enter" === key ? self.submitGuess() : ALPHABET.includes(key.toLowerCase()) && self.addLetter(key.toLowerCase());
+                if (key === "←" || key === "Backspace") {
+                    self.removeLetter();
+                } else if (key === "↵" || key === "Enter") {
+                    self.submitGuess();
+                } else if (ALPHABET.includes(key.toLowerCase())) {
+                    self.addLetter(key.toLowerCase());
+                }
             });
             this.$game.addEventListener("game-last-tile-revealed-in-row", function(event) {
                 self.$keyboard.letterEvaluations = self.letterEvaluations;
-                self.rowIndex < 6 && (self.canInput = true);
+                if (self.rowIndex < 6) {
+                    self.canInput = true;
+                }
                 var lastRow = self.$board.querySelectorAll("game-row")[self.rowIndex - 1];
-                (event.path || event.composedPath && event.composedPath()).includes(lastRow) && ([GAME_STATUS_WIN, GAME_STATUS_FAIL].includes(self.gameStatus) && (self.restoringFromLocalStorage ? self.showStatsModal() : (self.gameStatus === GAME_STATUS_WIN && (lastRow.setAttribute("win", ""), self.addToast(WIN_COMMENTS[self.rowIndex - 1], 2e3)), self.gameStatus === GAME_STATUS_FAIL && self.addToast(self.solution.toUpperCase(), 1 / 0), setTimeout(function() {
-                    self.showStatsModal();
-                }, 2500))), self.restoringFromLocalStorage = false);
+                var eventPath = event.path || (event.composedPath && event.composedPath());
+                if (!eventPath || !eventPath.includes(lastRow)) return;
+
+                var gameOver = self.gameStatus === GAME_STATUS_WIN ||
+                    self.gameStatus === GAME_STATUS_FAIL;
+                if (gameOver) {
+                    if (self.restoringFromLocalStorage) {
+                        self.showStatsModal();
+                    } else {
+                        if (self.gameStatus === GAME_STATUS_WIN) {
+                            lastRow.setAttribute("win", "");
+                            self.addToast(WIN_COMMENTS[self.rowIndex - 1], 2000);
+                        }
+                        if (self.gameStatus === GAME_STATUS_FAIL) {
+                            self.addToast(self.solution.toUpperCase(), Infinity);
+                        }
+                        setTimeout(function() {
+                            self.showStatsModal();
+                        }, 2500);
+                    }
+                }
+                self.restoringFromLocalStorage = false;
             });
             this.addEventListener("game-setting-change", function(event) {
-                var detail = event.detail,
-                    name = detail.name,
-                    checked = detail.checked,
-                    disabled = detail.disabled;
+                var detail = event.detail;
+                var name = detail.name;
+                var checked = detail.checked;
+                var disabled = detail.disabled;
                 switch (name) {
                 case "hard-mode":
-                    return void (disabled ? self.addToast("Hard mode can only be enabled at the start of a round", 1500, true) : (self.hardMode = checked, saveGameState({
-                        hardMode: checked
-                    })));
+                    if (disabled) {
+                        self.addToast("Hard mode can only be enabled at the start of a round", 1500, true);
+                        return;
+                    }
+                    self.hardMode = checked;
+                    saveGameState({ hardMode: checked });
+                    return;
                 }
             });
             this.querySelector("#settings-button").addEventListener("click", function() {
@@ -818,11 +952,16 @@
                 btn && self.$keyboard.contains(btn) && self.dispatchKeyPressEvent(btn.dataset.key);
             });
             window.addEventListener("keydown", function(event) {
-                if (true !== event.repeat) {
-                    var key = event.key,
-                        meta = event.metaKey,
-                        ctrl = event.ctrlKey;
-                    meta || ctrl || (ALPHABET.includes(key.toLowerCase()) || "Backspace" === key || "Enter" === key) && self.dispatchKeyPressEvent(key);
+                if (event.repeat) return;
+                var key = event.key;
+                var meta = event.metaKey;
+                var ctrl = event.ctrlKey;
+                if (meta || ctrl) return;
+                var isLetter = ALPHABET.includes(key.toLowerCase());
+                var isBackspace = key === "Backspace";
+                var isEnter = key === "Enter";
+                if (isLetter || isBackspace || isEnter) {
+                    self.dispatchKeyPressEvent(key);
                 }
             });
             this.$keyboard.addEventListener("transitionend", function(event) {
