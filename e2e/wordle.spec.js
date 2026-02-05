@@ -421,7 +421,7 @@ test.describe('Wordle E2E Tests', () => {
       expect(states).toEqual(['correct', 'correct', 'correct', 'correct', 'correct']);
 
       // Win toast should appear (one of the WIN_COMMENTS)
-      const winComments = ['Genius', 'Magnificent', 'Impressive', 'Splendid', 'Great', 'Phew'];
+      const winComments = ['Genius', 'Magnificent', 'Impressive', 'Splendid', 'Great', 'Whew'];
       // Toast appears after tile animations complete; wait for it
       await page.waitForFunction(() => {
         const app = document.querySelector('game-app');

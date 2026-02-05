@@ -384,9 +384,12 @@
     const PUZZLE_START_DATE = new Date(2021, 5, 19, 0, 0, 0, 0);
 
     function calculateDaysBetween(start, end) {
-        var s = new Date(start),
-            diff = new Date(end).setHours(0, 0, 0, 0) - s.setHours(0, 0, 0, 0);
-        return Math.round(diff / 864e5);
+        var startDate = new Date(start);
+        var endDate = new Date(end);
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(0, 0, 0, 0);
+        var diffMs = endDate - startDate;
+        return Math.round(diffMs / 86_400_000);
     }
 
     function getSolution(date) {
@@ -556,7 +559,7 @@
     const GAME_STATUS_IN_PROGRESS = "IN_PROGRESS";
     const GAME_STATUS_WIN = "WIN";
     const GAME_STATUS_FAIL = "FAIL";
-    const WIN_COMMENTS = ["Genius", "Magnificent", "Impressive", "Splendid", "Great", "Phew"];
+    const WIN_COMMENTS = ["Genius", "Magnificent", "Impressive", "Splendid", "Great", "Whew"];
 
     class GameApp extends HTMLElement {
         tileIndex = 0;
