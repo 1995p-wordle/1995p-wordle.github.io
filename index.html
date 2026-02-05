@@ -8,10 +8,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;700&display=swap" rel="stylesheet">
-    <title>Wordle (1995p)</title>
+    <title>Left Wordle</title>
     <meta name="description" content="Guess the hidden word in 6 tries. A new puzzle is available each day.">
     <!-- FB Meta Tags -->
-    <meta property="og:url" content="https://1995p-wordle.github.io">
+    <meta property="og:url" content="https://left-wordle.com">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Wordle - A daily word game">
     <meta property="og:description" content="Guess the hidden word in 6 tries. A new puzzle is available each day.">
@@ -35,7 +35,7 @@
                         </button>
                     </div>
                     <div class="title">
-                        Wordle
+                        Left Wordle
                     </div>
                     <div class="menu">
                         <button id="save-button" class="icon" aria-label="save">
@@ -130,6 +130,22 @@
             </div>
             <div class="control">
               <game-switch id="show-help-on-load" name="show-help-on-load"></game-switch>
+            </div>
+          </div>
+          <div class="setting">
+            <div class="text">
+              <div class="title">Append to Share Text Header Line</div>
+            </div>
+            <div class="control">
+              <input type="text" id="share-header-append" name="share-header-append">
+            </div>
+          </div>
+          <div class="setting">
+            <div class="text">
+              <div class="title">Append After Grid</div>
+            </div>
+            <div class="control">
+              <input type="text" id="share-after-grid" name="share-after-grid">
             </div>
           </div>
         </section>

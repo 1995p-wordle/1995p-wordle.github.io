@@ -175,7 +175,9 @@
 
     var DARK_THEME_KEY = "darkTheme",
         COLOR_BLIND_THEME_KEY = "colorBlindTheme",
-        SHOW_HELP_ON_LOAD_KEY = "showHelpOnLoad";
+        SHOW_HELP_ON_LOAD_KEY = "showHelpOnLoad",
+        SHARE_TEXT_ADDITIONS_KEY = "shareTextAdditions",
+        DEFAULT_SHARE_TEXT_ADDITIONS = { header: "(Left Wordle)", afterGrid: "" };
 
     class GameThemeManager extends HTMLElement {
         isDarkTheme = false;
@@ -297,7 +299,23 @@
                 }));
                 self.render();
             });
+            // Handle text input changes for share text additions
+            this.querySelector("#share-header-append").addEventListener("input", function(event) {
+                self.saveShareTextAdditions();
+            });
+            this.querySelector("#share-after-grid").addEventListener("input", function(event) {
+                self.saveShareTextAdditions();
+            });
             this.render();
+        }
+
+        saveShareTextAdditions() {
+            var headerVal = this.querySelector("#share-header-append").value;
+            var afterGridVal = this.querySelector("#share-after-grid").value;
+            window.localStorage.setItem(SHARE_TEXT_ADDITIONS_KEY, JSON.stringify({
+                header: headerVal,
+                afterGrid: afterGridVal
+            }));
         }
 
         render() {
@@ -322,6 +340,11 @@
             if (showHelpOnLoad !== false) {
                 this.querySelector("#show-help-on-load").setAttribute("checked", "");
             }
+            // Share text additions - use stored values or defaults
+            var stored = window.localStorage.getItem(SHARE_TEXT_ADDITIONS_KEY);
+            var shareAdditions = stored ? JSON.parse(stored) : DEFAULT_SHARE_TEXT_ADDITIONS;
+            this.querySelector("#share-header-append").value = shareAdditions.header || "";
+            this.querySelector("#share-after-grid").value = shareAdditions.afterGrid || "";
         }
     }
     customElements.define("game-settings", GameSettings);
@@ -976,6 +999,9 @@
             });
             window.addEventListener("keydown", function(event) {
                 if (event.repeat) return;
+                // Ignore keyboard input when typing in a text field
+                var target = event.target;
+                if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
                 var key = event.key;
                 var meta = event.metaKey;
                 var ctrl = event.ctrlKey;
@@ -1063,6 +1089,8 @@
         var isWin = gameResults.isWin;
         var isDarkTheme = JSON.parse(window.localStorage.getItem(DARK_THEME_KEY));
         var isColorBlind = JSON.parse(window.localStorage.getItem(COLOR_BLIND_THEME_KEY));
+        var stored = window.localStorage.getItem(SHARE_TEXT_ADDITIONS_KEY);
+        var shareAdditions = stored ? JSON.parse(stored) : DEFAULT_SHARE_TEXT_ADDITIONS;
 
         // Build header line: "Wordle 123 4/6 (1995p)" or "Wordle 123 X/6* (1995p)"
         var header = "Wordle " + dayOffset.toLocaleString();
@@ -1070,7 +1098,10 @@
         if (isHardMode) {
             header += "*";
         }
-        header += " (1995p)";
+        // header += " (1995p)";
+        if (shareAdditions.header) {
+            header += " " + shareAdditions.header;
+        }
         // Build emoji grid
         var grid = "";
         evaluations.forEach(function (row) {
@@ -1094,7 +1125,11 @@
             }
         });
 
-        return { text: header + "\n\n" + grid.trimEnd() };
+        var result = header + "\n\n" + grid.trimEnd();
+        if (shareAdditions.afterGrid) {
+            result += "\n" + shareAdditions.afterGrid;
+        }
+        return { text: result };
     }
 
     var statsContainerTemplate = document.getElementById("stats-container-template");
