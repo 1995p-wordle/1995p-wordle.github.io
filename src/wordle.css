@@ -808,17 +808,44 @@ game-settings #copyright {
     }
 }
 
-game-settings input[type="text"] {
+game-settings .section-heading {
     font-size: 16px;
+    font-weight: 700;
+    margin: 16px 0 8px;
+    text-align: center;
+}
+
+game-settings .share-text-row {
+    display: flex;
+    gap: 12px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--color-tone-4);
+}
+
+game-settings .share-text-field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+game-settings .share-text-field label {
+    font-size: 13px;
+    color: var(--color-tone-2);
+    margin-bottom: 4px;
+}
+
+game-settings textarea {
+    font-size: 14px;
+    font-family: inherit;
     padding: 8px;
     border: 1px solid var(--color-tone-4);
     border-radius: 4px;
     background-color: var(--color-tone-7);
     color: var(--color-tone-1);
-    width: 150px;
+    resize: vertical;
 }
 
-game-settings input[type="text"]:focus {
+game-settings textarea:focus {
     outline: none;
     border-color: var(--color-tone-3);
 }

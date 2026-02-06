@@ -1104,7 +1104,7 @@
         }
         // header += " (1995p)";
         if (shareAdditions.header) {
-            header += " " + shareAdditions.header;
+            header += " " + shareAdditions.header.replace(/\\n/g, "\n");
         }
         // Build emoji grid
         var grid = "";
@@ -1131,7 +1131,7 @@
 
         var result = header + "\n\n" + grid.trimEnd();
         if (shareAdditions.afterGrid) {
-            result += "\n" + shareAdditions.afterGrid;
+            result += "\n" + shareAdditions.afterGrid.replace(/\\n/g, "\n");
         }
         return { text: result };
     }
