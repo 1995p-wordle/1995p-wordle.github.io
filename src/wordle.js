@@ -1085,6 +1085,23 @@
         }
     }
 
+    // Sentry test trigger — only fires when ?test-sentry=true with correct pwd
+    (async function() {
+        var params = new URLSearchParams(window.location.search);
+        if (params.get('test-sentry') !== 'true') return;
+        if (atob(params.get("pwd")) !== "QmVydGhhQDYx") return
+          try {
+            try {
+              myUndefinedFunction();
+            } catch (err) {
+              Sentry.captureException(err);
+              console.log("Sentry test exception sent:", err.message);
+            }
+          } catch (err) {
+            console.error("Sentry test trigger failed:", err);
+          }
+    })();
+
     function buildShareText(gameResults) {
         var evaluations = gameResults.evaluations;
         var dayOffset = gameResults.dayOffset;
