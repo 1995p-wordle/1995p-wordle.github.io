@@ -1065,11 +1065,13 @@
                 return;
             }
         } catch (err) {
+            console.error('Native share failed:', err.name, err.message, err);
             // User cancelled share or share failed - fall through to clipboard
             if (err.name === 'AbortError') {
                 // User cancelled - don't show error, just return
                 return;
             }
+            Sentry.captureException(err, { tags: { shareMethod: "native" } });
         }
 
         // Clipboard fallback
@@ -1077,9 +1079,31 @@
             await navigator.clipboard.writeText(data.text);
             onSuccess();
         } catch (err) {
+            Sentry.captureException(err, { tags: { shareMethod: "clipboard" } });
+            console.error('Clipboard fallback failed:', err.name, err.message, err);
             onError();
         }
     }
+
+    // Sentry test trigger — only fires when ?test-sentry=true and from allowed IP
+    (async function() {
+        var params = new URLSearchParams(window.location.search);
+        if (params.get('test-sentry') !== 'true') return;
+        try {
+            var resp = await fetch('https://api.ipify.org?format=json');
+            var data = await resp.json();
+            var allowedIp = atob('NzEuOTAuMjEzLjIyMQ==');
+            if (data.ip !== allowedIp) return;
+            try {
+                myUndefinedFunction();
+            } catch (err) {
+                Sentry.captureException(err);
+                console.log('Sentry test exception sent:', err.message);
+            }
+        } catch (err) {
+            console.error('Sentry test trigger failed:', err);
+        }
+    })();
 
     function buildShareText(gameResults) {
         var evaluations = gameResults.evaluations;
