@@ -1,5 +1,4 @@
-var answer_list = [
-    "cigar",
+var answer_list = ["cigar",
     "rebut",
     "sissy",
     "humph",

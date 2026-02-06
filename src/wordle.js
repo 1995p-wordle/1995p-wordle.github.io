@@ -202,7 +202,7 @@
 
         setDarkTheme(enabled) {
             var body = document.querySelector("body");
-            if (enabled && !body.classList.contains("nightmode")) {
+            if (enabled) {
                 body.classList.add("nightmode");
             } else {
                 body.classList.remove("nightmode");
@@ -213,7 +213,7 @@
 
         setColorBlindTheme(enabled) {
             var body = document.querySelector("body");
-            if (enabled && !body.classList.contains("colorblind")) {
+            if (enabled) {
                 body.classList.add("colorblind");
             } else {
                 body.classList.remove("colorblind");
