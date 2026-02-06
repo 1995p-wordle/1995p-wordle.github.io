@@ -1090,10 +1090,6 @@
         var params = new URLSearchParams(window.location.search);
         if (params.get('test-sentry') !== 'true') return;
         try {
-            var resp = await fetch('https://api.ipify.org?format=json');
-            var data = await resp.json();
-            var allowedIp = atob('NzEuOTAuMjEzLjIyMQ==');
-            if (data.ip !== allowedIp) return;
             try {
                 myUndefinedFunction();
             } catch (err) {
