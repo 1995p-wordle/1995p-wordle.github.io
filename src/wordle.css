@@ -89,12 +89,10 @@
 html {
     height: 100%;
     min-width: 320px;
-    min-height: 670px;
 }
 
 body {
     height: 100%;
-    min-height: 670px;
     background-color: var(--color-background);
     margin: 0;
     padding: 0;
@@ -244,6 +242,32 @@ game-keyboard {
     }
 }
 
+@media (max-height: 530px) {
+    :root {
+        --header-height: 40px;
+        --keyboard-height: 170px;
+    }
+    #board-container {
+        padding-bottom: 0;
+    }
+    #board-container::before {
+        display: none;
+    }
+    #board {
+        padding: 3px;
+        grid-gap: 4px;
+    }
+    game-keyboard {
+        padding-bottom: 0;
+    }
+    #keyboard .row {
+        margin-bottom: 4px;
+    }
+    #keyboard button {
+        height: 46px;
+    }
+}
+
 button.icon {
     background: none;
     border: none;
@@ -292,8 +316,8 @@ game-tile .tile {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    font-size: 2rem;
-    line-height: 2rem;
+    font-size: 1.7rem;
+    line-height: 1.7rem;
     font-weight: bold;
     vertical-align: middle;
     box-sizing: border-box;
@@ -315,12 +339,6 @@ game-tile .tile::before {
     }
 }
 
-@media (max-width: 330px) {
-    game-tile .tile {
-        font-size: 1.7rem;
-        line-height: 1.7rem;
-    }
-}
 
 game-tile .tile[data-state='empty'] {
     border: 2px solid var(--color-tone-4);
