@@ -3,11 +3,15 @@
 <head>
     <script src="https://browser.sentry-cdn.com/8.0.0/bundle.min.js" crossorigin="anonymous"></script>
     <script>
-      if (window.location.hostname.endsWith('left-wordle.com')) {
-        Sentry.init({
-          dsn: "https://9697e52d1ad89c70c7209f2b26a81e74@o299183.ingest.us.sentry.io/4510838879617024",
-        });
-      }
+        // import * as Sentry from "@sentry/browser";
+        if (window.location.hostname.endsWith('left-wordle.com')) {
+            Sentry.init({
+                dsn: "https://9697e52d1ad89c70c7209f2b26a81e74@o299183.ingest.us.sentry.io/4510838879617024",
+                // integrations: [Sentry.browserTracingIntegration()],
+                // tracesSampleRate: 0.3,
+                // tracePropagationTargets: ["localhost", /^https:\/\/left-wordle\.com/],
+                });
+        }
     </script>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta charset="UTF-8">
