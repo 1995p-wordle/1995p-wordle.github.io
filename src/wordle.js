@@ -1111,6 +1111,8 @@
 
     // Sentry test trigger — only fires when ?test-sentry=true with correct pwd
     (async function() {
+        // leaving code in place should it be necessary later, but it's nt needed now.
+        return;
         var params = new URLSearchParams(window.location.search);
         if (params.get('test-sentry') !== 'true') return;
         if (btoa(params.get("pwd")) !== "QmVydGhhQDYx") return;
