@@ -1075,12 +1075,36 @@
         }
 
         // Clipboard fallback
+        if (navigator.clipboard?.writeText) {
+            try {
+                await navigator.clipboard.writeText(data.text);
+                onSuccess();
+                return;
+            } catch (err) {
+                Sentry.captureException(err, { tags: { shareMethod: "clipboard" } });
+                console.error('Clipboard fallback failed:', err.name, err.message, err);
+            }
+        }
+
+        // Legacy textarea fallback (iOS Chrome, non-secure contexts, etc.)
         try {
-            await navigator.clipboard.writeText(data.text);
-            onSuccess();
+            var ta = document.createElement('textarea');
+            ta.value = data.text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            var ok = document.execCommand('copy');
+            document.body.removeChild(ta);
+            if (ok) {
+                onSuccess();
+            } else {
+                onError();
+            }
         } catch (err) {
-            Sentry.captureException(err, { tags: { shareMethod: "clipboard" } });
-            console.error('Clipboard fallback failed:', err.name, err.message, err);
+            Sentry.captureException(err, { tags: { shareMethod: "execCommand" } });
+            console.error('execCommand copy failed:', err.name, err.message, err);
             onError();
         }
     }
@@ -1089,7 +1113,7 @@
     (async function() {
         var params = new URLSearchParams(window.location.search);
         if (params.get('test-sentry') !== 'true') return;
-        if (atob(params.get("pwd")) !== "QmVydGhhQDYx") return
+        if (btoa(params.get("pwd")) !== "QmVydGhhQDYx") return
           try {
             try {
               myUndefinedFunction();
