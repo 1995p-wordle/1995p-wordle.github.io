@@ -1113,7 +1113,7 @@
     (async function() {
         var params = new URLSearchParams(window.location.search);
         if (params.get('test-sentry') !== 'true') return;
-        if (btoa(params.get("pwd")) !== "QmVydGhhQDYx") return
+        if (btoa(params.get("pwd")) !== "QmVydGhhQDYx") return;
           try {
             try {
               myUndefinedFunction();
