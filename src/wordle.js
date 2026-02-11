@@ -465,6 +465,187 @@
         averageGuesses: 0
     };
 
+    var HISTORY_KEY = "history";
+    var LEGACY_STATS_KEY = "legacy_stats";
+    var DEVICE_ID_KEY = "device_id";
+
+    function formatLocalDate(date) {
+        var year = date.getFullYear();
+        var month = String(date.getMonth() + 1).padStart(2, "0");
+        var day = String(date.getDate()).padStart(2, "0");
+        return "".concat(year, "-").concat(month, "-").concat(day);
+    }
+
+    function parseLocalDateString(dateStr) {
+        if (!dateStr || typeof dateStr !== "string") return null;
+        var parts = dateStr.split("-");
+        if (parts.length !== 3) return null;
+        var year = parseInt(parts[0], 10);
+        var month = parseInt(parts[1], 10);
+        var day = parseInt(parts[2], 10);
+        if (!year || !month || !day) return null;
+        return new Date(year, month - 1, day);
+    }
+
+    function getCutoffDateString(dateStr) {
+        var date = parseLocalDateString(dateStr);
+        if (!date) return null;
+        date.setDate(date.getDate() - 1);
+        return formatLocalDate(date);
+    }
+
+    function normalizeAnswer(value) {
+        if (value === undefined || value === null) return null;
+        var str = String(value).trim();
+        if (!str) return null;
+        return str.toLowerCase();
+    }
+
+    function normalizeStarter(value) {
+        if (value === undefined || value === null) return null;
+        var str = String(value).trim();
+        if (!str) return null;
+        return str.toLowerCase();
+    }
+
+    function normalizeMode(value, fallbackHardMode) {
+        if (value === undefined || value === null || value === "") {
+            if (fallbackHardMode === true) return "hard";
+            if (fallbackHardMode === false) return "regular";
+            return null;
+        }
+        var str = String(value).trim().toLowerCase();
+        if (!str) return null;
+        if (str === "normal" || str === "standard" || str === "classic") return "regular";
+        return str;
+    }
+
+    function getDeviceId() {
+        var existing = window.localStorage.getItem(DEVICE_ID_KEY);
+        if (existing) return existing;
+        var generated = (typeof crypto !== "undefined" && crypto.randomUUID) ?
+            crypto.randomUUID() :
+            Math.random().toString(36).slice(2) + Date.now().toString(36);
+        window.localStorage.setItem(DEVICE_ID_KEY, generated);
+        return generated;
+    }
+
+    function getHistory() {
+        var stored = window.localStorage.getItem(HISTORY_KEY);
+        if (!stored) return {};
+        try {
+            var parsed = JSON.parse(stored);
+            return parsed && typeof parsed === "object" ? parsed : {};
+        } catch (e) {
+            return {};
+        }
+    }
+
+    function saveHistory(history) {
+        window.localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    }
+
+    function getLegacyStats() {
+        var stored = window.localStorage.getItem(LEGACY_STATS_KEY);
+        if (!stored) return null;
+        try {
+            return JSON.parse(stored);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function setLegacyStats(legacy) {
+        window.localStorage.setItem(LEGACY_STATS_KEY, JSON.stringify(legacy || {}));
+    }
+
+    function buildLegacySnapshot(stats, cutoffDateStr) {
+        var guesses = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 };
+        if (stats && stats.guesses) {
+            for (var i = 1; i <= 6; i++) {
+                guesses[i] = stats.guesses[i] || 0;
+            }
+            guesses[7] = stats.guesses.fail || 0;
+        }
+        var state = getGameState();
+        var lastCompletedDate = null;
+        if (state && state.lastCompletedTs) {
+            lastCompletedDate = formatLocalDate(new Date(state.lastCompletedTs));
+        }
+        return {
+            gamesPlayed: stats && stats.gamesPlayed || 0,
+            gamesWon: stats && stats.gamesWon || 0,
+            guesses: guesses,
+            maxStreak: stats && stats.maxStreak || 0,
+            current_streak_length: stats && stats.currentStreak || 0,
+            current_streak_end_date: lastCompletedDate,
+            recorded_on: formatLocalDate(new Date()),
+            cutoff_date: cutoffDateStr
+        };
+    }
+
+    function recordHistoryEntry(params) {
+        if (!params || params.puzzleNum === undefined || params.puzzleNum === null) return;
+        if (typeof params.result !== "number") return;
+        var puzzleNum = Number(params.puzzleNum);
+        if (!Number.isFinite(puzzleNum)) return;
+        var history = getHistory();
+        var key = String(puzzleNum);
+        var completedAt = params.completedAt || Date.now();
+        var entry = {
+            puzzle_num: puzzleNum,
+            date: params.date || formatLocalDate(new Date()),
+            result: params.result,
+            answer: normalizeAnswer(params.answer),
+            mode: normalizeMode(params.mode, params.hardMode),
+            starter: normalizeStarter(params.starter),
+            completed_at: completedAt,
+            updated_at: Date.now(),
+            device_id: getDeviceId()
+        };
+
+        var existing = history[key];
+        var shouldWrite = !existing;
+        if (!shouldWrite && existing) {
+            if (existing.completed_at === undefined || existing.completed_at === null) {
+                shouldWrite = true;
+            } else {
+                var existingCompleted = typeof existing.completed_at === "number" ?
+                    existing.completed_at :
+                    Date.parse(existing.completed_at);
+                if (!existingCompleted || Number.isNaN(existingCompleted)) {
+                    shouldWrite = true;
+                } else {
+                    shouldWrite = completedAt < existingCompleted;
+                }
+            }
+        }
+
+        if (shouldWrite) {
+            history[key] = entry;
+            saveHistory(history);
+        } else if (existing) {
+            var updated = false;
+            if (!existing.answer && entry.answer) {
+                existing.answer = entry.answer;
+                updated = true;
+            }
+            if (!existing.mode && entry.mode) {
+                existing.mode = entry.mode;
+                updated = true;
+            }
+            if (!existing.starter && entry.starter) {
+                existing.starter = entry.starter;
+                updated = true;
+            }
+            if (updated) {
+                existing.updated_at = Date.now();
+                history[key] = existing;
+                saveHistory(history);
+            }
+        }
+    }
+
     function getStatistics() {
         var storedStats = window.localStorage.getItem("statistics") || JSON.stringify(DEFAULT_STATISTICS);
         console.debug('loaded stats', storedStats);
@@ -473,6 +654,14 @@
 
     function updateStatistics(gameResults) {
         var stats = getStatistics();
+        var history = getHistory();
+        var legacy = getLegacyStats();
+        var now = new Date();
+        var dateStr = (gameResults && gameResults.date) ? gameResults.date : formatLocalDate(now);
+        if ((!history || Object.keys(history).length === 0) && !legacy) {
+            var cutoffDate = getCutoffDateString(dateStr);
+            setLegacyStats(buildLegacySnapshot(stats, cutoffDate));
+        }
 
         // Update guesses and streak
         if (gameResults.isWin) {
@@ -498,6 +687,18 @@
         );
 
         window.localStorage.setItem("statistics", JSON.stringify(stats));
+
+        var result = gameResults.isWin ? gameResults.numGuesses : 7;
+        recordHistoryEntry({
+            puzzleNum: (gameResults && gameResults.puzzleNum !== undefined) ? gameResults.puzzleNum : getDayOffset(now),
+            date: dateStr,
+            result: result,
+            completedAt: Date.now(),
+            answer: gameResults && gameResults.answer ? gameResults.answer : getSolution(now),
+            mode: gameResults && gameResults.mode ? gameResults.mode : (gameResults && gameResults.hardMode ? "hard" : "regular"),
+            hardMode: gameResults && gameResults.hardMode,
+            starter: gameResults && gameResults.starter
+        });
     }
 
     function evaluateGuess(guessed_wd, ans_wd) {
@@ -685,7 +886,13 @@
                     updateStatistics({
                         isWin: isCorrect,
                         isStreak: isStreak,
-                        numGuesses: this.rowIndex
+                        numGuesses: this.rowIndex,
+                        puzzleNum: this.dayOffset,
+                        date: formatLocalDate(this.today),
+                        answer: this.solution,
+                        mode: this.hardMode ? "hard" : "regular",
+                        hardMode: this.hardMode,
+                        starter: this.boardState && this.boardState[0] ? this.boardState[0] : null
                     });
                     saveGameState({ lastCompletedTs: Date.now() });
                     window.localStorage.setItem(SHOW_HELP_ON_LOAD_KEY, JSON.stringify(false));
