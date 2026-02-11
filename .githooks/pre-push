@@ -14,14 +14,14 @@ if [[ "$branch" != "main" ]]; then
   exit 0
 fi
 
-version_file="app_version.txt"
+version_file="app_version.js"
 if [[ ! -f "$version_file" ]]; then
   echo "pre-push: missing $version_file" >&2
   exit 1
 fi
 
-release="$(tr -d '[:space:]' < "$version_file")"
-
+release="$(sed -n 's/.*APP_VERSION = "\([^"]*\)".*/\1/p' "$version_file" | head -n 1)"
+[[ -n "$version" ]] || exit 0
 
 # Idempotent: skip if already created
 if sentry-cli releases info "$release" >/dev/null 2>&1; then
