@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+remote="${1:-}"
+url="${2:-}"
+
+# Only act on pushes to the GitHub Pages origin
+if [[ "$url" != "git@github-1995p:1995p-wordle/1995p-wordle.github.io.git" ]]; then
+  exit 0
+fi
+
+branch="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || true)"
+if [[ "$branch" != "main" ]]; then
+  exit 0
+fi
+
+version_file="app_version.txt"
+if [[ ! -f "$version_file" ]]; then
+  echo "pre-push: missing $version_file" >&2
+  exit 1
+fi
+
+release="$(tr -d '[:space:]' < "$version_file")"
+
+# Idempotent: skip if already created
+if sentry-cli releases info "$release" >/dev/null 2>&1; then
+  exit 0
+fi
+
+echo "Creating Sentry release: $release"
+
+sentry-cli releases new "$release"
+sentry-cli releases set-commits "$release" --auto
+sentry-cli releases finalize "$release"

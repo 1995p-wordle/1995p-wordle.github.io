@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Only run on main
+branch="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || true)"
+if [[ "$branch" != "main" ]]; then
+  exit 0
+fi
+
+version_file="app_version.txt"
+
+# UTC date
+today="$(date -u +%F)"
+
+# Compute UTC day window (inclusive start, exclusive end) in a portable way using python
+# macOS date flags differ from GNU date, so avoid relying on them.
+tomorrow="$(python3 - <<'PY'
+from datetime import datetime, timedelta, timezone
+now = datetime.now(timezone.utc)
+print((now.date() + timedelta(days=1)).isoformat())
+PY
+)"
+
+since="${today}T00:00:00Z"
+until="${tomorrow}T00:00:00Z"
+
+# Count commits on main with committer date in the UTC day window, then add 1 for the new commit.
+# rev-list is fast and reliable.
+count="$(git rev-list --count --since="$since" --until="$until" main 2>/dev/null || echo 0)"
+x="$((count + 1))"
+
+version="${today}_${x}"
+
+# Write version file if needed
+current=""
+if [[ -f "$version_file" ]]; then
+  current="$(tr -d '[:space:]' < "$version_file" || true)"
+fi
+
+if [[ "$current" != "$version" ]]; then
+  printf "%s\n" "$version" > "$version_file"
+  git add -- "$version_file"
+fi
+
+exit 0
