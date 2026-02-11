@@ -22,10 +22,16 @@ fi
 
 release="$(tr -d '[:space:]' < "$version_file")"
 
+
 # Idempotent: skip if already created
 if sentry-cli releases info "$release" >/dev/null 2>&1; then
   exit 0
 fi
+
+SENTRY_AUTH_TOKEN=$(< .private_env/sentry_auth_token.txt)
+SENTRY_PROJECT="left-wordle"
+SENTRY_ORG="salon-suites"
+
 
 echo "Creating Sentry release: $release"
 

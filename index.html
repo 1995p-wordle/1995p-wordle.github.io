@@ -3,15 +3,32 @@
 <head>
     <script src="https://browser.sentry-cdn.com/8.0.0/bundle.min.js" crossorigin="anonymous"></script>
     <script>
-        // import * as Sentry from "@sentry/browser";
-        if (window.location.hostname.endsWith('left-wordle.com')) {
-            Sentry.init({
-                dsn: "https://9697e52d1ad89c70c7209f2b26a81e74@o299183.ingest.us.sentry.io/4510838879617024",
-                // integrations: [Sentry.browserTracingIntegration()],
-                // tracesSampleRate: 0.3,
-                // tracePropagationTargets: ["localhost", /^https:\/\/left-wordle\.com/],
-                });
-        }
+      (function () {
+        if (!window.location.hostname.endsWith("left-wordle.com")) return;
+
+        const s = document.createElement("script");
+        s.src = `/app_version.js?cb=${Date.now()}`;
+        s.defer = true;
+
+        s.onload = function () {
+          if (!window.APP_VERSION) {
+            console.warn("APP_VERSION missing; Sentry not initialized");
+            return;
+          }
+
+          Sentry.init({
+            dsn: "https://9697e52d1ad89c70c7209f2b26a81e74@o299183.ingest.us.sentry.io/4510838879617024",
+            release: window.APP_VERSION,
+            environment: "production",
+          });
+        };
+
+        s.onerror = function () {
+          console.warn("Failed to load app_version.js; Sentry not initialized");
+        };
+
+        document.head.appendChild(s);
+      })();
     </script>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta charset="UTF-8">

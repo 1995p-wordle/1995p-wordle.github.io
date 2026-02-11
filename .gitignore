@@ -10,3 +10,4 @@ docs_private/*
 # Playwright
 test-results/
 playwright-report/
+.private_env/*

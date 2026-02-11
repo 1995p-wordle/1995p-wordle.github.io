@@ -2,23 +2,18 @@
 set -euo pipefail
 
 branch="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || true)"
-if [[ "$branch" != "main" ]]; then
-  exit 0
-fi
+[[ "$branch" == "main" ]] || exit 0
 
-version_file="app_version.txt"
-if [[ ! -f "$version_file" ]]; then
-  exit 0
-fi
+version_file="app_version.js"
+[[ -f "$version_file" ]] || exit 0
 
-version="$(tr -d '[:space:]' < "$version_file")"
+version="$(sed -n 's/.*APP_VERSION = "\([^"]*\)".*/\1/p' "$version_file" | head -n 1)"
+[[ -n "$version" ]] || exit 0
+
 tag="v${version}"
 
-# If tag already exists, don't clobber it.
 if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
-  echo "post-commit: tag already exists: $tag (not retagging)" >&2
   exit 0
 fi
 
 git tag "$tag"
-exit 0
