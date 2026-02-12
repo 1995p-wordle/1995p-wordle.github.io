@@ -36,7 +36,12 @@ if [[ ! -f "$token_file" ]]; then
 fi
 
 export SENTRY_AUTH_TOKEN
-SENTRY_AUTH_TOKEN="$(< "$token_file")"
+SENTRY_AUTH_TOKEN="$(tr -d '\r\n' < "$token_file")"
+
+if [[ -z "$SENTRY_AUTH_TOKEN" ]]; then
+  echo "pre-push: empty SENTRY_AUTH_TOKEN" >&2
+  exit 1
+fi
 
 export SENTRY_PROJECT="left-wordle"
 export SENTRY_ORG="salon-suites"
