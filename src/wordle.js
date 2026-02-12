@@ -1156,6 +1156,7 @@
                         self.$content.removeChild(node);
                     }
                 }));
+                document.dispatchEvent(new CustomEvent("game-modal-closed"));
             });
         }
 
