@@ -19,7 +19,7 @@ since="${today}T00:00:00Z"
 until="${tomorrow}T00:00:00Z"
 
 count="$(git rev-list --count --since="$since" --until="$until" main 2>/dev/null || echo 0)"
-x="$((count + 1))"
+x="$(printf "%03d" $((count + 1)))"
 version="${today}_${x}"
 
 content=$(

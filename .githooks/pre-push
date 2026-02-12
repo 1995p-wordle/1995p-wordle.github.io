@@ -21,7 +21,7 @@ if [[ ! -f "$version_file" ]]; then
 fi
 
 release="$(sed -n 's/.*APP_VERSION = "\([^"]*\)".*/\1/p' "$version_file" | head -n 1)"
-[[ -n "$version" ]] || exit 0
+[[ -n "$release" ]] || exit 0
 
 # Idempotent: skip if already created
 if sentry-cli releases info "$release" >/dev/null 2>&1; then
