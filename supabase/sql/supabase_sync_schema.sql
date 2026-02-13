@@ -39,18 +39,18 @@ drop policy if exists "profiles_update_own" on public.profiles;
 create policy "profiles_select_own"
     on public.profiles
     for select
-    using (auth.uid() = user_id);
+    using ( (select auth.uid()) = user_id );
 
 create policy "profiles_insert_own"
     on public.profiles
     for insert
-    with check (auth.uid() = user_id);
+    with check ( (select auth.uid()) = user_id );
 
 create policy "profiles_update_own"
     on public.profiles
     for update
-    using (auth.uid() = user_id)
-    with check (auth.uid() = user_id);
+    using ( (select auth.uid()) = user_id )
+    with check ( (select auth.uid()) = user_id );
 
 drop policy if exists "games owner"      on public.games;
 drop policy if exists "games_select_own" on public.games;
@@ -61,20 +61,20 @@ drop policy if exists "games_delete_own" on public.games;
 create policy "games_select_own"
     on public.games
     for select
-    using (auth.uid() = user_id);
+    using ( (select auth.uid()) = user_id );
 
 create policy "games_insert_own"
     on public.games
     for insert
-    with check (auth.uid() = user_id);
+    with check ( (select auth.uid()) = user_id );
 
 create policy "games_update_own"
     on public.games
     for update
-    using (auth.uid() = user_id)
-    with check (auth.uid() = user_id);
+    using ( (select auth.uid()) = user_id )
+    with check ( (select auth.uid()) = user_id );
 
 create policy "games_delete_own"
     on public.games
     for delete
-    using (auth.uid() = user_id);
+    using ( (select auth.uid()) = user_id );
