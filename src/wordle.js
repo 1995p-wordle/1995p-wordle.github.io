@@ -277,6 +277,9 @@
             gameStatus: null,
             lastPlayedTs: null,
             lastCompletedTs: null,
+            puzzleNum: null,
+            date: null,
+            updatedAt: null,
             restoringFromLocalStorage: null,
             hardMode: false
         };
@@ -289,6 +292,7 @@
     function saveGameState(updates) {
         var current = getGameState();
         var merged = deepMerge(current, updates);
+        merged.updatedAt = Date.now();
         window.localStorage.setItem(GAME_STATE_KEY, JSON.stringify(merged));
     }
 
@@ -820,6 +824,33 @@
         }
     }
 
+    function getHistoryCompletionForPuzzle(puzzleNum) {
+        var history = getHistory();
+        var entry = history[String(puzzleNum)];
+        if (!entry) return null;
+
+        var result = Number(entry.result);
+        if (!Number.isFinite(result) || result < 1 || result > 7) return null;
+
+        var completedAt = null;
+        if (entry.completed_at !== undefined && entry.completed_at !== null) {
+            if (typeof entry.completed_at === "number") {
+                completedAt = entry.completed_at;
+            } else {
+                var parsed = Date.parse(entry.completed_at);
+                if (!Number.isNaN(parsed)) completedAt = parsed;
+            }
+        }
+
+        return {
+            result: result,
+            isWin: result >= 1 && result <= 6,
+            status: result >= 1 && result <= 6 ? GAME_STATUS_WIN : GAME_STATUS_FAIL,
+            rowIndex: result >= 1 && result <= 6 ? result : 6,
+            completedAt: completedAt
+        };
+    }
+
     function getStatistics() {
         var storedStats = window.localStorage.getItem("statistics") || JSON.stringify(DEFAULT_STATISTICS);
         console.debug('loaded stats', storedStats);
@@ -831,7 +862,27 @@
         var history = getHistory();
         var legacy = getLegacyStats();
         var now = new Date();
+        var hasExplicitPuzzleNum = !!(gameResults && gameResults.puzzleNum !== undefined && gameResults.puzzleNum !== null);
+        var puzzleNum = hasExplicitPuzzleNum ? gameResults.puzzleNum : getDayOffset(now);
         var dateStr = (gameResults && gameResults.date) ? gameResults.date : formatLocalDate(now);
+        var existingCompletion = hasExplicitPuzzleNum ? getHistoryCompletionForPuzzle(puzzleNum) : null;
+
+        if (existingCompletion) {
+            // Keep history metadata fresh but avoid double-counting the same puzzle in stats.
+            recordHistoryEntry({
+                puzzleNum: puzzleNum,
+                date: dateStr,
+                result: existingCompletion.result,
+                completedAt: existingCompletion.completedAt || Date.now(),
+                answer: gameResults && gameResults.answer ? gameResults.answer : getSolution(now),
+                mode: gameResults && gameResults.mode ? gameResults.mode : (gameResults && gameResults.hardMode ? "hard" : "regular"),
+                hardMode: gameResults && gameResults.hardMode,
+                starter: gameResults && gameResults.starter
+            });
+            recomputeAndPersistStatistics();
+            return;
+        }
+
         if ((!history || Object.keys(history).length === 0) && !legacy) {
             var cutoffDate = getCutoffDateString(dateStr);
             setLegacyStats(buildLegacySnapshot(stats, cutoffDate));
@@ -864,7 +915,7 @@
 
         var result = gameResults.isWin ? gameResults.numGuesses : 7;
         recordHistoryEntry({
-            puzzleNum: (gameResults && gameResults.puzzleNum !== undefined) ? gameResults.puzzleNum : getDayOffset(now),
+            puzzleNum: puzzleNum,
             date: dateStr,
             result: result,
             completedAt: Date.now(),
@@ -1003,7 +1054,9 @@
                     boardState: this.boardState,
                     evaluations: this.evaluations,
                     solution: this.solution,
-                    gameStatus: this.gameStatus
+                    gameStatus: this.gameStatus,
+                    puzzleNum: this.dayOffset,
+                    date: formatLocalDate(this.today)
                 });
                 gtag("event", "level_start", {
                     level_name: encodeWord(this.solution)
@@ -1023,6 +1076,30 @@
                 this.hardMode = state.hardMode;
                 this.gameStatus !== GAME_STATUS_IN_PROGRESS && (this.canInput = false);
                 this.restoringFromLocalStorage = true;
+            }
+
+            var historyCompletion = getHistoryCompletionForPuzzle(this.dayOffset);
+            if (historyCompletion && this.gameStatus === GAME_STATUS_IN_PROGRESS) {
+                this.boardState = new Array(6).fill("");
+                this.evaluations = new Array(6).fill(null);
+                this.letterEvaluations = {};
+                this.rowIndex = historyCompletion.rowIndex;
+                this.gameStatus = historyCompletion.status;
+                this.canInput = false;
+                this.restoringFromLocalStorage = true;
+                this.lastCompletedTs = historyCompletion.completedAt || this.lastCompletedTs || Date.now();
+                this.lastPlayedTs = historyCompletion.completedAt || this.lastPlayedTs || Date.now();
+                saveGameState({
+                    rowIndex: this.rowIndex,
+                    boardState: this.boardState,
+                    evaluations: this.evaluations,
+                    solution: this.solution,
+                    gameStatus: this.gameStatus,
+                    lastPlayedTs: this.lastPlayedTs,
+                    lastCompletedTs: this.lastCompletedTs,
+                    puzzleNum: this.dayOffset,
+                    date: formatLocalDate(this.today)
+                });
             }
         }
 
@@ -1072,7 +1149,11 @@
                         hardMode: this.hardMode,
                         starter: this.boardState && this.boardState[0] ? this.boardState[0] : null
                     });
-                    saveGameState({ lastCompletedTs: Date.now() });
+                    saveGameState({
+                        lastCompletedTs: Date.now(),
+                        puzzleNum: this.dayOffset,
+                        date: formatLocalDate(this.today)
+                    });
                     var showHelpFalse = JSON.stringify(false);
                     var prevShowHelp = window.localStorage.getItem(SHOW_HELP_ON_LOAD_KEY);
                     window.localStorage.setItem(SHOW_HELP_ON_LOAD_KEY, showHelpFalse);
@@ -1098,8 +1179,12 @@
                     evaluations: this.evaluations,
                     solution: this.solution,
                     gameStatus: this.gameStatus,
-                    lastPlayedTs: Date.now()
+                    lastPlayedTs: Date.now(),
+                    hardMode: this.hardMode,
+                    puzzleNum: this.dayOffset,
+                    date: formatLocalDate(this.today)
                 });
+                notifySyncChange("game_state", { puzzleNum: this.dayOffset });
             }
         }
 
@@ -1269,7 +1354,12 @@
                         return;
                     }
                     self.hardMode = checked;
-                    saveGameState({ hardMode: checked });
+                    saveGameState({
+                        hardMode: checked,
+                        puzzleNum: self.dayOffset,
+                        date: formatLocalDate(self.today)
+                    });
+                    notifySyncChange("game_state", { puzzleNum: self.dayOffset });
                     return;
                 case "show-help-on-load":
                     var nextShowHelp = JSON.stringify(checked);
