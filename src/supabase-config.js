@@ -11,3 +11,44 @@ window.SUPABASE_ANON_KEY =
 window.SUPABASE_MAGIC_LINK_USE_EDGE_FUNCTION = false;
 window.SUPABASE_MAGIC_LINK_FUNCTION_NAME = "send-magic-link";
 window.SUPABASE_MAGIC_LINK_REDIRECT_PATH = "/sync-resolve";
+
+// Optional rollout override via query string.
+// - ?enable-cloud-sync=true|1|on   -> enables and persists to localStorage
+// - ?enable-cloud-sync=false|0|off -> disables and persists to localStorage
+// - ?enable-cloud-sync=reset       -> clears persisted override
+(function resolveCloudSyncFlag() {
+  var STORAGE_KEY = "cloud_sync_override";
+  var QUERY_KEY = "enable-cloud-sync";
+
+  function parseBool(value) {
+    var normalized = String(value || "").trim().toLowerCase();
+    if (normalized === "true" || normalized === "1" || normalized === "on") return true;
+    if (normalized === "false" || normalized === "0" || normalized === "off") return false;
+    return null;
+  }
+
+  try {
+    var params = new URLSearchParams(window.location.search || "");
+    if (params.has(QUERY_KEY)) {
+      var raw = params.get(QUERY_KEY);
+      var normalized = String(raw || "").trim().toLowerCase();
+      if (normalized === "reset" || normalized === "clear") {
+        window.localStorage.removeItem(STORAGE_KEY);
+      } else {
+        var parsed = parseBool(raw);
+        if (parsed !== null) {
+          window.localStorage.setItem(STORAGE_KEY, parsed ? "true" : "false");
+        }
+      }
+    }
+
+    var stored = window.localStorage.getItem(STORAGE_KEY);
+    if (stored === "true") {
+      window.SUPABASE_SYNC_ENABLED = true;
+    } else if (stored === "false") {
+      window.SUPABASE_SYNC_ENABLED = false;
+    }
+  } catch (e) {
+    // Ignore query/localStorage parsing failures and keep default flag.
+  }
+})();

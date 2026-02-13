@@ -421,6 +421,14 @@
         }
 
         if (prefsChanged && window.location && typeof window.location.reload === "function") {
+            // Persist fresh timestamps before reload so first-time profile pulls do not loop reload forever.
+            updateSyncMeta({
+                history_dirty: syncMeta.history_dirty,
+                history_last_pulled_at: syncMeta.history_last_pulled_at,
+                preferences_updated_at: prefsUpdatedAt,
+                legacy_updated_at: legacyUpdatedAt,
+                premerge_complete: syncMeta.premerge_complete
+            });
             window.location.reload();
             return;
         }
