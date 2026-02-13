@@ -4,6 +4,7 @@
     var HISTORY_KEY = "history";
     var GAME_STATE_KEY = "gameState";
     var LEGACY_STATS_KEY = "legacy_stats";
+    var DEVICE_ID_KEY = "device_id";
     var SYNC_META_KEY = "sync_meta";
     var PRE_MERGE_STATS_KEY = "pre_merge_stats";
     var PRE_MERGE_HISTORY_KEY = "pre_merge_history";
@@ -13,10 +14,11 @@
     var COLOR_BLIND_THEME_KEY = "colorBlindTheme";
     var SHOW_HELP_ON_LOAD_KEY = "showHelpOnLoad";
     var SHARE_TEXT_ADDITIONS_KEY = "shareTextAdditions";
-    var PROFILE_GAME_STATE_KEY = "__sync_game_state";
+    var LEGACY_PROFILE_GAME_STATE_KEY = "__sync_game_state";
 
     var GAMES_TABLE = "games";
     var PROFILES_TABLE = "profiles";
+    var GAME_STATE_TABLE = "current_game_state";
 
     var DEBOUNCE_MS = 1000;
     var pushTimer = null;
@@ -84,6 +86,7 @@
                 history_last_pulled_at: 0,
                 preferences_updated_at: 0,
                 legacy_updated_at: 0,
+                game_state_updated_at: 0,
                 premerge_complete: false
             };
         }
@@ -91,6 +94,7 @@
         if (!meta.history_last_pulled_at) meta.history_last_pulled_at = 0;
         if (!meta.preferences_updated_at) meta.preferences_updated_at = 0;
         if (!meta.legacy_updated_at) meta.legacy_updated_at = 0;
+        if (!meta.game_state_updated_at) meta.game_state_updated_at = 0;
         if (meta.premerge_complete !== true) meta.premerge_complete = false;
         return meta;
     }
@@ -173,6 +177,16 @@
         window.localStorage.setItem(GAME_STATE_KEY, JSON.stringify(state));
     }
 
+    function getDeviceId() {
+        var existing = window.localStorage.getItem(DEVICE_ID_KEY);
+        if (existing) return existing;
+        var generated = (typeof crypto !== "undefined" && crypto.randomUUID) ?
+            crypto.randomUUID() :
+            Math.random().toString(36).slice(2) + Date.now().toString(36);
+        window.localStorage.setItem(DEVICE_ID_KEY, generated);
+        return generated;
+    }
+
     function parseStoredBool(key, fallback) {
         var stored = window.localStorage.getItem(key);
         if (stored === null || stored === undefined) return fallback;
@@ -190,17 +204,6 @@
                 afterGrid: ""
             })
         };
-    }
-
-    function buildProfilePreferences(uiPrefs) {
-        var profilePrefs = Object.assign({}, uiPrefs || {});
-        var gameState = getLocalGameStateForProfile();
-        if (gameState) {
-            profilePrefs[PROFILE_GAME_STATE_KEY] = gameState;
-        } else {
-            delete profilePrefs[PROFILE_GAME_STATE_KEY];
-        }
-        return profilePrefs;
     }
 
     function applyRemoteUiPreferences(remotePrefs) {
@@ -378,6 +381,44 @@
         };
     }
 
+    function gameStateToRow(state, userId) {
+        var normalized = normalizeGameStateForSync(state);
+        if (!normalized) return null;
+        return {
+            user_id: userId,
+            puzzle_num: normalized.puzzleNum,
+            date: normalized.date,
+            row_index: normalized.rowIndex,
+            board_state: normalized.boardState,
+            evaluations: normalized.evaluations,
+            solution: normalized.solution,
+            game_status: normalized.gameStatus || "IN_PROGRESS",
+            hard_mode: normalized.hardMode === true,
+            last_played_at: normalized.lastPlayedTs ? toIso(normalized.lastPlayedTs) : null,
+            last_completed_at: normalized.lastCompletedTs ? toIso(normalized.lastCompletedTs) : null,
+            updated_at: toIso(normalized.updatedAt || Date.now()),
+            device_id: getDeviceId(),
+            schema_version: 1
+        };
+    }
+
+    function rowToGameState(row) {
+        if (!row) return null;
+        return normalizeGameStateForSync({
+            puzzleNum: row.puzzle_num,
+            date: row.date,
+            rowIndex: row.row_index,
+            boardState: row.board_state,
+            evaluations: row.evaluations,
+            solution: row.solution,
+            gameStatus: row.game_status,
+            hardMode: row.hard_mode === true,
+            lastPlayedTs: toMs(row.last_played_at),
+            lastCompletedTs: toMs(row.last_completed_at),
+            updatedAt: toMs(row.updated_at)
+        });
+    }
+
     function fillMissingHistoryMetadata(baseEntry, otherEntry) {
         var entry = Object.assign({}, baseEntry || {});
         var updated = false;
@@ -465,6 +506,27 @@
         return true;
     }
 
+    async function fetchGameState(userId) {
+        var result = await client.from(GAME_STATE_TABLE).select("*").eq("user_id", userId).maybeSingle();
+        if (result.error) {
+            console.error("Sync: game_state fetch error", result.error);
+            return null;
+        }
+        return result.data;
+    }
+
+    async function upsertGameState(userId, state) {
+        var row = gameStateToRow(state, userId);
+        if (!row) return true;
+
+        var result = await client.from(GAME_STATE_TABLE).upsert(row, { onConflict: "user_id" });
+        if (result.error) {
+            console.error("Sync: game_state upsert error", result.error);
+            return false;
+        }
+        return true;
+    }
+
     async function fetchHistorySince(userId, sinceTs) {
         var query = client.from(GAMES_TABLE).select("*").eq("user_id", userId);
         if (sinceTs > 0) {
@@ -523,11 +585,15 @@
 
         var localHistory = getLocalHistory();
         var localPrefs = getLocalPreferences();
-        var localProfilePrefs = buildProfilePreferences(localPrefs);
+        var localGameState = getLocalGameStateForProfile();
         var localLegacy = getLocalLegacyStats();
 
         var prefsUpdatedAt = syncMeta.preferences_updated_at || 0;
         var legacyUpdatedAt = syncMeta.legacy_updated_at || 0;
+        var gameStateUpdatedAt = syncMeta.game_state_updated_at || 0;
+        if (localGameState && !gameStateUpdatedAt) {
+            gameStateUpdatedAt = toMs(localGameState.updatedAt) || Date.now();
+        }
 
         // First sync bootstrap: reconcile all known local history rows.
         if ((syncMeta.history_last_pulled_at || 0) === 0 && (!syncMeta.history_dirty || syncMeta.history_dirty.length === 0)) {
@@ -542,15 +608,13 @@
         var legacyChanged = false;
         var prefsChanged = false;
         var gameStateChanged = false;
+        var remoteLegacyProfileGameState = null;
 
         if (remoteProfile) {
             var remotePrefsUpdatedAt = toMs(remoteProfile.preferences_updated_at);
             var remoteLegacyUpdatedAt = toMs(remoteProfile.legacy_updated_at);
             var remoteProfilePrefs = remoteProfile.preferences || {};
-
-            // Always reconcile remote game-state snapshot for today's puzzle.
-            // This is merged independently from preference timestamp comparisons.
-            gameStateChanged = applyRemoteGameState(remoteProfilePrefs[PROFILE_GAME_STATE_KEY]) || gameStateChanged;
+            remoteLegacyProfileGameState = remoteProfilePrefs[LEGACY_PROFILE_GAME_STATE_KEY] || null;
 
             if (remotePrefsUpdatedAt > prefsUpdatedAt) {
                 localPrefs = {
@@ -560,8 +624,6 @@
                     shareTextAdditions: remoteProfilePrefs.shareTextAdditions
                 };
                 prefsChanged = applyRemoteUiPreferences(localPrefs);
-                gameStateChanged = applyRemoteGameState(remoteProfilePrefs[PROFILE_GAME_STATE_KEY]) || gameStateChanged;
-                localProfilePrefs = buildProfilePreferences(getLocalPreferences());
                 prefsUpdatedAt = remotePrefsUpdatedAt;
             } else if (prefsUpdatedAt > remotePrefsUpdatedAt) {
                 profileNeedsPush = true;
@@ -582,8 +644,38 @@
         }
 
         if (profileNeedsPush) {
-            localProfilePrefs = buildProfilePreferences(getLocalPreferences());
-            await upsertProfile(userId, localProfilePrefs, localLegacy, prefsUpdatedAt, legacyUpdatedAt);
+            await upsertProfile(userId, getLocalPreferences(), localLegacy, prefsUpdatedAt, legacyUpdatedAt);
+        }
+
+        var remoteGameStateRow = await fetchGameState(userId);
+        var remoteGameState = rowToGameState(remoteGameStateRow);
+
+        // Backward-compatibility path for existing profile-embedded game state.
+        if (!remoteGameState && remoteLegacyProfileGameState) {
+            remoteGameState = normalizeGameStateForSync(remoteLegacyProfileGameState);
+            if (remoteGameState) {
+                await upsertGameState(userId, remoteGameState);
+            }
+        }
+
+        if (remoteGameState) {
+            if (applyRemoteGameState(remoteGameState)) {
+                gameStateChanged = true;
+                gameStateUpdatedAt = toMs(remoteGameState.updatedAt) || Date.now();
+            } else {
+                var refreshedLocalGameState = getLocalGameStateForProfile();
+                if (refreshedLocalGameState && shouldApplyRemoteGameState(remoteGameState, refreshedLocalGameState)) {
+                    var pushedGameState = await upsertGameState(userId, refreshedLocalGameState);
+                    if (pushedGameState) {
+                        gameStateUpdatedAt = toMs(refreshedLocalGameState.updatedAt) || Date.now();
+                    }
+                }
+            }
+        } else if (localGameState) {
+            var seededGameState = await upsertGameState(userId, localGameState);
+            if (seededGameState) {
+                gameStateUpdatedAt = toMs(localGameState.updatedAt) || Date.now();
+            }
         }
 
         if ((prefsChanged || gameStateChanged) && window.location && typeof window.location.reload === "function") {
@@ -593,6 +685,7 @@
                 history_last_pulled_at: syncMeta.history_last_pulled_at,
                 preferences_updated_at: prefsUpdatedAt,
                 legacy_updated_at: legacyUpdatedAt,
+                game_state_updated_at: gameStateUpdatedAt,
                 premerge_complete: syncMeta.premerge_complete
             });
             window.location.reload();
@@ -689,6 +782,7 @@
             history_last_pulled_at: syncMeta.history_last_pulled_at,
             preferences_updated_at: prefsUpdatedAt,
             legacy_updated_at: legacyUpdatedAt,
+            game_state_updated_at: gameStateUpdatedAt,
             premerge_complete: syncMeta.premerge_complete
         });
     }
@@ -719,7 +813,7 @@
         }
 
         if (changeType === "game_state") {
-            syncMeta.preferences_updated_at = Date.now();
+            syncMeta.game_state_updated_at = Date.now();
         }
 
         setSyncMeta(syncMeta);
