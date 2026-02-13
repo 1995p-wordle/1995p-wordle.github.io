@@ -14,7 +14,7 @@ create table if not exists public.profiles (
 create table if not exists public.games (
     user_id uuid not null references auth.users(id) on delete cascade,
     puzzle_num integer not null,
-    date date,
+    date date not null,
     result smallint not null check (result between 1 and 7),
     answer text,
     mode text,
@@ -31,6 +31,7 @@ create index if not exists games_user_updated_idx on public.games (user_id, upda
 alter table public.profiles enable row level security;
 alter table public.games enable row level security;
 
+drop policy if exists "profiles owner"      on public.profiles;
 drop policy if exists "profiles_select_own" on public.profiles;
 drop policy if exists "profiles_insert_own" on public.profiles;
 drop policy if exists "profiles_update_own" on public.profiles;
@@ -51,6 +52,7 @@ create policy "profiles_update_own"
     using (auth.uid() = user_id)
     with check (auth.uid() = user_id);
 
+drop policy if exists "games owner"      on public.games;
 drop policy if exists "games_select_own" on public.games;
 drop policy if exists "games_insert_own" on public.games;
 drop policy if exists "games_update_own" on public.games;
