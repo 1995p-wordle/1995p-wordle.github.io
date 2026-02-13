@@ -320,11 +320,32 @@
                 .then(function(text) {
                     var match = text.match(/APP_VERSION\s*=\s*"([^"]+)"/);
                     if (match && match[1] !== loadedVersion) {
-                        window.location.reload();
+                        showUpdateModal();
                     }
                 })
                 .catch(function() {});
         });
+
+        function showUpdateModal() {
+            var overlay = document.createElement("div");
+            overlay.id = "update-modal-overlay";
+            overlay.innerHTML =
+                '<div id="update-modal">' +
+                    '<p>There\'s an updated version of Left Wordle available. Do you want to update?</p>' +
+                    '<div id="update-modal-buttons">' +
+                        '<button id="update-now-btn">Update Now</button>' +
+                        '<button id="update-later-btn">Maybe Later</button>' +
+                    '</div>' +
+                '</div>';
+            document.body.appendChild(overlay);
+
+            document.getElementById("update-now-btn").addEventListener("click", function() {
+                window.location.reload();
+            });
+            document.getElementById("update-later-btn").addEventListener("click", function() {
+                overlay.remove();
+            });
+        }
     })();
     </script>
 </body>
