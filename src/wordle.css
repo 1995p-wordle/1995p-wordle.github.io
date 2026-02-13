@@ -1200,3 +1200,37 @@ game-icon {
 #inputload {
     padding: 0.5em 0;
 }
+
+#inputHistoryLoad,
+#sync-email-input {
+    padding: 0.5em 0;
+    width: 100%;
+}
+
+#save .save-section-heading {
+    margin: 16px 0 8px 0;
+    font-size: 14px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    color: var(--color-tone-2);
+}
+
+#save .save-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+#save .save-actions button {
+    background: var(--color-tone-1);
+    color: var(--color-background);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 8px 10px;
+    font-size: 12px;
+}
+
+#save #sync-status {
+    margin-top: 8px;
+}

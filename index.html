@@ -100,6 +100,7 @@
                     <slot name="content">
                       <div class="sections">
     <section>
+      <h3 class="save-section-heading">Statistics</h3>
       <div class="setting" id="saveButton">
         <div class="text">
           <div class="title">Save Stats</div>
@@ -114,7 +115,44 @@
         </div>
       </div>
     </section>
-
+    <section>
+      <h3 class="save-section-heading">History</h3>
+      <div class="setting" id="exportHistoryJsonButton">
+        <div class="text">
+          <div class="title">Export History (JSON)</div>
+          <div class="description">Export puzzle_num, date, result, answer, mode, starter, completed_at, updated_at, device_id</div>
+        </div>
+      </div>
+      <div class="setting" id="exportHistoryCsvButton">
+        <div class="text">
+          <div class="title">Export History (CSV)</div>
+          <div class="description">CSV export with all history fields</div>
+        </div>
+      </div>
+      <div class="setting" id="loadHistoryButton">
+        <div class="text">
+          <div class="title">Import History (CSV or JSON)</div>
+          <div class="description">Merges by puzzle number using earliest completion time</div>
+          <input id='inputHistoryLoad' type='file' accept=".json,.csv,text/csv,application/json"></input>
+        </div>
+      </div>
+    </section>
+    <section>
+      <h3 class="save-section-heading">Cloud Sync (Beta)</h3>
+      <div class="setting">
+        <div class="text">
+          <div class="title">Email</div>
+          <div class="description">Use magic link sign-in for sync</div>
+          <input id="sync-email-input" type="email" autocomplete="email" placeholder="you@example.com" />
+        </div>
+      </div>
+      <div class="setting save-actions">
+        <button id="sync-signin-button" type="button">Send Magic Link</button>
+        <button id="sync-now-button" type="button">Sync Now</button>
+        <button id="sync-signout-button" type="button">Sign Out</button>
+      </div>
+      <div id="sync-status" class="description"></div>
+    </section>
   </div>
                     </slot>
                 </div>
