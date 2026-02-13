@@ -179,6 +179,12 @@
         SHARE_TEXT_ADDITIONS_KEY = "shareTextAdditions",
         DEFAULT_SHARE_TEXT_ADDITIONS = { header: "(Left Wordle)", afterGrid: "" };
 
+    function notifySyncChange(changeType, payload) {
+        if (window.wordleSync && window.wordleSync.enabled && typeof window.wordleSync.onDataChanged === "function") {
+            window.wordleSync.onDataChanged(changeType, payload || {});
+        }
+    }
+
     class GameThemeManager extends HTMLElement {
         isDarkTheme = false;
         isColorBlindTheme = false;
@@ -208,7 +214,12 @@
                 body.classList.remove("nightmode");
             }
             this.isDarkTheme = enabled;
-            window.localStorage.setItem(DARK_THEME_KEY, JSON.stringify(enabled));
+            var next = JSON.stringify(enabled);
+            var prev = window.localStorage.getItem(DARK_THEME_KEY);
+            window.localStorage.setItem(DARK_THEME_KEY, next);
+            if (prev !== next) {
+                notifySyncChange("preference", { key: DARK_THEME_KEY });
+            }
         }
 
         setColorBlindTheme(enabled) {
@@ -219,7 +230,12 @@
                 body.classList.remove("colorblind");
             }
             this.isColorBlindTheme = enabled;
-            window.localStorage.setItem(COLOR_BLIND_THEME_KEY, JSON.stringify(enabled));
+            var next = JSON.stringify(enabled);
+            var prev = window.localStorage.getItem(COLOR_BLIND_THEME_KEY);
+            window.localStorage.setItem(COLOR_BLIND_THEME_KEY, next);
+            if (prev !== next) {
+                notifySyncChange("preference", { key: COLOR_BLIND_THEME_KEY });
+            }
         }
 
         connectedCallback() {
@@ -312,10 +328,15 @@
         saveShareTextAdditions() {
             var headerVal = this.querySelector("#share-header-append").value;
             var afterGridVal = this.querySelector("#share-after-grid").value;
-            window.localStorage.setItem(SHARE_TEXT_ADDITIONS_KEY, JSON.stringify({
+            var next = JSON.stringify({
                 header: headerVal,
                 afterGrid: afterGridVal
-            }));
+            });
+            var prev = window.localStorage.getItem(SHARE_TEXT_ADDITIONS_KEY);
+            window.localStorage.setItem(SHARE_TEXT_ADDITIONS_KEY, next);
+            if (prev !== next) {
+                notifySyncChange("preference", { key: SHARE_TEXT_ADDITIONS_KEY });
+            }
         }
 
         render() {
@@ -556,7 +577,12 @@
     }
 
     function setLegacyStats(legacy) {
-        window.localStorage.setItem(LEGACY_STATS_KEY, JSON.stringify(legacy || {}));
+        var next = JSON.stringify(legacy || {});
+        var prev = window.localStorage.getItem(LEGACY_STATS_KEY);
+        window.localStorage.setItem(LEGACY_STATS_KEY, next);
+        if (prev !== next) {
+            notifySyncChange("legacy", {});
+        }
     }
 
     function buildLegacySnapshot(stats, cutoffDateStr) {
@@ -582,6 +608,152 @@
             recorded_on: formatLocalDate(new Date()),
             cutoff_date: cutoffDateStr
         };
+    }
+
+    function getDateFromDayOffset(dayOffset) {
+        var d = new Date(PUZZLE_START_DATE);
+        d.setDate(d.getDate() + dayOffset);
+        return d;
+    }
+
+    function normalizeLegacyGuesses(legacy) {
+        var guesses = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, fail: 0 };
+        if (!legacy || !legacy.guesses) return guesses;
+        for (var i = 1; i <= 6; i++) {
+            guesses[i] = parseInt(legacy.guesses[i], 10) || 0;
+        }
+        guesses.fail = parseInt(legacy.guesses[7], 10) || parseInt(legacy.guesses.fail, 10) || 0;
+        return guesses;
+    }
+
+    function computeHistoryStats(history, cutoffDateStr) {
+        var stats = JSON.parse(JSON.stringify(DEFAULT_STATISTICS));
+        var cutoffDate = parseLocalDateString(cutoffDateStr);
+        var entries = Object.values(history).map(function(entry) {
+            if (!entry) return null;
+            var puzzleNum = Number(entry.puzzle_num);
+            var resultNum = Number(entry.result);
+            if (!Number.isFinite(puzzleNum) || !Number.isFinite(resultNum)) return null;
+            var dateObj = entry.date ? parseLocalDateString(entry.date) : getDateFromDayOffset(puzzleNum);
+            if (cutoffDate && dateObj && calculateDaysBetween(cutoffDate, dateObj) <= 0) {
+                return null;
+            }
+            return Object.assign({}, entry, { puzzle_num: puzzleNum, result: resultNum, dateObj: dateObj });
+        }).filter(Boolean).sort(function(a, b) {
+            return a.puzzle_num - b.puzzle_num;
+        });
+
+        var guessSum = 0;
+        entries.forEach(function(entry) {
+            if (entry.result >= 1 && entry.result <= 6) {
+                stats.guesses[entry.result] += 1;
+                stats.gamesWon += 1;
+                guessSum += entry.result;
+            } else {
+                stats.guesses.fail += 1;
+            }
+            stats.gamesPlayed += 1;
+        });
+
+        stats.winPercentage = stats.gamesPlayed ? Math.round(stats.gamesWon / stats.gamesPlayed * 100) : 0;
+        stats.averageGuesses = stats.gamesWon ? Math.round(guessSum / stats.gamesWon) : 0;
+
+        var currentStreak = 0;
+        var maxStreak = 0;
+        var lastPuzzle = null;
+        var lastWasWin = false;
+
+        entries.forEach(function(entry) {
+            var isWin = entry.result >= 1 && entry.result <= 6;
+            if (!isWin) {
+                currentStreak = 0;
+                lastWasWin = false;
+                lastPuzzle = entry.puzzle_num;
+                return;
+            }
+            if (lastWasWin && lastPuzzle !== null && entry.puzzle_num === lastPuzzle + 1) {
+                currentStreak += 1;
+            } else {
+                currentStreak = 1;
+            }
+            maxStreak = Math.max(maxStreak, currentStreak);
+            lastWasWin = true;
+            lastPuzzle = entry.puzzle_num;
+        });
+
+        var startWinStreak = 0;
+        for (var idx = 0; idx < entries.length; idx++) {
+            var row = entries[idx];
+            var rowIsWin = row.result >= 1 && row.result <= 6;
+            if (!rowIsWin) break;
+            if (idx > 0 && row.puzzle_num !== entries[idx - 1].puzzle_num + 1) break;
+            startWinStreak += 1;
+        }
+
+        return {
+            stats: stats,
+            guessSum: guessSum,
+            currentStreak: currentStreak,
+            maxStreak: maxStreak,
+            startWinStreak: startWinStreak,
+            firstEntry: entries.length ? entries[0] : null
+        };
+    }
+
+    function computeStatisticsFromHistoryAndLegacy() {
+        var history = getHistory();
+        var legacy = getLegacyStats() || {};
+        var historyStats = computeHistoryStats(history, legacy.cutoff_date || null);
+        var stats = historyStats.stats;
+
+        var legacyGuesses = normalizeLegacyGuesses(legacy);
+        var legacyGuessSum = 0;
+        for (var i = 1; i <= 6; i++) {
+            legacyGuessSum += i * (legacyGuesses[i] || 0);
+        }
+
+        var legacyGamesWon = Number.isFinite(Number(legacy.gamesWon)) ? Number(legacy.gamesWon) :
+            (legacyGuesses[1] + legacyGuesses[2] + legacyGuesses[3] + legacyGuesses[4] + legacyGuesses[5] + legacyGuesses[6]);
+        var legacyGamesPlayed = Number.isFinite(Number(legacy.gamesPlayed)) ? Number(legacy.gamesPlayed) :
+            legacyGamesWon + legacyGuesses.fail;
+
+        stats.gamesPlayed += legacyGamesPlayed;
+        stats.gamesWon += legacyGamesWon;
+        stats.guesses.fail += legacyGuesses.fail;
+        for (var j = 1; j <= 6; j++) {
+            stats.guesses[j] += legacyGuesses[j];
+        }
+
+        var totalGuessSum = historyStats.guessSum + legacyGuessSum;
+        stats.winPercentage = stats.gamesPlayed ? Math.round(stats.gamesWon / stats.gamesPlayed * 100) : 0;
+        stats.averageGuesses = stats.gamesWon ? Math.round(totalGuessSum / stats.gamesWon) : 0;
+        stats.maxStreak = Math.max(historyStats.maxStreak, legacy.maxStreak || 0);
+
+        var legacyCurrent = parseInt(legacy.current_streak_length, 10) || 0;
+        var legacyEndDate = legacy.current_streak_end_date;
+        var hasHistory = !!historyStats.firstEntry;
+        if (!hasHistory) {
+            stats.currentStreak = legacyCurrent;
+        } else {
+            stats.currentStreak = historyStats.currentStreak;
+            if (legacyCurrent > 0 && legacyEndDate && historyStats.startWinStreak > 0) {
+                var firstEntryDate = historyStats.firstEntry && historyStats.firstEntry.dateObj ? historyStats.firstEntry.dateObj : null;
+                var legacyEnd = parseLocalDateString(legacyEndDate);
+                if (legacyEnd && firstEntryDate &&
+                    calculateDaysBetween(legacyEnd, firstEntryDate) === 1 &&
+                    historyStats.currentStreak === historyStats.startWinStreak) {
+                    stats.currentStreak = legacyCurrent + historyStats.currentStreak;
+                }
+            }
+        }
+
+        return stats;
+    }
+
+    function recomputeAndPersistStatistics() {
+        var stats = computeStatisticsFromHistoryAndLegacy();
+        window.localStorage.setItem("statistics", JSON.stringify(stats));
+        return stats;
     }
 
     function recordHistoryEntry(params) {
@@ -624,6 +796,7 @@
         if (shouldWrite) {
             history[key] = entry;
             saveHistory(history);
+            notifySyncChange("history", { puzzleNum: puzzleNum });
         } else if (existing) {
             var updated = false;
             if (!existing.answer && entry.answer) {
@@ -642,6 +815,7 @@
                 existing.updated_at = Date.now();
                 history[key] = existing;
                 saveHistory(history);
+                notifySyncChange("history", { puzzleNum: puzzleNum });
             }
         }
     }
@@ -795,6 +969,7 @@
     class GameApp extends HTMLElement {
         tileIndex = 0;
         rowIndex = 0;
+        openingSyncRequested = false;
         solution;
         boardState;
         evaluations;
@@ -837,6 +1012,9 @@
                 this.boardState = state.boardState;
                 this.evaluations = state.evaluations;
                 this.rowIndex = state.rowIndex;
+                if (this.rowIndex > 0 || (this.boardState[0] && this.boardState[0].length > 0)) {
+                    this.openingSyncRequested = true;
+                }
                 this.solution = state.solution;
                 this.dayOffset = getDayOffset(this.today);
                 this.letterEvaluations = aggregateLetterEvaluations(this.boardState, this.evaluations);
@@ -895,7 +1073,12 @@
                         starter: this.boardState && this.boardState[0] ? this.boardState[0] : null
                     });
                     saveGameState({ lastCompletedTs: Date.now() });
-                    window.localStorage.setItem(SHOW_HELP_ON_LOAD_KEY, JSON.stringify(false));
+                    var showHelpFalse = JSON.stringify(false);
+                    var prevShowHelp = window.localStorage.getItem(SHOW_HELP_ON_LOAD_KEY);
+                    window.localStorage.setItem(SHOW_HELP_ON_LOAD_KEY, showHelpFalse);
+                    if (prevShowHelp !== showHelpFalse) {
+                        notifySyncChange("preference", { key: SHOW_HELP_ON_LOAD_KEY });
+                    }
                     if (isCorrect) {
                         this.gameStatus = GAME_STATUS_WIN;
                     } else {
@@ -924,6 +1107,13 @@
             if (this.gameStatus !== GAME_STATUS_IN_PROGRESS) return;
             if (!this.canInput) return;
             if (this.tileIndex >= 5) return;
+            if (!this.openingSyncRequested && this.rowIndex === 0 && this.tileIndex === 0 &&
+                window.wordleSync && window.wordleSync.enabled && typeof window.wordleSync.performSync === "function") {
+                this.openingSyncRequested = true;
+                window.wordleSync.performSync({ mode: "full" }).catch(function(err) {
+                    console.debug("Opening sync failed", err);
+                });
+            }
 
             this.boardState[this.rowIndex] += letter;
             var row = this.$board.querySelectorAll("game-row")[this.rowIndex];
@@ -1007,7 +1197,12 @@
             var willShowStatsModal = this.restoringFromLocalStorage &&
                 (this.gameStatus === GAME_STATUS_WIN || this.gameStatus === GAME_STATUS_FAIL);
             if (willShowStatsModal) {
-                window.localStorage.setItem(SHOW_HELP_ON_LOAD_KEY, JSON.stringify(false));
+                var showHelpFalse = JSON.stringify(false);
+                var prevShowHelp = window.localStorage.getItem(SHOW_HELP_ON_LOAD_KEY);
+                window.localStorage.setItem(SHOW_HELP_ON_LOAD_KEY, showHelpFalse);
+                if (prevShowHelp !== showHelpFalse) {
+                    notifySyncChange("preference", { key: SHOW_HELP_ON_LOAD_KEY });
+                }
             } else {
                 var showHelpOnLoad = JSON.parse(window.localStorage.getItem(SHOW_HELP_ON_LOAD_KEY));
                 if (showHelpOnLoad !== false) {
@@ -1077,7 +1272,12 @@
                     saveGameState({ hardMode: checked });
                     return;
                 case "show-help-on-load":
-                    window.localStorage.setItem(SHOW_HELP_ON_LOAD_KEY, JSON.stringify(checked));
+                    var nextShowHelp = JSON.stringify(checked);
+                    var prevShowHelp = window.localStorage.getItem(SHOW_HELP_ON_LOAD_KEY);
+                    window.localStorage.setItem(SHOW_HELP_ON_LOAD_KEY, nextShowHelp);
+                    if (prevShowHelp !== nextShowHelp) {
+                        notifySyncChange("preference", { key: SHOW_HELP_ON_LOAD_KEY });
+                    }
                     return;
                 }
             });
@@ -1626,6 +1826,16 @@
     }
     customElements.define("countdown-timer", CountdownTimer);
 
+    // Sync layer can trigger a recompute after remote merge/update.
+    window.wordleStats = {
+        recompute: recomputeAndPersistStatistics,
+        compute: computeStatisticsFromHistoryAndLegacy
+    };
+    if (window.wordleSyncNeedsStatsRefresh) {
+        recomputeAndPersistStatistics();
+        window.wordleSyncNeedsStatsRefresh = false;
+    }
+
     // Export pure functions for testing
     window.wordleTestExports = {
         PRESENT: PRESENT,
@@ -1647,6 +1857,8 @@
         encodeWord: encodeWord,
         getStatistics: getStatistics,
         updateStatistics: updateStatistics,
+        computeStatisticsFromHistoryAndLegacy: computeStatisticsFromHistoryAndLegacy,
+        recomputeAndPersistStatistics: recomputeAndPersistStatistics,
         evaluateGuess: evaluateGuess,
         validateHardMode: validateHardMode,
         buildShareText: buildShareText,
