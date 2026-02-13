@@ -216,15 +216,62 @@
         );
     }
 
+    function isCompletedStatus(status) {
+        return status === "WIN" || status === "FAIL";
+    }
+
+    function getActiveRowLength(state) {
+        if (!state || !Array.isArray(state.boardState)) return 0;
+        var rowIndex = Number(state.rowIndex);
+        if (!Number.isFinite(rowIndex)) return 0;
+        if (rowIndex < 0 || rowIndex >= state.boardState.length) return 0;
+        var row = state.boardState[rowIndex];
+        return typeof row === "string" ? row.length : 0;
+    }
+
+    function shouldApplyRemoteGameState(localState, remoteState) {
+        if (!localState) return true;
+
+        var today = getTodayDateString();
+        if (localState.date !== remoteState.date) {
+            if (remoteState.date === today && localState.date !== today) return true;
+            return false;
+        }
+
+        if (localState.puzzleNum !== remoteState.puzzleNum) {
+            var localInProgress = localState.gameStatus === "IN_PROGRESS";
+            var remoteInProgress = remoteState.gameStatus === "IN_PROGRESS";
+            if (remoteInProgress && localInProgress) {
+                return (Number(remoteState.rowIndex) || 0) > (Number(localState.rowIndex) || 0);
+            }
+            return isCompletedStatus(remoteState.gameStatus) && !isCompletedStatus(localState.gameStatus);
+        }
+
+        var localCompleted = isCompletedStatus(localState.gameStatus);
+        var remoteCompleted = isCompletedStatus(remoteState.gameStatus);
+        if (remoteCompleted && !localCompleted) return true;
+        if (localCompleted && !remoteCompleted) return false;
+
+        var localRows = Number(localState.rowIndex) || 0;
+        var remoteRows = Number(remoteState.rowIndex) || 0;
+        if (remoteRows !== localRows) return remoteRows > localRows;
+
+        var localRowLength = getActiveRowLength(localState);
+        var remoteRowLength = getActiveRowLength(remoteState);
+        if (remoteRowLength !== localRowLength) return remoteRowLength > localRowLength;
+
+        var localUpdatedAt = toMs(localState.updatedAt);
+        var remoteUpdatedAt = toMs(remoteState.updatedAt);
+        return remoteUpdatedAt > localUpdatedAt;
+    }
+
     function applyRemoteGameState(remoteState) {
         var normalizedRemote = normalizeGameStateForSync(remoteState);
         if (!normalizedRemote) return false;
         if (normalizedRemote.date !== getTodayDateString()) return false;
 
         var localState = normalizeGameStateForSync(getLocalGameState());
-        var localUpdatedAt = localState ? toMs(localState.updatedAt) : 0;
-        var remoteUpdatedAt = toMs(normalizedRemote.updatedAt);
-        if (localUpdatedAt && remoteUpdatedAt && remoteUpdatedAt <= localUpdatedAt) return false;
+        if (!shouldApplyRemoteGameState(localState, normalizedRemote)) return false;
 
         setLocalGameState({
             boardState: normalizedRemote.boardState,
@@ -499,9 +546,13 @@
         if (remoteProfile) {
             var remotePrefsUpdatedAt = toMs(remoteProfile.preferences_updated_at);
             var remoteLegacyUpdatedAt = toMs(remoteProfile.legacy_updated_at);
+            var remoteProfilePrefs = remoteProfile.preferences || {};
+
+            // Always reconcile remote game-state snapshot for today's puzzle.
+            // This is merged independently from preference timestamp comparisons.
+            gameStateChanged = applyRemoteGameState(remoteProfilePrefs[PROFILE_GAME_STATE_KEY]) || gameStateChanged;
 
             if (remotePrefsUpdatedAt > prefsUpdatedAt) {
-                var remoteProfilePrefs = remoteProfile.preferences || {};
                 localPrefs = {
                     darkTheme: remoteProfilePrefs.darkTheme,
                     colorBlindTheme: remoteProfilePrefs.colorBlindTheme,
