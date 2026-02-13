@@ -697,6 +697,64 @@ game-modal .close-icon game-icon {
     cursor: pointer;
 }
 
+/* update modal */
+#update-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--opacity-50);
+    z-index: 4000;
+}
+
+#update-modal {
+    border-radius: 8px;
+    border: 1px solid var(--color-tone-6);
+    background-color: var(--modal-content-bg);
+    color: var(--color-tone-1);
+    box-shadow: 0 4px 23px 0 rgba(0, 0, 0, 0.2);
+    padding: 24px;
+    max-width: 320px;
+    width: 90%;
+    text-align: center;
+    animation: SlideIn 200ms;
+}
+
+#update-modal p {
+    margin: 0 0 20px;
+    font-size: 16px;
+    line-height: 1.4;
+}
+
+#update-modal-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+#update-modal-buttons button {
+    padding: 10px 20px;
+    border-radius: 4px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#update-now-btn {
+    background-color: var(--color-correct);
+    color: var(--key-evaluated-text-color, #fff);
+}
+
+#update-later-btn {
+    background-color: var(--color-tone-4);
+    color: var(--key-evaluated-text-color, #fff);
+}
+
 /* game-page styles */
 game-page {
     display: none;
