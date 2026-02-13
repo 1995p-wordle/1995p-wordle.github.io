@@ -548,8 +548,48 @@
         pushToRemote();
     }
 
+    function normalizeRedirectPath(path) {
+        var redirectPath = (typeof path === "string" && path.trim()) ? path.trim() : "/sync-resolve";
+        return redirectPath.charAt(0) === "/" ? redirectPath : "/" + redirectPath;
+    }
+
+    function getMagicLinkRedirectPath() {
+        return normalizeRedirectPath(window.SUPABASE_MAGIC_LINK_REDIRECT_PATH || "/sync-resolve");
+    }
+
+    function getMagicLinkRedirectUrl(redirectPath) {
+        if (!window.location || !window.location.origin) return null;
+        return window.location.origin + normalizeRedirectPath(redirectPath);
+    }
+
     async function signInWithMagicLink(email) {
-        var result = await client.auth.signInWithOtp({ email: email });
+        var normalizedEmail = String(email || "").trim().toLowerCase();
+        if (!normalizedEmail) {
+            return { error: { message: "Email is required" } };
+        }
+
+        var redirectPath = getMagicLinkRedirectPath();
+        if (window.SUPABASE_MAGIC_LINK_USE_EDGE_FUNCTION === true) {
+            var fnName = window.SUPABASE_MAGIC_LINK_FUNCTION_NAME || "send-magic-link";
+            var invokeResult = await client.functions.invoke(fnName, {
+                body: { email: normalizedEmail, redirectPath: redirectPath }
+            });
+            if (invokeResult.error) {
+                return { error: { message: invokeResult.error.message || "Failed to send magic link" } };
+            }
+            if (invokeResult.data && invokeResult.data.error) {
+                return { error: { message: invokeResult.data.error } };
+            }
+            return { error: null };
+        }
+
+        var redirectUrl = getMagicLinkRedirectUrl(redirectPath);
+        var payload = { email: normalizedEmail };
+        if (redirectUrl) {
+            payload.options = { emailRedirectTo: redirectUrl };
+        }
+
+        var result = await client.auth.signInWithOtp(payload);
         if (result.error) {
             return { error: { message: result.error.message || "Failed to send magic link" } };
         }
