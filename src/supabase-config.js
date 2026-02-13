@@ -1,5 +1,6 @@
 // Supabase configuration for Left Wordle cloud sync.
 // Keep sync disabled until schema, auth flow, and UI are fully ready.
 window.SUPABASE_SYNC_ENABLED = false;
-window.SUPABASE_URL = "YOUR_SUPABASE_URL";
-window.SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+window.SUPABASE_URL = "https://pxzmjxjbfggbvjwattky.supabase.co";
+window.SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4em1qeGpiZmdnYnZqd2F0dGt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0ODg4NjYsImV4cCI6MjA4NjA2NDg2Nn0.7Fh8ygvg2SVOLwCHye1DM0aUH1PBvLcS5-aoCeWsmDA";
