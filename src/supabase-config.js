@@ -8,7 +8,7 @@ window.SUPABASE_ANON_KEY =
 // Magic link delivery strategy:
 // false: use client.auth.signInWithOtp (Supabase default mail flow)
 // true: invoke edge function (supports custom email templates)
-window.SUPABASE_MAGIC_LINK_USE_EDGE_FUNCTION = false;
+window.SUPABASE_MAGIC_LINK_USE_EDGE_FUNCTION = true;
 window.SUPABASE_MAGIC_LINK_FUNCTION_NAME = "send-magic-link";
 window.SUPABASE_MAGIC_LINK_REDIRECT_PATH = "/sync-resolve";
 
