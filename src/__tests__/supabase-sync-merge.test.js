@@ -251,7 +251,7 @@ describe('supabase-sync merge process', () => {
         expect(cloudGames.map((row) => row.puzzle_num).sort()).toEqual([1700, 1701]);
     });
 
-    test('keeps local earliest completion and upserts it over later cloud row', async () => {
+    test('keeps cloud completed history row when local disagrees', async () => {
         const userId = 'user-1';
         const localCompletedAt = Date.parse('2026-02-13T10:00:00.000Z');
         const remoteCompletedAt = Date.parse('2026-02-13T13:00:00.000Z');
@@ -292,15 +292,15 @@ describe('supabase-sync merge process', () => {
         await env.sync.performSync({ mode: 'full' });
 
         const cloud = env.mock.getGame(userId, 1700);
-        expect(Date.parse(cloud.completed_at)).toBe(localCompletedAt);
-        expect(cloud.result).toBe(3);
+        expect(Date.parse(cloud.completed_at)).toBe(remoteCompletedAt);
+        expect(cloud.result).toBe(4);
 
         const local = JSON.parse(env.dom.window.localStorage.getItem('history'));
-        expect(local['1700'].result).toBe(3);
-        expect(local['1700'].starter).toBe('grind');
+        expect(local['1700'].result).toBe(4);
+        expect(local['1700'].starter).toBe('trace');
     });
 
-    test('accepts remote earliest completion and enriches missing metadata locally', async () => {
+    test('accepts cloud completed row as-is without local metadata enrichment', async () => {
         const userId = 'user-1';
         const remoteCompletedAt = Date.parse('2026-02-13T09:00:00.000Z');
         const localCompletedAt = Date.parse('2026-02-13T11:00:00.000Z');
@@ -342,9 +342,9 @@ describe('supabase-sync merge process', () => {
 
         const local = JSON.parse(env.dom.window.localStorage.getItem('history'));
         expect(local['1700'].result).toBe(3);
-        expect(local['1700'].answer).toBe('crisp');
-        expect(local['1700'].mode).toBe('hard');
-        expect(local['1700'].starter).toBe('grind');
+        expect(local['1700'].answer).toBeNull();
+        expect(local['1700'].mode).toBeNull();
+        expect(local['1700'].starter).toBeNull();
     });
 
     test('pulls remote current_game_state into a fresh browser for today', async () => {
@@ -458,5 +458,68 @@ describe('supabase-sync merge process', () => {
         expect(cloudState.row_index).toBe(2);
         expect(cloudState.board_state[1]).toBe('patsy');
         expect(cloudState.board_state[2]).toBe('c');
+    });
+
+    test('rejects divergent local in-progress state and restores cloud state', async () => {
+        const userId = 'user-1';
+        const today = formatLocalDate(new Date());
+
+        const env = setupSyncTest({
+            remote: {
+                current_game_state: [
+                    {
+                        user_id: userId,
+                        puzzle_num: 1700,
+                        date: today,
+                        row_index: 2,
+                        board_state: ['grind', 'patsy', '', '', '', ''],
+                        evaluations: [
+                            ['absent', 'correct', 'correct', 'absent', 'absent'],
+                            ['present', 'absent', 'absent', 'correct', 'absent'],
+                            null, null, null, null
+                        ],
+                        solution: 'crisp',
+                        game_status: 'IN_PROGRESS',
+                        hard_mode: false,
+                        last_played_at: new Date().toISOString(),
+                        last_completed_at: null,
+                        updated_at: new Date().toISOString(),
+                        device_id: 'device-a',
+                        schema_version: 1
+                    }
+                ]
+            },
+            local: {
+                gameState: {
+                    boardState: ['crane', '', '', '', '', ''],
+                    evaluations: [
+                        ['absent', 'absent', 'absent', 'present', 'absent'],
+                        null, null, null, null, null
+                    ],
+                    rowIndex: 1,
+                    solution: 'crisp',
+                    gameStatus: 'IN_PROGRESS',
+                    lastPlayedTs: Date.now(),
+                    lastCompletedTs: 0,
+                    hardMode: false,
+                    puzzleNum: 1700,
+                    date: today,
+                    updatedAt: Date.now() + 1000
+                }
+            }
+        });
+
+        env.mock.setSession(userId);
+        await env.sync.performSync({ mode: 'full' });
+
+        const localState = JSON.parse(env.dom.window.localStorage.getItem('gameState'));
+        expect(localState.rowIndex).toBe(2);
+        expect(localState.boardState[0]).toBe('grind');
+        expect(localState.boardState[1]).toBe('patsy');
+
+        const cloudState = env.mock.getCurrentGameState(userId);
+        expect(cloudState.row_index).toBe(2);
+        expect(cloudState.board_state[0]).toBe('grind');
+        expect(cloudState.board_state[1]).toBe('patsy');
     });
 });

@@ -223,13 +223,62 @@
         return status === "WIN" || status === "FAIL";
     }
 
-    function getActiveRowLength(state) {
-        if (!state || !Array.isArray(state.boardState)) return 0;
-        var rowIndex = Number(state.rowIndex);
-        if (!Number.isFinite(rowIndex)) return 0;
-        if (rowIndex < 0 || rowIndex >= state.boardState.length) return 0;
+    function getBoardRow(state, rowIndex) {
+        if (!state || !Array.isArray(state.boardState)) return "";
+        if (rowIndex < 0 || rowIndex >= state.boardState.length) return "";
         var row = state.boardState[rowIndex];
-        return typeof row === "string" ? row.length : 0;
+        return typeof row === "string" ? row : "";
+    }
+
+    function getEvaluationRow(state, rowIndex) {
+        if (!state || !Array.isArray(state.evaluations)) return null;
+        if (rowIndex < 0 || rowIndex >= state.evaluations.length) return null;
+        return state.evaluations[rowIndex] || null;
+    }
+
+    function areGameStateRowsEqual(leftState, rightState, rowIndex) {
+        return (
+            getBoardRow(leftState, rowIndex) === getBoardRow(rightState, rowIndex) &&
+            JSON.stringify(getEvaluationRow(leftState, rowIndex)) === JSON.stringify(getEvaluationRow(rightState, rowIndex))
+        );
+    }
+
+    function isRemoteInProgressPrefixOfLocal(remoteState, localState) {
+        if (!remoteState || !localState) return false;
+        if (remoteState.gameStatus !== "IN_PROGRESS") return false;
+        if (remoteState.date !== localState.date) return false;
+        if (remoteState.puzzleNum !== localState.puzzleNum) return false;
+
+        var remoteRows = Math.max(0, Number(remoteState.rowIndex) || 0);
+        var localRows = Math.max(0, Number(localState.rowIndex) || 0);
+        if (localRows < remoteRows) return false;
+
+        var i;
+        for (i = 0; i < remoteRows; i += 1) {
+            if (!areGameStateRowsEqual(remoteState, localState, i)) return false;
+        }
+
+        var remoteActive = getBoardRow(remoteState, remoteRows);
+        if (remoteActive.length) {
+            var localAtRemoteActive = getBoardRow(localState, remoteRows);
+            if (!localAtRemoteActive.startsWith(remoteActive)) return false;
+        }
+
+        return true;
+    }
+
+    function areGameStatesEquivalent(leftState, rightState) {
+        if (!leftState || !rightState) return false;
+        return (
+            leftState.puzzleNum === rightState.puzzleNum &&
+            leftState.date === rightState.date &&
+            (Number(leftState.rowIndex) || 0) === (Number(rightState.rowIndex) || 0) &&
+            JSON.stringify(leftState.boardState || []) === JSON.stringify(rightState.boardState || []) &&
+            JSON.stringify(leftState.evaluations || []) === JSON.stringify(rightState.evaluations || []) &&
+            leftState.solution === rightState.solution &&
+            leftState.gameStatus === rightState.gameStatus &&
+            (leftState.hardMode === true) === (rightState.hardMode === true)
+        );
     }
 
     function shouldApplyRemoteGameState(localState, remoteState) {
@@ -242,30 +291,32 @@
         }
 
         if (localState.puzzleNum !== remoteState.puzzleNum) {
-            var localInProgress = localState.gameStatus === "IN_PROGRESS";
-            var remoteInProgress = remoteState.gameStatus === "IN_PROGRESS";
-            if (remoteInProgress && localInProgress) {
-                return (Number(remoteState.rowIndex) || 0) > (Number(localState.rowIndex) || 0);
-            }
-            return isCompletedStatus(remoteState.gameStatus) && !isCompletedStatus(localState.gameStatus);
+            return true;
         }
 
-        var localCompleted = isCompletedStatus(localState.gameStatus);
         var remoteCompleted = isCompletedStatus(remoteState.gameStatus);
-        if (remoteCompleted && !localCompleted) return true;
-        if (localCompleted && !remoteCompleted) return false;
+        if (remoteCompleted) return true;
 
-        var localRows = Number(localState.rowIndex) || 0;
-        var remoteRows = Number(remoteState.rowIndex) || 0;
-        if (remoteRows !== localRows) return remoteRows > localRows;
+        if (remoteState.gameStatus === "IN_PROGRESS") {
+            return !isRemoteInProgressPrefixOfLocal(remoteState, localState);
+        }
 
-        var localRowLength = getActiveRowLength(localState);
-        var remoteRowLength = getActiveRowLength(remoteState);
-        if (remoteRowLength !== localRowLength) return remoteRowLength > localRowLength;
+        return true;
+    }
 
-        var localUpdatedAt = toMs(localState.updatedAt);
-        var remoteUpdatedAt = toMs(remoteState.updatedAt);
-        return remoteUpdatedAt > localUpdatedAt;
+    function shouldPushLocalGameState(remoteState, localState) {
+        if (!localState) return false;
+        if (!remoteState) return true;
+
+        var today = getTodayDateString();
+        if (remoteState.date !== localState.date || remoteState.puzzleNum !== localState.puzzleNum) {
+            return localState.date === today && remoteState.date !== today;
+        }
+
+        if (isCompletedStatus(remoteState.gameStatus)) return false;
+        if (remoteState.gameStatus !== "IN_PROGRESS") return false;
+        if (!isRemoteInProgressPrefixOfLocal(remoteState, localState)) return false;
+        return !areGameStatesEquivalent(remoteState, localState);
     }
 
     function applyRemoteGameState(remoteState) {
@@ -419,25 +470,18 @@
         });
     }
 
-    function fillMissingHistoryMetadata(baseEntry, otherEntry) {
-        var entry = Object.assign({}, baseEntry || {});
-        var updated = false;
-        if (!entry.answer && otherEntry && otherEntry.answer) {
-            entry.answer = otherEntry.answer;
-            updated = true;
-        }
-        if (!entry.mode && otherEntry && otherEntry.mode) {
-            entry.mode = otherEntry.mode;
-            updated = true;
-        }
-        if (!entry.starter && otherEntry && otherEntry.starter) {
-            entry.starter = otherEntry.starter;
-            updated = true;
-        }
-        if (updated) {
-            entry.updated_at = Date.now();
-        }
-        return { entry: entry, updated: updated };
+    function historyEntriesEqual(leftEntry, rightEntry) {
+        if (!leftEntry || !rightEntry) return false;
+        return (
+            Number(leftEntry.puzzle_num) === Number(rightEntry.puzzle_num) &&
+            (leftEntry.date || null) === (rightEntry.date || null) &&
+            Number(leftEntry.result) === Number(rightEntry.result) &&
+            (leftEntry.answer || null) === (rightEntry.answer || null) &&
+            (leftEntry.mode || null) === (rightEntry.mode || null) &&
+            (leftEntry.starter || null) === (rightEntry.starter || null) &&
+            toMs(leftEntry.completed_at) === toMs(rightEntry.completed_at) &&
+            (leftEntry.device_id || null) === (rightEntry.device_id || null)
+        );
     }
 
     function mergeRemoteHistory(localHistory, remoteRows) {
@@ -454,22 +498,9 @@
                 return;
             }
 
-            var localCompleted = toMs(existing.completed_at);
-            var remoteCompleted = toMs(remoteEntry.completed_at);
-
-            if (remoteCompleted && (!localCompleted || remoteCompleted < localCompleted)) {
-                var mergedFromLocal = fillMissingHistoryMetadata(remoteEntry, existing);
-                history[key] = mergedFromLocal.entry;
+            if (!historyEntriesEqual(existing, remoteEntry)) {
+                history[key] = remoteEntry;
                 changed = true;
-                return;
-            }
-
-            if (localCompleted && (!remoteCompleted || localCompleted <= remoteCompleted)) {
-                var mergedFromRemote = fillMissingHistoryMetadata(existing, remoteEntry);
-                if (mergedFromRemote.updated) {
-                    history[key] = mergedFromRemote.entry;
-                    changed = true;
-                }
             }
         });
 
@@ -664,7 +695,7 @@
                 gameStateUpdatedAt = toMs(remoteGameState.updatedAt) || Date.now();
             } else {
                 var refreshedLocalGameState = getLocalGameStateForProfile();
-                if (refreshedLocalGameState && shouldApplyRemoteGameState(remoteGameState, refreshedLocalGameState)) {
+                if (shouldPushLocalGameState(remoteGameState, refreshedLocalGameState)) {
                     var pushedGameState = await upsertGameState(userId, refreshedLocalGameState);
                     if (pushedGameState) {
                         gameStateUpdatedAt = toMs(refreshedLocalGameState.updatedAt) || Date.now();
@@ -736,29 +767,8 @@
                     }
 
                     var remoteEntry = rowToHistoryEntry(remoteRow);
-                    var localCompleted = toMs(localEntry.completed_at);
-                    var remoteCompleted = toMs(remoteEntry.completed_at);
-
-                    if (localCompleted && (!remoteCompleted || localCompleted < remoteCompleted)) {
-                        toUpsert.push(localEntry);
-                        remainingDirty.push(key);
-                        return;
-                    }
-
-                    if (remoteCompleted && (!localCompleted || remoteCompleted < localCompleted)) {
-                        var mergedRemoteFirst = fillMissingHistoryMetadata(remoteEntry, localEntry);
-                        localHistory[key] = mergedRemoteFirst.entry;
-                        localChanged = true;
-                        if (mergedRemoteFirst.updated) {
-                            toUpsert.push(mergedRemoteFirst.entry);
-                            remainingDirty.push(key);
-                        }
-                        return;
-                    }
-
-                    var mergedEqual = fillMissingHistoryMetadata(localEntry, remoteEntry);
-                    if (mergedEqual.updated) {
-                        localHistory[key] = mergedEqual.entry;
+                    if (!historyEntriesEqual(localEntry, remoteEntry)) {
+                        localHistory[key] = remoteEntry;
                         localChanged = true;
                     }
                 });
