@@ -16,9 +16,13 @@ window.SUPABASE_MAGIC_LINK_REDIRECT_PATH = "/sync-resolve";
 // - ?enable-cloud-sync=true|1|on   -> enables and persists to localStorage
 // - ?enable-cloud-sync=false|0|off -> disables and persists to localStorage
 // - ?enable-cloud-sync=reset       -> clears persisted override
+// Special host behavior:
+// - staging.left-wordle.com defaults sync ON
+// - on staging, only ?enable-cloud-sync=false|0|off turns sync OFF for that page load
 (function resolveCloudSyncFlag() {
   var STORAGE_KEY = "cloud_sync_override";
   var QUERY_KEY = "enable-cloud-sync";
+  var STAGING_HOST = "staging.left-wordle.com";
 
   function parseBool(value) {
     var normalized = String(value || "").trim().toLowerCase();
@@ -28,7 +32,22 @@ window.SUPABASE_MAGIC_LINK_REDIRECT_PATH = "/sync-resolve";
   }
 
   try {
+    var hostname = window.location && window.location.hostname ? window.location.hostname : "";
+    var isStagingHost = hostname === STAGING_HOST;
     var params = new URLSearchParams(window.location.search || "");
+
+    if (isStagingHost) {
+      if (params.has(QUERY_KEY)) {
+        var stagingParsed = parseBool(params.get(QUERY_KEY));
+        if (stagingParsed === false) {
+          window.SUPABASE_SYNC_ENABLED = false;
+          return;
+        }
+      }
+      window.SUPABASE_SYNC_ENABLED = true;
+      return;
+    }
+
     if (params.has(QUERY_KEY)) {
       var raw = params.get(QUERY_KEY);
       var normalized = String(raw || "").trim().toLowerCase();
