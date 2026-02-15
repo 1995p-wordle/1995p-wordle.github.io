@@ -3,7 +3,9 @@
 
     var HISTORY_KEY = "history";
     var LEGACY_STATS_KEY = "legacy_stats";
+    var LEGACY_STATS_BACKUP_KEY = "legacy_stats_pre_history_authoritative";
     var STATISTICS_KEY = "statistics";
+    var HISTORY_AUTHORITATIVE_MODEL = "history_authoritative_v1";
     var DEVICE_ID_KEY = "device_id";
     var PUZZLE_START_DATE = new Date(2021, 5, 19); // June 19, 2021 local
     var HISTORY_BASE_FIELDS = [
@@ -43,23 +45,6 @@
         var month = String(date.getMonth() + 1).padStart(2, "0");
         var day = String(date.getDate()).padStart(2, "0");
         return "".concat(year, "-").concat(month, "-").concat(day);
-    }
-
-    function parseLocalDate(dateStr) {
-        if (typeof dateStr !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return null;
-        var parts = dateStr.split("-");
-        var year = parseInt(parts[0], 10);
-        var month = parseInt(parts[1], 10);
-        var day = parseInt(parts[2], 10);
-        if (!year || !month || !day) return null;
-        return new Date(year, month - 1, day);
-    }
-
-    function isDateOnOrBefore(leftDateStr, rightDateStr) {
-        var left = parseLocalDate(leftDateStr);
-        var right = parseLocalDate(rightDateStr);
-        if (!left || !right) return false;
-        return left.getTime() <= right.getTime();
     }
 
     function puzzleNumToDate(puzzleNum) {
@@ -403,16 +388,14 @@
         };
     }
 
-    function getCutoffDateFromLegacy(legacy) {
-        return legacy && typeof legacy.cutoff_date === "string" ? legacy.cutoff_date : null;
-    }
-
     function normalizeStatsTotals(stats) {
         stats = stats || {};
         var guesses = stats.guesses || {};
         return {
             gamesPlayed: Number(stats.gamesPlayed) || 0,
             gamesWon: Number(stats.gamesWon) || 0,
+            currentStreak: Number(stats.currentStreak) || 0,
+            maxStreak: Number(stats.maxStreak) || 0,
             guesses: {
                 1: Number(guesses[1]) || 0,
                 2: Number(guesses[2]) || 0,
@@ -425,30 +408,147 @@
         };
     }
 
-    function computePostCutoffTotals(history, cutoffDate) {
-        var totals = {
+    function createZeroTotals() {
+        return {
             gamesPlayed: 0,
             gamesWon: 0,
             guesses: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, fail: 0 }
         };
+    }
 
-        Object.values(history || {}).forEach(function(entry) {
-            if (!entry) return;
+    function createZeroLegacyForHistoryAuthoritative() {
+        return {
+            model: HISTORY_AUTHORITATIVE_MODEL,
+            totals_delta: createZeroTotals(),
+            current_streak_adjustment: {
+                delta: 0,
+                anchor_puzzle_num: -1
+            },
+            max_streak_floor: 0,
+            recorded_on: formatLocalDate(new Date())
+        };
+    }
+
+    function backupLegacyStatsIfNeeded(currentLegacy) {
+        if (!currentLegacy || typeof currentLegacy !== "object") return;
+        if (!Object.keys(currentLegacy).length) return;
+        if (currentLegacy.model === HISTORY_AUTHORITATIVE_MODEL) return;
+        if (window.localStorage.getItem(LEGACY_STATS_BACKUP_KEY) !== null) return;
+        window.localStorage.setItem(LEGACY_STATS_BACKUP_KEY, JSON.stringify(currentLegacy));
+    }
+
+    function setHistoryAuthoritativeLegacyZeroed() {
+        var currentLegacy = getLegacyStatsObject();
+        backupLegacyStatsIfNeeded(currentLegacy);
+        setLegacyStatsObject(createZeroLegacyForHistoryAuthoritative());
+        applyLegacySyncChangeNotification();
+    }
+
+    function computeHistoryMinimums(history) {
+        var totals = normalizeStatsTotals(createZeroTotals());
+        var entries = Object.values(history || {}).map(function(entry) {
+            if (!entry) return null;
+            var puzzleNum = Number(entry.puzzle_num);
             var result = Number(entry.result);
-            if (!Number.isFinite(result)) return;
-            var date = entry.date || puzzleNumToDate(Number(entry.puzzle_num));
-            if (cutoffDate && isDateOnOrBefore(date, cutoffDate)) return;
+            if (!Number.isFinite(puzzleNum) || !Number.isFinite(result)) return null;
+            return { puzzle_num: puzzleNum, result: result };
+        }).filter(Boolean).sort(function(a, b) {
+            return a.puzzle_num - b.puzzle_num;
+        });
 
-            totals.gamesPlayed += 1;
-            if (result >= 1 && result <= 6) {
+        var currentStreak = 0;
+        var maxStreak = 0;
+        var lastPuzzle = null;
+        var lastWasWin = false;
+
+        entries.forEach(function(entry) {
+            if (entry.result >= 1 && entry.result <= 6) {
+                totals.gamesPlayed += 1;
                 totals.gamesWon += 1;
-                totals.guesses[result] += 1;
-            } else {
+                totals.guesses[entry.result] += 1;
+
+                if (lastWasWin && lastPuzzle !== null && entry.puzzle_num === lastPuzzle + 1) {
+                    currentStreak += 1;
+                } else {
+                    currentStreak = 1;
+                }
+                if (currentStreak > maxStreak) maxStreak = currentStreak;
+                lastWasWin = true;
+                lastPuzzle = entry.puzzle_num;
+                return;
+            }
+
+            if (entry.result === 7) {
+                totals.gamesPlayed += 1;
                 totals.guesses.fail += 1;
+                currentStreak = 0;
+                lastWasWin = false;
+                lastPuzzle = entry.puzzle_num;
             }
         });
 
+        totals.currentStreak = currentStreak;
+        totals.maxStreak = maxStreak;
+        totals.latestPuzzleNum = entries.length ? entries[entries.length - 1].puzzle_num : -1;
         return totals;
+    }
+
+    function buildHistoryAuthoritativeLegacyFromTarget(historyMinimums, targetTotals) {
+        var currentDelta = targetTotals.currentStreak - historyMinimums.currentStreak;
+        return {
+            model: HISTORY_AUTHORITATIVE_MODEL,
+            totals_delta: {
+                gamesPlayed: targetTotals.gamesPlayed - historyMinimums.gamesPlayed,
+                gamesWon: targetTotals.gamesWon - historyMinimums.gamesWon,
+                guesses: {
+                    1: targetTotals.guesses[1] - historyMinimums.guesses[1],
+                    2: targetTotals.guesses[2] - historyMinimums.guesses[2],
+                    3: targetTotals.guesses[3] - historyMinimums.guesses[3],
+                    4: targetTotals.guesses[4] - historyMinimums.guesses[4],
+                    5: targetTotals.guesses[5] - historyMinimums.guesses[5],
+                    6: targetTotals.guesses[6] - historyMinimums.guesses[6],
+                    fail: targetTotals.guesses.fail - historyMinimums.guesses.fail
+                }
+            },
+            current_streak_adjustment: {
+                delta: currentDelta,
+                anchor_puzzle_num: historyMinimums.latestPuzzleNum
+            },
+            max_streak_floor: targetTotals.maxStreak,
+            recorded_on: formatLocalDate(new Date())
+        };
+    }
+
+    function hasNegativeTotalsDelta(legacyWithDelta) {
+        var delta = legacyWithDelta && legacyWithDelta.totals_delta ? legacyWithDelta.totals_delta : createZeroTotals();
+        if ((Number(delta.gamesPlayed) || 0) < 0) return true;
+        if ((Number(delta.gamesWon) || 0) < 0) return true;
+        var guesses = delta.guesses || {};
+        if ((Number(guesses.fail) || 0) < 0) return true;
+        for (var i = 1; i <= 6; i += 1) {
+            if ((Number(guesses[i]) || 0) < 0) return true;
+        }
+        return false;
+    }
+
+    function hasTargetBelowHistoryMinimums(targetTotals, historyMinimums) {
+        if (targetTotals.gamesPlayed < historyMinimums.gamesPlayed) return true;
+        if (targetTotals.gamesWon < historyMinimums.gamesWon) return true;
+        if (targetTotals.currentStreak < historyMinimums.currentStreak) return true;
+        if (targetTotals.maxStreak < historyMinimums.maxStreak) return true;
+        if (targetTotals.maxStreak < targetTotals.currentStreak) return true;
+        if (targetTotals.guesses.fail < historyMinimums.guesses.fail) return true;
+        for (var i = 1; i <= 6; i += 1) {
+            if (targetTotals.guesses[i] < historyMinimums.guesses[i]) return true;
+        }
+        return false;
+    }
+
+    function formatHistoryMinimumsMessage(historyMinimums) {
+        return "Values cannot be below history minimums: Played " + historyMinimums.gamesPlayed +
+            ", Won " + historyMinimums.gamesWon +
+            ", Current Streak " + historyMinimums.currentStreak +
+            ", Max Streak " + historyMinimums.maxStreak + ".";
     }
 
     function computeDerivedFromTotals(totals) {
@@ -586,12 +686,8 @@
 
         setImportSummaryLine("history-import-summary-line1", summary.processed + " games were processed from your file.");
         setImportSummaryLine("history-import-summary-line2", summary.newGames + " of those games were not previously recorded in your history.");
-        if (summary.cutoffDate) {
-            setImportSummaryLine("history-import-summary-line3", summary.preCutoff + " of the new games were before cutoff (" + summary.cutoffDate + ") and did not change stats.");
-        } else {
-            setImportSummaryLine("history-import-summary-line3", "No cutoff date is set, so all new games were eligible to affect stats.");
-        }
-        setImportSummaryLine("history-import-summary-line4", summary.postCutoff + " of the new games were counted toward stats.");
+        setImportSummaryLine("history-import-summary-line3", summary.newGames + " new games were counted toward stats and streaks.");
+        setImportSummaryLine("history-import-summary-line4", "Legacy baseline was reset so history is now the authoritative source.");
 
         modal.classList.remove("hidden");
     }
@@ -637,10 +733,6 @@
             var invalidCount = 0;
             var validCount = 0;
             var addedCount = 0;
-            var preCutoffCount = 0;
-            var postCutoffCount = 0;
-            var legacy = getLegacyStatsObject();
-            var cutoffDate = getCutoffDateFromLegacy(legacy);
             var stagedByPuzzle = {};
 
             rawRecords.forEach(function(raw, index) {
@@ -659,12 +751,6 @@
                 localHistory[key] = entry;
                 changedPuzzleNums.push(entry.puzzle_num);
                 addedCount += 1;
-
-                if (cutoffDate && isDateOnOrBefore(entry.date, cutoffDate)) {
-                    preCutoffCount += 1;
-                } else {
-                    postCutoffCount += 1;
-                }
             });
 
             if (!changedPuzzleNums.length) {
@@ -672,12 +758,23 @@
                 if (invalidCount) {
                     noChangeMessage += " (" + invalidCount + " invalid rows skipped)";
                 }
-                showStatus(statusElement, noChangeMessage, false);
+                if (!validCount) {
+                    showStatus(statusElement, noChangeMessage, false);
+                    return;
+                }
+                setHistoryAuthoritativeLegacyZeroed();
+                recomputeStatisticsAfterHistoryImport();
+                showStatus(statusElement, noChangeMessage + "; stats recalculated from full history", false);
+                openHistoryImportSummaryModal({
+                    processed: rawRecords.length,
+                    newGames: 0
+                });
                 return;
             }
 
             setHistoryObject(localHistory);
             notifyHistoryChanged(changedPuzzleNums);
+            setHistoryAuthoritativeLegacyZeroed();
             recomputeStatisticsAfterHistoryImport();
 
             var statusMessage = "Import complete: " + addedCount + " new games added";
@@ -685,11 +782,8 @@
             showStatus(statusElement, statusMessage, false);
 
             openHistoryImportSummaryModal({
-                processed: validCount,
-                newGames: addedCount,
-                preCutoff: preCutoffCount,
-                postCutoff: postCutoffCount,
-                cutoffDate: cutoffDate
+                processed: rawRecords.length,
+                newGames: addedCount
             });
         } catch (err) {
             console.error("History import failed", err);
@@ -723,6 +817,8 @@
         return {
             gamesPlayed: parseField(inputs.gamesPlayed),
             gamesWon: parseField(inputs.gamesWon),
+            currentStreak: parseField(inputs.currentStreak),
+            maxStreak: parseField(inputs.maxStreak),
             guesses: {
                 1: parseField(inputs.g1),
                 2: parseField(inputs.g2),
@@ -737,6 +833,9 @@
 
     function validateAdjustTotals(targetTotals) {
         if (!Number.isFinite(targetTotals.gamesPlayed) || !Number.isFinite(targetTotals.gamesWon)) {
+            return "Use whole numbers 0 or greater.";
+        }
+        if (!Number.isFinite(targetTotals.currentStreak) || !Number.isFinite(targetTotals.maxStreak)) {
             return "Use whole numbers 0 or greater.";
         }
         for (var i = 1; i <= 6; i += 1) {
@@ -759,6 +858,9 @@
         }
         if (winsByGuess !== targetTotals.gamesWon) {
             return "Winning guess totals (1-6) must equal Games Won.";
+        }
+        if (targetTotals.maxStreak < targetTotals.currentStreak) {
+            return "Max Streak must be greater than or equal to Current Streak.";
         }
 
         return null;
@@ -787,6 +889,8 @@
         var inputs = {
             gamesPlayed: document.getElementById("adjust-gamesPlayed"),
             gamesWon: document.getElementById("adjust-gamesWon"),
+            currentStreak: document.getElementById("adjust-currentStreak"),
+            maxStreak: document.getElementById("adjust-maxStreak"),
             g1: document.getElementById("adjust-g1"),
             g2: document.getElementById("adjust-g2"),
             g3: document.getElementById("adjust-g3"),
@@ -797,23 +901,20 @@
         };
         var preview = {
             winPercentage: document.getElementById("adjust-preview-winPercentage"),
-            averageGuesses: document.getElementById("adjust-preview-averageGuesses"),
-            currentStreak: document.getElementById("adjust-preview-currentStreak"),
-            maxStreak: document.getElementById("adjust-preview-maxStreak")
+            averageGuesses: document.getElementById("adjust-preview-averageGuesses")
         };
         var errorEl = document.getElementById("adjust-stats-error");
 
         var stats = getCurrentStatsForAdjustment();
         inputs.gamesPlayed.value = stats.gamesPlayed;
         inputs.gamesWon.value = stats.gamesWon;
+        inputs.currentStreak.value = stats.currentStreak;
+        inputs.maxStreak.value = stats.maxStreak;
         for (var i = 1; i <= 6; i += 1) {
             inputs["g" + i].value = stats.guesses[i];
         }
         inputs.gfail.value = stats.guesses.fail;
 
-        var liveStats = safeParseJSON(window.localStorage.getItem(STATISTICS_KEY), toDefaultStats());
-        if (preview.currentStreak) preview.currentStreak.textContent = String(Number(liveStats.currentStreak) || 0);
-        if (preview.maxStreak) preview.maxStreak.textContent = String(Number(liveStats.maxStreak) || 0);
         if (errorEl) errorEl.textContent = "";
 
         updateAdjustStatsPreview(inputs, preview);
@@ -836,6 +937,8 @@
         var inputs = {
             gamesPlayed: document.getElementById("adjust-gamesPlayed"),
             gamesWon: document.getElementById("adjust-gamesWon"),
+            currentStreak: document.getElementById("adjust-currentStreak"),
+            maxStreak: document.getElementById("adjust-maxStreak"),
             g1: document.getElementById("adjust-g1"),
             g2: document.getElementById("adjust-g2"),
             g3: document.getElementById("adjust-g3"),
@@ -886,42 +989,18 @@
                 }
 
                 var history = getHistoryObject();
-                var legacy = getLegacyStatsObject();
-                var cutoffDate = getCutoffDateFromLegacy(legacy);
-                var postCutoff = computePostCutoffTotals(history, cutoffDate);
-
-                var nextLegacyGuesses = {
-                    1: targetTotals.guesses[1] - postCutoff.guesses[1],
-                    2: targetTotals.guesses[2] - postCutoff.guesses[2],
-                    3: targetTotals.guesses[3] - postCutoff.guesses[3],
-                    4: targetTotals.guesses[4] - postCutoff.guesses[4],
-                    5: targetTotals.guesses[5] - postCutoff.guesses[5],
-                    6: targetTotals.guesses[6] - postCutoff.guesses[6],
-                    7: targetTotals.guesses.fail - postCutoff.guesses.fail
-                };
-                var nextLegacyGamesPlayed = targetTotals.gamesPlayed - postCutoff.gamesPlayed;
-                var nextLegacyGamesWon = targetTotals.gamesWon - postCutoff.gamesWon;
-
-                var hasNegative = nextLegacyGamesPlayed < 0 || nextLegacyGamesWon < 0;
-                for (var i = 1; i <= 7; i += 1) {
-                    if ((nextLegacyGuesses[i] || 0) < 0) {
-                        hasNegative = true;
-                        break;
-                    }
-                }
-                if (hasNegative) {
-                    setError("These totals are lower than your post-cutoff recorded history and cannot be applied.");
+                var historyMinimums = computeHistoryMinimums(history);
+                if (hasTargetBelowHistoryMinimums(targetTotals, historyMinimums)) {
+                    setError(formatHistoryMinimumsMessage(historyMinimums));
                     return;
                 }
 
-                var nextLegacy = Object.assign({}, legacy);
-                nextLegacy.gamesPlayed = nextLegacyGamesPlayed;
-                nextLegacy.gamesWon = nextLegacyGamesWon;
-                nextLegacy.guesses = nextLegacyGuesses;
-                nextLegacy.recorded_on = formatLocalDate(new Date());
-                if (!("maxStreak" in nextLegacy)) nextLegacy.maxStreak = 0;
-                if (!("current_streak_length" in nextLegacy)) nextLegacy.current_streak_length = 0;
-                if (!("current_streak_end_date" in nextLegacy)) nextLegacy.current_streak_end_date = null;
+                var nextLegacy = buildHistoryAuthoritativeLegacyFromTarget(historyMinimums, targetTotals);
+                if (hasNegativeTotalsDelta(nextLegacy)) {
+                    setError("Values cannot be lower than history-derived totals.");
+                    return;
+                }
+                backupLegacyStatsIfNeeded(getLegacyStatsObject());
 
                 setLegacyStatsObject(nextLegacy);
                 applyLegacySyncChangeNotification();

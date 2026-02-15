@@ -493,6 +493,7 @@
     var HISTORY_KEY = "history";
     var LEGACY_STATS_KEY = "legacy_stats";
     var DEVICE_ID_KEY = "device_id";
+    var HISTORY_AUTHORITATIVE_MODEL = "history_authoritative_v1";
 
     function formatLocalDate(date) {
         var year = date.getFullYear();
@@ -630,6 +631,64 @@
         return guesses;
     }
 
+    function normalizeHistoryAuthoritativeDelta(legacy) {
+        var delta = legacy && legacy.totals_delta ? legacy.totals_delta : {};
+        var guesses = delta.guesses || {};
+        return {
+            gamesPlayed: Math.max(0, parseInt(delta.gamesPlayed, 10) || 0),
+            gamesWon: Math.max(0, parseInt(delta.gamesWon, 10) || 0),
+            guesses: {
+                1: Math.max(0, parseInt(guesses[1], 10) || 0),
+                2: Math.max(0, parseInt(guesses[2], 10) || 0),
+                3: Math.max(0, parseInt(guesses[3], 10) || 0),
+                4: Math.max(0, parseInt(guesses[4], 10) || 0),
+                5: Math.max(0, parseInt(guesses[5], 10) || 0),
+                6: Math.max(0, parseInt(guesses[6], 10) || 0),
+                fail: Math.max(0, parseInt(guesses.fail, 10) || 0)
+            }
+        };
+    }
+
+    function normalizeCurrentStreakAdjustment(legacy) {
+        var adjustment = legacy && legacy.current_streak_adjustment ? legacy.current_streak_adjustment : {};
+        var anchor = Number(adjustment.anchor_puzzle_num);
+        return {
+            delta: Math.max(0, parseInt(adjustment.delta, 10) || 0),
+            anchorPuzzleNum: Number.isFinite(anchor) ? Math.floor(anchor) : -1
+        };
+    }
+
+    function isCurrentStreakAdjustmentActive(entries, streakAdjustment) {
+        if (!streakAdjustment || streakAdjustment.delta <= 0) return false;
+        var nextExpected = streakAdjustment.anchorPuzzleNum + 1;
+        for (var i = 0; i < entries.length; i++) {
+            var entry = entries[i];
+            if (entry.puzzle_num <= streakAdjustment.anchorPuzzleNum) continue;
+            if (entry.puzzle_num !== nextExpected) return false;
+            var isWin = entry.result >= 1 && entry.result <= 6;
+            if (!isWin) return false;
+            nextExpected += 1;
+        }
+        return true;
+    }
+
+    function applyFinalRateStats(stats) {
+        var guessSum = 0;
+        for (var i = 1; i <= 6; i++) {
+            guessSum += i * (stats.guesses[i] || 0);
+        }
+        stats.winPercentage = stats.gamesPlayed ? Math.round(stats.gamesWon / stats.gamesPlayed * 100) : 0;
+        stats.averageGuesses = stats.gamesWon ? Math.round(guessSum / stats.gamesWon) : 0;
+    }
+
+    function computeHistoryOnlyStatistics() {
+        var historyStats = computeHistoryStats(getHistory(), null);
+        var stats = historyStats.stats;
+        stats.currentStreak = historyStats.currentStreak;
+        stats.maxStreak = historyStats.maxStreak;
+        return stats;
+    }
+
     function computeHistoryStats(history, cutoffDateStr) {
         var stats = JSON.parse(JSON.stringify(DEFAULT_STATISTICS));
         var cutoffDate = parseLocalDateString(cutoffDateStr);
@@ -700,13 +759,49 @@
             currentStreak: currentStreak,
             maxStreak: maxStreak,
             startWinStreak: startWinStreak,
-            firstEntry: entries.length ? entries[0] : null
+            firstEntry: entries.length ? entries[0] : null,
+            entries: entries
         };
     }
 
     function computeStatisticsFromHistoryAndLegacy() {
         var history = getHistory();
         var legacy = getLegacyStats() || {};
+
+        if (legacy.model === HISTORY_AUTHORITATIVE_MODEL) {
+            var historyOnly = computeHistoryStats(history, null);
+            var historyTotals = historyOnly.stats;
+            var delta = normalizeHistoryAuthoritativeDelta(legacy);
+            var streakAdjustment = normalizeCurrentStreakAdjustment(legacy);
+            var statsFromHistory = JSON.parse(JSON.stringify(DEFAULT_STATISTICS));
+
+            statsFromHistory.gamesPlayed = historyTotals.gamesPlayed + delta.gamesPlayed;
+            statsFromHistory.gamesWon = historyTotals.gamesWon + delta.gamesWon;
+            statsFromHistory.guesses.fail = historyTotals.guesses.fail + delta.guesses.fail;
+            for (var n = 1; n <= 6; n++) {
+                statsFromHistory.guesses[n] = historyTotals.guesses[n] + delta.guesses[n];
+            }
+
+            statsFromHistory.gamesPlayed = Math.max(statsFromHistory.gamesPlayed, historyTotals.gamesPlayed);
+            statsFromHistory.gamesWon = Math.max(statsFromHistory.gamesWon, historyTotals.gamesWon);
+            statsFromHistory.guesses.fail = Math.max(statsFromHistory.guesses.fail, historyTotals.guesses.fail);
+            for (var m = 1; m <= 6; m++) {
+                statsFromHistory.guesses[m] = Math.max(statsFromHistory.guesses[m], historyTotals.guesses[m]);
+            }
+
+            var maxStreakFloor = Math.max(0, parseInt(legacy.max_streak_floor, 10) || 0);
+            var currentStreak = historyOnly.currentStreak;
+            if (isCurrentStreakAdjustmentActive(historyOnly.entries || [], streakAdjustment)) {
+                currentStreak += streakAdjustment.delta;
+            }
+
+            statsFromHistory.currentStreak = currentStreak;
+            statsFromHistory.maxStreak = Math.max(historyOnly.maxStreak, maxStreakFloor, currentStreak);
+
+            applyFinalRateStats(statsFromHistory);
+            return statsFromHistory;
+        }
+
         var historyStats = computeHistoryStats(history, legacy.cutoff_date || null);
         var stats = historyStats.stats;
 
@@ -1919,7 +2014,8 @@
     // Sync layer can trigger a recompute after remote merge/update.
     window.wordleStats = {
         recompute: recomputeAndPersistStatistics,
-        compute: computeStatisticsFromHistoryAndLegacy
+        compute: computeStatisticsFromHistoryAndLegacy,
+        computeHistoryOnly: computeHistoryOnlyStatistics
     };
     if (window.wordleSyncNeedsStatsRefresh) {
         recomputeAndPersistStatistics();
@@ -1947,6 +2043,7 @@
         encodeWord: encodeWord,
         getStatistics: getStatistics,
         updateStatistics: updateStatistics,
+        computeHistoryOnlyStatistics: computeHistoryOnlyStatistics,
         computeStatisticsFromHistoryAndLegacy: computeStatisticsFromHistoryAndLegacy,
         recomputeAndPersistStatistics: recomputeAndPersistStatistics,
         evaluateGuess: evaluateGuess,
