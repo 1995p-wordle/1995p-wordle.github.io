@@ -114,6 +114,12 @@
           <input id='inputload' type='file' accept=".json"></input>
         </div>
       </div>
+      <div class="setting" id="adjustStatsButton">
+        <div class="text">
+          <div class="title">Adjust Stats</div>
+          <div class="description">Set totals directly; baseline is recalculated automatically</div>
+        </div>
+      </div>
     </section>
     <section>
       <h3 class="save-section-heading">History</h3>
@@ -132,7 +138,7 @@
       <div class="setting" id="loadHistoryButton">
         <div class="text">
           <div class="title">Import History (CSV or JSON)</div>
-          <div class="description">Merges by puzzle number using earliest completion time</div>
+          <div class="description">Adds missing puzzle entries; existing entries are kept</div>
           <input id='inputHistoryLoad' type='file' accept=".json,.csv,text/csv,application/json"></input>
         </div>
       </div>
@@ -153,6 +159,49 @@
       </div>
       <div id="sync-status" class="description"></div>
     </section>
+  </div>
+  <div id="history-import-summary-modal" class="save-inline-modal hidden" role="dialog" aria-modal="true" aria-labelledby="history-import-summary-title">
+    <div class="save-inline-modal-card">
+      <h3 id="history-import-summary-title">Import Complete</h3>
+      <p id="history-import-summary-line1"></p>
+      <p id="history-import-summary-line2"></p>
+      <p id="history-import-summary-line3"></p>
+      <p id="history-import-summary-line4"></p>
+      <p>When you close this window, your updated stats will be shown.</p>
+      <p>If totals need correction, return here and choose Adjust Stats.</p>
+      <div class="save-inline-modal-actions">
+        <button id="history-import-summary-view-stats" type="button">View Updated Stats</button>
+        <button id="history-import-summary-close" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+  <div id="adjust-stats-modal" class="save-inline-modal hidden" role="dialog" aria-modal="true" aria-labelledby="adjust-stats-title">
+    <div class="save-inline-modal-card">
+      <h3 id="adjust-stats-title">Adjust Stats</h3>
+      <p>Enter totals you want to see. History stays unchanged and baseline is recalculated automatically.</p>
+      <div class="adjust-stats-grid">
+        <label>Games Played<input id="adjust-gamesPlayed" type="number" min="0" step="1" /></label>
+        <label>Games Won<input id="adjust-gamesWon" type="number" min="0" step="1" /></label>
+        <label>1 Guess<input id="adjust-g1" type="number" min="0" step="1" /></label>
+        <label>2 Guesses<input id="adjust-g2" type="number" min="0" step="1" /></label>
+        <label>3 Guesses<input id="adjust-g3" type="number" min="0" step="1" /></label>
+        <label>4 Guesses<input id="adjust-g4" type="number" min="0" step="1" /></label>
+        <label>5 Guesses<input id="adjust-g5" type="number" min="0" step="1" /></label>
+        <label>6 Guesses<input id="adjust-g6" type="number" min="0" step="1" /></label>
+        <label>Failed Games<input id="adjust-gfail" type="number" min="0" step="1" /></label>
+      </div>
+      <div class="adjust-stats-preview">
+        <div><strong>Win %:</strong> <span id="adjust-preview-winPercentage">0</span></div>
+        <div><strong>Average Guesses:</strong> <span id="adjust-preview-averageGuesses">0</span></div>
+        <div><strong>Current Streak:</strong> <span id="adjust-preview-currentStreak">0</span></div>
+        <div><strong>Max Streak:</strong> <span id="adjust-preview-maxStreak">0</span></div>
+      </div>
+      <div id="adjust-stats-error" class="description"></div>
+      <div class="save-inline-modal-actions">
+        <button id="adjust-stats-apply" type="button">Apply Adjustment</button>
+        <button id="adjust-stats-cancel" type="button">Cancel</button>
+      </div>
+    </div>
   </div>
                     </slot>
                 </div>

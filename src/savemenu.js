@@ -2,6 +2,8 @@
     "use strict";
 
     var HISTORY_KEY = "history";
+    var LEGACY_STATS_KEY = "legacy_stats";
+    var STATISTICS_KEY = "statistics";
     var DEVICE_ID_KEY = "device_id";
     var PUZZLE_START_DATE = new Date(2021, 5, 19); // June 19, 2021 local
     var HISTORY_BASE_FIELDS = [
@@ -43,6 +45,23 @@
         return "".concat(year, "-").concat(month, "-").concat(day);
     }
 
+    function parseLocalDate(dateStr) {
+        if (typeof dateStr !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return null;
+        var parts = dateStr.split("-");
+        var year = parseInt(parts[0], 10);
+        var month = parseInt(parts[1], 10);
+        var day = parseInt(parts[2], 10);
+        if (!year || !month || !day) return null;
+        return new Date(year, month - 1, day);
+    }
+
+    function isDateOnOrBefore(leftDateStr, rightDateStr) {
+        var left = parseLocalDate(leftDateStr);
+        var right = parseLocalDate(rightDateStr);
+        if (!left || !right) return false;
+        return left.getTime() <= right.getTime();
+    }
+
     function puzzleNumToDate(puzzleNum) {
         var d = new Date(PUZZLE_START_DATE);
         d.setDate(d.getDate() + puzzleNum);
@@ -77,6 +96,17 @@
 
     function setHistoryObject(history) {
         window.localStorage.setItem(HISTORY_KEY, JSON.stringify(history || {}));
+    }
+
+    function getLegacyStatsObject() {
+        var raw = window.localStorage.getItem(LEGACY_STATS_KEY);
+        if (!raw) return {};
+        var parsed = safeParseJSON(raw, {});
+        return parsed && typeof parsed === "object" ? parsed : {};
+    }
+
+    function setLegacyStatsObject(legacy) {
+        window.localStorage.setItem(LEGACY_STATS_KEY, JSON.stringify(legacy || {}));
     }
 
     function showStatus(element, message, isError) {
@@ -373,50 +403,70 @@
         };
     }
 
-    function mergeMetadata(winner, loser) {
-        var out = Object.assign({}, winner);
-        var changed = false;
-
-        if (!out.answer && loser && loser.answer) {
-            out.answer = loser.answer;
-            changed = true;
-        }
-        if (!out.mode && loser && loser.mode) {
-            out.mode = loser.mode;
-            changed = true;
-        }
-        if (!out.starter && loser && loser.starter) {
-            out.starter = loser.starter;
-            changed = true;
-        }
-        if (!out.date && loser && loser.date) {
-            out.date = loser.date;
-            changed = true;
-        }
-
-        if (changed) {
-            out.updated_at = Date.now();
-        }
-        return { entry: out, changed: changed };
+    function getCutoffDateFromLegacy(legacy) {
+        return legacy && typeof legacy.cutoff_date === "string" ? legacy.cutoff_date : null;
     }
 
-    function mergeHistoryEntry(existing, incoming) {
-        if (!existing) return { entry: incoming, changed: true };
+    function normalizeStatsTotals(stats) {
+        stats = stats || {};
+        var guesses = stats.guesses || {};
+        return {
+            gamesPlayed: Number(stats.gamesPlayed) || 0,
+            gamesWon: Number(stats.gamesWon) || 0,
+            guesses: {
+                1: Number(guesses[1]) || 0,
+                2: Number(guesses[2]) || 0,
+                3: Number(guesses[3]) || 0,
+                4: Number(guesses[4]) || 0,
+                5: Number(guesses[5]) || 0,
+                6: Number(guesses[6]) || 0,
+                fail: Number(guesses.fail) || 0
+            }
+        };
+    }
 
-        var existingCompleted = toMs(existing.completed_at);
-        var incomingCompleted = toMs(incoming.completed_at);
+    function computePostCutoffTotals(history, cutoffDate) {
+        var totals = {
+            gamesPlayed: 0,
+            gamesWon: 0,
+            guesses: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, fail: 0 }
+        };
 
-        if (incomingCompleted && (!existingCompleted || incomingCompleted < existingCompleted)) {
-            var incomingWinner = mergeMetadata(incoming, existing);
-            return { entry: incomingWinner.entry, changed: true };
+        Object.values(history || {}).forEach(function(entry) {
+            if (!entry) return;
+            var result = Number(entry.result);
+            if (!Number.isFinite(result)) return;
+            var date = entry.date || puzzleNumToDate(Number(entry.puzzle_num));
+            if (cutoffDate && isDateOnOrBefore(date, cutoffDate)) return;
+
+            totals.gamesPlayed += 1;
+            if (result >= 1 && result <= 6) {
+                totals.gamesWon += 1;
+                totals.guesses[result] += 1;
+            } else {
+                totals.guesses.fail += 1;
+            }
+        });
+
+        return totals;
+    }
+
+    function computeDerivedFromTotals(totals) {
+        var guessSum = 0;
+        for (var i = 1; i <= 6; i += 1) {
+            guessSum += i * (totals.guesses[i] || 0);
         }
+        return {
+            winPercentage: totals.gamesPlayed ? Math.round(totals.gamesWon / totals.gamesPlayed * 100) : 0,
+            averageGuesses: totals.gamesWon ? Math.round(guessSum / totals.gamesWon) : 0
+        };
+    }
 
-        if (existingCompleted && (!incomingCompleted || existingCompleted <= incomingCompleted)) {
-            var existingWinner = mergeMetadata(existing, incoming);
-            return { entry: existingWinner.entry, changed: existingWinner.changed };
+    function applyLegacySyncChangeNotification() {
+        if (!window.wordleSync || !window.wordleSync.enabled || typeof window.wordleSync.onDataChanged !== "function") {
+            return;
         }
-
-        return { entry: existing, changed: false };
+        window.wordleSync.onDataChanged("legacy", {});
     }
 
     function getHistoryExportShape(historyEntries) {
@@ -518,6 +568,56 @@
         window.wordleSyncNeedsStatsRefresh = true;
     }
 
+    function openStatsModalFromSaveMenu() {
+        var app = document.querySelector("game-app");
+        if (app && typeof app.showStatsModal === "function") {
+            app.showStatsModal();
+        }
+    }
+
+    function setImportSummaryLine(id, text) {
+        var el = document.getElementById(id);
+        if (el) el.textContent = text;
+    }
+
+    function openHistoryImportSummaryModal(summary) {
+        var modal = document.getElementById("history-import-summary-modal");
+        if (!modal) return;
+
+        setImportSummaryLine("history-import-summary-line1", summary.processed + " games were processed from your file.");
+        setImportSummaryLine("history-import-summary-line2", summary.newGames + " of those games were not previously recorded in your history.");
+        if (summary.cutoffDate) {
+            setImportSummaryLine("history-import-summary-line3", summary.preCutoff + " of the new games were before cutoff (" + summary.cutoffDate + ") and did not change stats.");
+        } else {
+            setImportSummaryLine("history-import-summary-line3", "No cutoff date is set, so all new games were eligible to affect stats.");
+        }
+        setImportSummaryLine("history-import-summary-line4", summary.postCutoff + " of the new games were counted toward stats.");
+
+        modal.classList.remove("hidden");
+    }
+
+    function closeHistoryImportSummaryModal(showStats) {
+        var modal = document.getElementById("history-import-summary-modal");
+        if (!modal) return;
+        modal.classList.add("hidden");
+        if (showStats) openStatsModalFromSaveMenu();
+    }
+
+    function wireHistoryImportSummaryModal() {
+        var closeButton = document.getElementById("history-import-summary-close");
+        var viewStatsButton = document.getElementById("history-import-summary-view-stats");
+        if (closeButton) {
+            closeButton.addEventListener("click", function() {
+                closeHistoryImportSummaryModal(true);
+            });
+        }
+        if (viewStatsButton) {
+            viewStatsButton.addEventListener("click", function() {
+                closeHistoryImportSummaryModal(true);
+            });
+        }
+    }
+
     async function handleHistoryImportFile(file, statusElement, loadButtonElement) {
         if (!file) return;
 
@@ -535,8 +635,13 @@
             var localHistory = getHistoryObject();
             var changedPuzzleNums = [];
             var invalidCount = 0;
+            var validCount = 0;
             var addedCount = 0;
-            var updatedCount = 0;
+            var preCutoffCount = 0;
+            var postCutoffCount = 0;
+            var legacy = getLegacyStatsObject();
+            var cutoffDate = getCutoffDateFromLegacy(legacy);
+            var stagedByPuzzle = {};
 
             rawRecords.forEach(function(raw, index) {
                 var entry = normalizeImportedEntry(raw, index);
@@ -544,23 +649,30 @@
                     invalidCount += 1;
                     return;
                 }
+                validCount += 1;
 
                 var key = String(entry.puzzle_num);
-                var existing = localHistory[key];
-                var merged = mergeHistoryEntry(existing, entry);
-                if (!merged.changed) return;
+                if (localHistory[key]) return;
+                if (stagedByPuzzle[key]) return;
 
-                localHistory[key] = merged.entry;
+                stagedByPuzzle[key] = entry;
+                localHistory[key] = entry;
                 changedPuzzleNums.push(entry.puzzle_num);
-                if (existing) {
-                    updatedCount += 1;
+                addedCount += 1;
+
+                if (cutoffDate && isDateOnOrBefore(entry.date, cutoffDate)) {
+                    preCutoffCount += 1;
                 } else {
-                    addedCount += 1;
+                    postCutoffCount += 1;
                 }
             });
 
             if (!changedPuzzleNums.length) {
-                showStatus(statusElement, "Import complete: no new changes" + (invalidCount ? " (" + invalidCount + " invalid rows skipped)" : ""), false);
+                var noChangeMessage = "Import complete: no new games added";
+                if (invalidCount) {
+                    noChangeMessage += " (" + invalidCount + " invalid rows skipped)";
+                }
+                showStatus(statusElement, noChangeMessage, false);
                 return;
             }
 
@@ -568,9 +680,17 @@
             notifyHistoryChanged(changedPuzzleNums);
             recomputeStatisticsAfterHistoryImport();
 
-            var statusMessage = "Import complete: " + addedCount + " added, " + updatedCount + " updated";
+            var statusMessage = "Import complete: " + addedCount + " new games added";
             if (invalidCount) statusMessage += ", " + invalidCount + " skipped";
             showStatus(statusElement, statusMessage, false);
+
+            openHistoryImportSummaryModal({
+                processed: validCount,
+                newGames: addedCount,
+                preCutoff: preCutoffCount,
+                postCutoff: postCutoffCount,
+                cutoffDate: cutoffDate
+            });
         } catch (err) {
             console.error("History import failed", err);
             showStatus(statusElement, "History import failed: " + (err && err.message ? err.message : "unknown error"), true);
@@ -582,6 +702,235 @@
             if (!button) return;
             button.disabled = !!disabled;
         });
+    }
+
+    function getCurrentStatsForAdjustment() {
+        if (window.wordleStats && typeof window.wordleStats.compute === "function") {
+            return normalizeStatsTotals(window.wordleStats.compute());
+        }
+        var raw = safeParseJSON(window.localStorage.getItem(STATISTICS_KEY), toDefaultStats());
+        return normalizeStatsTotals(raw);
+    }
+
+    function getAdjustTotalsFromInputs(inputs) {
+        function parseField(input) {
+            if (!input) return NaN;
+            var value = String(input.value || "").trim();
+            if (!/^\d+$/.test(value)) return NaN;
+            return parseInt(value, 10);
+        }
+
+        return {
+            gamesPlayed: parseField(inputs.gamesPlayed),
+            gamesWon: parseField(inputs.gamesWon),
+            guesses: {
+                1: parseField(inputs.g1),
+                2: parseField(inputs.g2),
+                3: parseField(inputs.g3),
+                4: parseField(inputs.g4),
+                5: parseField(inputs.g5),
+                6: parseField(inputs.g6),
+                fail: parseField(inputs.gfail)
+            }
+        };
+    }
+
+    function validateAdjustTotals(targetTotals) {
+        if (!Number.isFinite(targetTotals.gamesPlayed) || !Number.isFinite(targetTotals.gamesWon)) {
+            return "Use whole numbers 0 or greater.";
+        }
+        for (var i = 1; i <= 6; i += 1) {
+            if (!Number.isFinite(targetTotals.guesses[i])) return "Use whole numbers 0 or greater.";
+        }
+        if (!Number.isFinite(targetTotals.guesses.fail)) return "Use whole numbers 0 or greater.";
+
+        if (targetTotals.gamesWon > targetTotals.gamesPlayed) {
+            return "Games Won cannot be greater than Games Played.";
+        }
+
+        var winsByGuess = 0;
+        for (var j = 1; j <= 6; j += 1) {
+            winsByGuess += targetTotals.guesses[j];
+        }
+        var totalByGuess = winsByGuess + targetTotals.guesses.fail;
+
+        if (totalByGuess !== targetTotals.gamesPlayed) {
+            return "Guess totals (1-6 + Failed) must equal Games Played.";
+        }
+        if (winsByGuess !== targetTotals.gamesWon) {
+            return "Winning guess totals (1-6) must equal Games Won.";
+        }
+
+        return null;
+    }
+
+    function updateAdjustStatsPreview(inputs, preview) {
+        var totals = getAdjustTotalsFromInputs(inputs);
+        var validationError = validateAdjustTotals(totals);
+        var winPct = 0;
+        var avgGuesses = 0;
+
+        if (!validationError) {
+            var derived = computeDerivedFromTotals(totals);
+            winPct = derived.winPercentage;
+            avgGuesses = derived.averageGuesses;
+        }
+
+        if (preview.winPercentage) preview.winPercentage.textContent = String(winPct);
+        if (preview.averageGuesses) preview.averageGuesses.textContent = String(avgGuesses);
+    }
+
+    function openAdjustStatsModal(statusElement) {
+        var modal = document.getElementById("adjust-stats-modal");
+        if (!modal) return;
+
+        var inputs = {
+            gamesPlayed: document.getElementById("adjust-gamesPlayed"),
+            gamesWon: document.getElementById("adjust-gamesWon"),
+            g1: document.getElementById("adjust-g1"),
+            g2: document.getElementById("adjust-g2"),
+            g3: document.getElementById("adjust-g3"),
+            g4: document.getElementById("adjust-g4"),
+            g5: document.getElementById("adjust-g5"),
+            g6: document.getElementById("adjust-g6"),
+            gfail: document.getElementById("adjust-gfail")
+        };
+        var preview = {
+            winPercentage: document.getElementById("adjust-preview-winPercentage"),
+            averageGuesses: document.getElementById("adjust-preview-averageGuesses"),
+            currentStreak: document.getElementById("adjust-preview-currentStreak"),
+            maxStreak: document.getElementById("adjust-preview-maxStreak")
+        };
+        var errorEl = document.getElementById("adjust-stats-error");
+
+        var stats = getCurrentStatsForAdjustment();
+        inputs.gamesPlayed.value = stats.gamesPlayed;
+        inputs.gamesWon.value = stats.gamesWon;
+        for (var i = 1; i <= 6; i += 1) {
+            inputs["g" + i].value = stats.guesses[i];
+        }
+        inputs.gfail.value = stats.guesses.fail;
+
+        var liveStats = safeParseJSON(window.localStorage.getItem(STATISTICS_KEY), toDefaultStats());
+        if (preview.currentStreak) preview.currentStreak.textContent = String(Number(liveStats.currentStreak) || 0);
+        if (preview.maxStreak) preview.maxStreak.textContent = String(Number(liveStats.maxStreak) || 0);
+        if (errorEl) errorEl.textContent = "";
+
+        updateAdjustStatsPreview(inputs, preview);
+        modal.classList.remove("hidden");
+        showStatus(statusElement, "Adjusting stats totals...", false);
+    }
+
+    function closeAdjustStatsModal() {
+        var modal = document.getElementById("adjust-stats-modal");
+        if (!modal) return;
+        modal.classList.add("hidden");
+    }
+
+    function wireAdjustStatsModal(statusElement) {
+        var openButton = document.getElementById("adjustStatsButton");
+        var applyButton = document.getElementById("adjust-stats-apply");
+        var cancelButton = document.getElementById("adjust-stats-cancel");
+        var errorEl = document.getElementById("adjust-stats-error");
+
+        var inputs = {
+            gamesPlayed: document.getElementById("adjust-gamesPlayed"),
+            gamesWon: document.getElementById("adjust-gamesWon"),
+            g1: document.getElementById("adjust-g1"),
+            g2: document.getElementById("adjust-g2"),
+            g3: document.getElementById("adjust-g3"),
+            g4: document.getElementById("adjust-g4"),
+            g5: document.getElementById("adjust-g5"),
+            g6: document.getElementById("adjust-g6"),
+            gfail: document.getElementById("adjust-gfail")
+        };
+        var preview = {
+            winPercentage: document.getElementById("adjust-preview-winPercentage"),
+            averageGuesses: document.getElementById("adjust-preview-averageGuesses")
+        };
+
+        function setError(message) {
+            if (!errorEl) return;
+            errorEl.textContent = message || "";
+        }
+
+        var inputList = Object.values(inputs).filter(Boolean);
+        inputList.forEach(function(input) {
+            input.addEventListener("input", function() {
+                updateAdjustStatsPreview(inputs, preview);
+                setError("");
+            });
+        });
+
+        if (openButton) {
+            openButton.addEventListener("click", function() {
+                flashElement(openButton);
+                openAdjustStatsModal(statusElement);
+            });
+        }
+
+        if (cancelButton) {
+            cancelButton.addEventListener("click", function() {
+                closeAdjustStatsModal();
+                showStatus(statusElement, "Adjustment cancelled", false);
+            });
+        }
+
+        if (applyButton) {
+            applyButton.addEventListener("click", function() {
+                var targetTotals = getAdjustTotalsFromInputs(inputs);
+                var validationError = validateAdjustTotals(targetTotals);
+                if (validationError) {
+                    setError(validationError);
+                    return;
+                }
+
+                var history = getHistoryObject();
+                var legacy = getLegacyStatsObject();
+                var cutoffDate = getCutoffDateFromLegacy(legacy);
+                var postCutoff = computePostCutoffTotals(history, cutoffDate);
+
+                var nextLegacyGuesses = {
+                    1: targetTotals.guesses[1] - postCutoff.guesses[1],
+                    2: targetTotals.guesses[2] - postCutoff.guesses[2],
+                    3: targetTotals.guesses[3] - postCutoff.guesses[3],
+                    4: targetTotals.guesses[4] - postCutoff.guesses[4],
+                    5: targetTotals.guesses[5] - postCutoff.guesses[5],
+                    6: targetTotals.guesses[6] - postCutoff.guesses[6],
+                    7: targetTotals.guesses.fail - postCutoff.guesses.fail
+                };
+                var nextLegacyGamesPlayed = targetTotals.gamesPlayed - postCutoff.gamesPlayed;
+                var nextLegacyGamesWon = targetTotals.gamesWon - postCutoff.gamesWon;
+
+                var hasNegative = nextLegacyGamesPlayed < 0 || nextLegacyGamesWon < 0;
+                for (var i = 1; i <= 7; i += 1) {
+                    if ((nextLegacyGuesses[i] || 0) < 0) {
+                        hasNegative = true;
+                        break;
+                    }
+                }
+                if (hasNegative) {
+                    setError("These totals are lower than your post-cutoff recorded history and cannot be applied.");
+                    return;
+                }
+
+                var nextLegacy = Object.assign({}, legacy);
+                nextLegacy.gamesPlayed = nextLegacyGamesPlayed;
+                nextLegacy.gamesWon = nextLegacyGamesWon;
+                nextLegacy.guesses = nextLegacyGuesses;
+                nextLegacy.recorded_on = formatLocalDate(new Date());
+                if (!("maxStreak" in nextLegacy)) nextLegacy.maxStreak = 0;
+                if (!("current_streak_length" in nextLegacy)) nextLegacy.current_streak_length = 0;
+                if (!("current_streak_end_date" in nextLegacy)) nextLegacy.current_streak_end_date = null;
+
+                setLegacyStatsObject(nextLegacy);
+                applyLegacySyncChangeNotification();
+                recomputeStatisticsAfterHistoryImport();
+                closeAdjustStatsModal();
+                showStatus(statusElement, "Stats adjustment applied", false);
+                openStatsModalFromSaveMenu();
+            });
+        }
     }
 
     async function refreshSyncStatus(statusElement, emailInput, syncButtons) {
@@ -792,6 +1141,8 @@
 
         wireStatsImportExport(statusElement);
         wireHistoryImportExport(statusElement);
+        wireHistoryImportSummaryModal();
+        wireAdjustStatsModal(statusElement);
         wireSyncUi(statusElement);
     }
 
