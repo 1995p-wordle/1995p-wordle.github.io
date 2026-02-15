@@ -521,9 +521,10 @@
         return result.data;
     }
 
-    async function upsertProfile(userId, prefs, legacy, prefsUpdatedAt, legacyUpdatedAt) {
+    async function upsertProfile(userId, email, prefs, legacy, prefsUpdatedAt, legacyUpdatedAt) {
         var row = {
             user_id: userId,
+            email: email || null,
             preferences: prefs || {},
             legacy_stats: legacy || {},
             preferences_updated_at: prefsUpdatedAt ? toIso(prefsUpdatedAt) : null,
@@ -610,6 +611,7 @@
         var session = await getSession();
         if (!session) return;
         var userId = session.user.id;
+        var userEmail = session.user && session.user.email ? session.user.email : null;
 
         var syncMeta = getSyncMeta();
         syncMeta = ensurePreMergeBackup(syncMeta);
@@ -675,7 +677,7 @@
         }
 
         if (profileNeedsPush) {
-            await upsertProfile(userId, getLocalPreferences(), localLegacy, prefsUpdatedAt, legacyUpdatedAt);
+            await upsertProfile(userId, userEmail, getLocalPreferences(), localLegacy, prefsUpdatedAt, legacyUpdatedAt);
         }
 
         var remoteGameStateRow = await fetchGameState(userId);

@@ -2,14 +2,16 @@
 -- Apply in Supabase SQL editor after creating the project.
 
 create table if not exists public.profiles (
-    user_id uuid primary key references auth.users(id) on delete cascade,
-    preferences jsonb not null default '{}'::jsonb,
-    legacy_stats jsonb not null default '{}'::jsonb,
-    preferences_updated_at timestamptz,
-    legacy_updated_at timestamptz,
-    created_at timestamptz not null default timezone('utc', now()),
-    updated_at timestamptz not null default timezone('utc', now())
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  email text not null,
+  preferences jsonb not null default '{}'::jsonb,
+  legacy_stats jsonb not null default '{}'::jsonb,
+  preferences_updated_at timestamptz,
+  legacy_updated_at timestamptz,
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now())
 );
+
 
 create table if not exists public.games (
     user_id uuid not null references auth.users(id) on delete cascade,
